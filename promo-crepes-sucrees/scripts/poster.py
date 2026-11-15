@@ -1,7 +1,8 @@
 """Resto Crêpes – printable promo poster (A3 portrait, 300 dpi; also prints as A4).
 
-Usage: poster.py OUT_BASENAME      -> OUT_BASENAME.png and OUT_BASENAME.pdf
-Same look as the video (v2): red / yellow, sticker prices "old -> new".
+Usage: poster.py OUT_BASENAME [pop|resto]   -> OUT_BASENAME.png and OUT_BASENAME.pdf
+Themes: "pop" = red / yellow like the video (v2); "resto" = the restaurant's own colours
+(dark wood brown, amber of the LED strips, cream of the menu, pistachio green).
 """
 import math
 import os
@@ -17,6 +18,29 @@ import build2 as B2  # noqa: E402
 from build2 import (INK, WHITE, YEL, RED, RED_D, PISTA, PINK, GREY, tsprite, box_sprite, label_sprite, starburst,  # noqa: E402
                     arrow_sprite, old_price_sprite, inner)
 from build import blit_rgba, font  # noqa: E402
+
+THEME = sys.argv[2] if len(sys.argv) > 2 else "pop"
+if THEME == "resto":
+    INK = (30, 16, 10)
+    WHITE = (252, 245, 230)            # cream of the menu
+    YEL = (242, 176, 38)               # amber of the LED strips
+    PISTA = (170, 200, 86)
+    GREY = (150, 132, 118)
+    BG_C, BG_E, RAY, RAY_A = (128, 74, 30), (30, 16, 10), (236, 160, 40), 0.20
+    PRICE, PRICE_EX, STRIKE = (236, 150, 16), INK, (204, 58, 38)
+    STICKER_NUM = (120, 34, 14)
+    TITLE_EX = (150, 92, 22)
+    SLAB_F, SLAB_F_TXT = (146, 78, 34), WHITE
+    FOOT_SMALL = (120, 34, 14)
+    CARD = (253, 248, 236)
+else:
+    BG_C, BG_E, RAY, RAY_A = (240, 40, 44), RED_D, (255, 96, 70), 0.26
+    PRICE, PRICE_EX, STRIKE = RED, INK, RED
+    STICKER_NUM = RED
+    TITLE_EX = INK
+    SLAB_F, SLAB_F_TXT = PINK, WHITE
+    FOOT_SMALL = RED
+    CARD = (255, 252, 244)
 
 PW, PH = 3508, 4961            # A3 at 300 dpi
 CLIPS = "/home/user/work/clips/Crepe"
@@ -88,10 +112,10 @@ def photo(img, box, size, radius):
 
 def price_row(old, new, s_old=150, s_new=250):
     """Sprite: struck old price -> arrow -> big red new price."""
-    o = old_price_sprite(old, s_old, GREY, strike=RED)
+    o = old_price_sprite(old, s_old, GREY, strike=STRIKE)
     a = arrow_sprite(int(s_old * 0.78), int(s_old * 0.66), fill=YEL, ow=max(5, s_old // 16))
-    n = tsprite(str(new), "Lilita", s_new, RED, stroke=max(6, s_new // 20), extrude=(max(4, s_new // 30), max(5, s_new // 24), INK))
-    d = tsprite("DH", "Lilita", int(s_new * 0.5), RED, stroke=max(5, s_new // 26), extrude=(max(3, s_new // 40), max(4, s_new // 32), INK))
+    n = tsprite(str(new), "Lilita", s_new, PRICE, stroke=max(6, s_new // 20), extrude=(max(4, s_new // 30), max(5, s_new // 24), PRICE_EX))
+    d = tsprite("DH", "Lilita", int(s_new * 0.5), PRICE, stroke=max(5, s_new // 26), extrude=(max(3, s_new // 40), max(4, s_new // 32), PRICE_EX))
     ow_, oh = inner(o)
     aw, ah = inner(a)
     nw, nh = inner(n)
@@ -128,33 +152,33 @@ yy, xx = np.mgrid[0:PH, 0:PW].astype(np.float32)
 cx, cy = PW / 2, 1000.0
 d = np.clip(np.sqrt((xx - cx) ** 2 + (yy - cy) ** 2) / 4300, 0, 1)
 k = ((1 - d) ** 1.2)[..., None]
-bg = np.array((240, 40, 44), np.float32) * k + np.array(RED_D, np.float32) * (1 - k)
+bg = np.array(BG_C, np.float32) * k + np.array(BG_E, np.float32) * (1 - k)
 theta = np.arctan2(yy - cy, xx - cx)
-rays = np.clip(0.5 + 6.0 * np.sin(18 * theta + 0.3), 0, 1) * 0.26 * (1 - d * 0.6)
-bg = bg * (1 - rays[..., None]) + np.array((255, 96, 70), np.float32) * rays[..., None]
+rays = np.clip(0.5 + 6.0 * np.sin(18 * theta + 0.3), 0, 1) * RAY_A * (1 - d * 0.6)
+bg = bg * (1 - rays[..., None]) + np.array(RAY, np.float32) * rays[..., None]
 vig = 1 - 0.30 * np.clip(np.sqrt(((xx - PW / 2) / (PW * 0.8)) ** 2 + ((yy - PH / 2) / (PH * 0.75)) ** 2) - 0.4, 0, 1) ** 1.5
 bg *= vig[..., None]
 canvas = np.dstack([np.clip(bg, 0, 255).astype(np.uint8), np.full((PH, PW), 255, np.uint8)])
 del yy, xx, d, k, theta, rays, vig, bg
 
 # ------------------------------------------------------------------ header
-brand = tsprite("RESTO CRÊPES", "Lilita", 240, WHITE, stroke=18, extrude=(14, 18, INK), tracking=10)
+brand = tsprite("RESTO CRÊPES", "Lilita", 240, WHITE, stroke=18, extrude=(14, 18, TITLE_EX), tracking=10)
 paste(canvas, brand, PW / 2, 150, anchor="tc")
-title = tsprite("CRÊPES SUCRÉES", "Lilita", 470, WHITE, stroke=28, extrude=(22, 28, INK), maxw=3120)
+title = tsprite("CRÊPES SUCRÉES", "Lilita", 470, WHITE, stroke=28, extrude=(22, 28, TITLE_EX), maxw=3120)
 paste(canvas, title, PW / 2, 1000, anchor="c")
-promo = tsprite("Promo !", "Kaushan", 400, YEL, stroke=22, extrude=(15, 20, INK))
+promo = tsprite("Promo !", "Kaushan", 400, YEL, stroke=22, extrude=(15, 20, TITLE_EX if THEME == "resto" else INK))
 paste(canvas, promo, 860, 640, anchor="c", rot=7)
-st, spad = starburst(540, n=24, ow=12, hard=(16, 20))
+st, spad = starburst(540, fill=YEL, n=24, ow=12, hard=(16, 20))
 sc = st.shape[0] / 2
 t1 = tsprite("DÈS", "Montserrat-Black", 64, INK, tracking=6)
 blit_rgba(st, t1[0], sc - t1[0].shape[1] / 2, sc - 205 - t1[1])
-n15 = tsprite("15", "Lilita", 240, RED, stroke=10, extrude=(6, 8, INK))
-dh15 = tsprite("DH", "Lilita", 104, RED, stroke=7, extrude=(4, 6, INK))
+n15 = tsprite("15", "Lilita", 240, STICKER_NUM, stroke=10, extrude=(6, 8, INK))
+dh15 = tsprite("DH", "Lilita", 104, STICKER_NUM, stroke=7, extrude=(4, 6, INK))
 nw_, dw_ = inner(n15)[0], inner(dh15)[0]
 x15 = sc - (nw_ + 10 + dw_) / 2
 blit_rgba(st, n15[0], x15 - n15[1], sc - 150 - n15[1])
 blit_rgba(st, dh15[0], x15 + nw_ + 10 - dh15[1], sc - 150 + 122 - dh15[1])
-o20 = old_price_sprite(20, 76, INK, strike=RED)
+o20 = old_price_sprite(20, 76, INK, strike=STRIKE)
 blit_rgba(st, o20[0], sc - o20[0].shape[1] / 2, sc + 104 - o20[1])
 paste(canvas, (st, spad), 2890, 600, anchor="c", rot=10)
 
@@ -166,12 +190,12 @@ PHW, PHH = 1480, 1090
 cards = [
     dict(x=M, name="KOUNAFA PISTACHE", tag="NOUVEAU", accent=PISTA, name_col=INK, old=38, new=30,
          img=photo(kou, (410, 1385, 1920, 2497), (PHW, PHH), 46), rot=-1.0),
-    dict(x=PW - M - CW, name="CRÊPE 4 YOU", tag="CHOIX DU CHEF", accent=PINK, name_col=WHITE, old=35, new=30,
+    dict(x=PW - M - CW, name="CRÊPE 4 YOU", tag="CHOIX DU CHEF", accent=SLAB_F, name_col=SLAB_F_TXT, old=35, new=30,
          img=photo(four, (70, 1130, 1020, 1830), (PHW, PHH), 46), rot=1.0),
 ]
 CY = 1340
 for c in cards:
-    card, pad = box_sprite(CW, CH_, (255, 252, 244), 76, outline=INK, ow=14, hard=(22, 28))
+    card, pad = box_sprite(CW, CH_, CARD, 76, outline=INK, ow=14, hard=(22, 28))
     blit_rgba(card, c["img"], pad + 30, pad + 30)
     # ink frame around the photo
     S = 2
@@ -179,7 +203,7 @@ for c in cards:
     ImageDraw.Draw(fr).rounded_rectangle([0, 0, PHW * S - 1, PHH * S - 1], 46 * S, outline=INK + (255,), width=10 * S)
     blit_rgba(card, np.array(fr.resize((PHW, PHH), Image.LANCZOS)), pad + 30, pad + 30)
     name = label_sprite(c["name"], "Lilita", 150, c["name_col"], c["accent"], tracking=2, padx=54, pady=14, radius=34,
-                        outline=INK, ow=10, hard=(14, 18), stroke=8 if c["name_col"] == WHITE else 0, maxw=1260)
+                        outline=INK, ow=10, hard=(14, 18), stroke=8 if c["name_col"] != INK else 0, maxw=1260)
     paste(card, name, pad + CW / 2, pad + 30 + PHH - 20, anchor="c", rot=2.0)
     row = price_row(c["old"], c["new"], 150, 260)
     paste(card, row, pad + CW / 2, pad + 30 + PHH + 232, anchor="c")
@@ -189,10 +213,10 @@ for c in cards:
     paste(canvas, (card, pad), c["x"], CY, rot=c["rot"])
 
 # ------------------------------------------------------------------ full list
-sec = tsprite("ET TOUTES NOS CRÊPES SUCRÉES EN PROMO", "Lilita", 168, WHITE, stroke=14, extrude=(10, 13, INK), maxw=3160)
+sec = tsprite("ET TOUTES NOS CRÊPES SUCRÉES EN PROMO", "Lilita", 168, WHITE, stroke=14, extrude=(10, 13, TITLE_EX), maxw=3160)
 paste(canvas, sec, PW / 2, 3010, anchor="c")
 LX, LY, LW, LH = M, 3130, PW - 2 * M, 1150
-panel, pad = box_sprite(LW, LH, (255, 252, 244), 70, outline=INK, ow=14, hard=(22, 28))
+panel, pad = box_sprite(LW, LH, CARD, 70, outline=INK, ow=14, hard=(22, 28))
 items = [("Nutella", 20, 15), ("Caramel", 20, 15), ("Banane", 25, 20), ("Framboise", 25, 20), ("Oreo", 25, 20),
          ("KitKat", 25, 20), ("Milka", 30, 25), ("Snickers", 30, 25), ("Twix", 30, 25), ("Kinder", 30, 25),
          ("Lotus", 30, 25), ("Pistache", 30, 25), ("Chocolat blanc", 30, 25)]
@@ -221,7 +245,7 @@ paste(canvas, (panel, pad), LX, LY)
 # ------------------------------------------------------------------ footer
 FW, FH = PW - 2 * M - 60, 430
 foot, fpad = box_sprite(FW, FH, YEL, 60, outline=INK, ow=14, hard=(22, 28))
-fo = tsprite("OFFRE EXCLUSIVE", "Montserrat-Black", 96, RED, tracking=22)
+fo = tsprite("OFFRE EXCLUSIVE", "Montserrat-Black", 96, FOOT_SMALL, tracking=22)
 blit_rgba(foot, fo[0], fpad + (FW - inner(fo)[0]) / 2 - fo[1], fpad + 30 - fo[1])
 ft = tsprite("JUSQU'AU 22 NOVEMBRE INCLUS !", "Lilita", 226, INK, maxw=FW - 160)
 blit_rgba(foot, ft[0], fpad + (FW - inner(ft)[0]) / 2 - ft[1], fpad + 140 - ft[1])
