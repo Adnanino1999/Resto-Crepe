@@ -18,7 +18,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from edit import V, TOTAL  # noqa: E402
+from edit import V, TOTAL, FREEZE  # noqa: E402
 
 S = os.environ.get("PROMO_WORK", os.path.dirname(HERE))
 CACHE, FONTS, PHOTOS_DIR = f"{S}/cache4k", f"{S}/fonts", f"{S}/photos"
@@ -45,22 +45,27 @@ GRADE = ("eq=contrast=1.06:saturation=1.14:brightness=0.004,"
 SEG = {k: dict(key=k, clip=c, ss=ss, dur=d, sp=sp, T0=T, T1=T + d) for k, c, ss, d, sp, T, _ in V}
 SEG["p07"] = dict(key="p07", photo="photo_5764677286648025025_w.jpg", T0=12.35, T1=14.96, zx=(1.12, 1.20), py=-0.20, foc=(0.46, 0.27))
 SEG["p12"] = dict(key="p12", photo="photo_6050655862986052165_w.jpg", T0=19.76, T1=21.75, zx=(1.10, 1.18), py=-0.10, foc=(0.50, 0.25))
+SEG[FREEZE[0]] = dict(key=FREEZE[0], freeze_of=FREEZE[1], T0=FREEZE[2], T1=FREEZE[2] + FREEZE[3])
 ORDER = sorted(SEG.values(), key=lambda s: s["T0"])
 
-HEADS = {"v00", "v01", "v03", "v06", "v08", "v13"}
+HEADS = {"v00", "v01", "v03", "v06", "v08", "v13", "v17a", "v17b", "v17c", "v17d", "v17g"}
 SUPER = {k for k in SEG if k.startswith("v02")}
 CAM = {  # key: (z0, z1, fx, fy, punch)
     "v00": (1.00, 1.05, 0.5, 0.45, 0.0), "v01": (1.03, 1.08, 0.5, 0.35, 0.07), "v03": (1.04, 1.07, 0.5, 0.35, 0.05),
     "v06": (1.02, 1.06, 0.5, 0.55, 0.04), "v08": (1.03, 1.08, 0.5, 0.35, 0.05), "v13": (1.03, 1.08, 0.5, 0.35, 0.05),
     "v14": (1.10, 1.14, 0.5, 0.5, 0.0), "v15": (1.02, 1.10, 0.5, 0.62, 0.0),
+    "v16": (1.06, 1.10, 0.5, 0.5, 0.0), "v17a": (1.00, 1.04, 0.5, 0.4, 0.0), "v17b": (1.02, 1.07, 0.5, 0.35, 0.06),
+    "v17c": (1.04, 1.08, 0.5, 0.35, 0.07), "v17d": (1.02, 1.06, 0.5, 0.35, 0.07), "v17g": (1.06, 1.10, 0.5, 0.4, 0.0),
     "v04c": (1.04, 1.12, 0.45, 0.42, 0.04), "v09d": (1.06, 1.14, 0.5, 0.5, 0.04), "v02c": (1.05, 1.13, 0.5, 0.62, 0.06),
 }
-WHIP_AT = [4.25, 12.35, 19.76, 24.25]
+WHIP_AT = [4.25, 12.35, 19.76, 24.25, 25.45, 41.80]
 SUPER_CUTS = [4.25, 4.75, 5.25, 5.75, 6.25, 6.75, 7.25]
 SLAMS = {"p07": 12.72, "p12": 20.25}
-END_T, CTA_T = 24.25, 28.25
+END_T, STEP_B, CTA_T = 41.80, 44.60, 47.30
+SKIP0, SKIP1 = 24.25, 25.45
+PHONE = "06 60 24 14 75"
 
-SUBS = [  # (t0, t1, text with *gold* words, kind)  q = question (off-camera), a = answer
+SUBS_UNUSED = [  # French subtitles: dropped on request (Moroccan audience), kept for reference
     (0.28, 1.90, "Qu'est-ce que tu manges ?", "q"),
     (1.95, 3.10, "Frérot, Resto Crêpes a lancé…", "a"),
     (3.10, 4.22, "…une *promo de folie* !", "a"),
@@ -82,12 +87,13 @@ CHIPS = [  # (t_in, t_out, row, text, plus, offered)
     (16.50, 19.76, 0, "TACOS POULET", False, False),
     (17.80, 19.76, 1, "CRÊPE NUTELLA", True, False),
     (19.00, 19.76, 2, "FRITES", True, False),
+    (35.90, 39.15, 0, "FORMULE TACOS  •  45 DH", False, False),
 ]
 CARDS = {
     "p07": dict(title="FORMULE PIZZA", lines=["Pizza 4 fromages  +  Pancake", "+  Boisson offerte"]),
     "p12": dict(title="FORMULE TACOS", lines=["Tacos poulet  +  Frites  +  Crêpe Nutella", "+  Boisson offerte"]),
 }
-TOPBAR = [(1.90, 4.25), (7.75, 12.35), (14.96, 19.76), (21.75, 24.25)]
+TOPBAR = [(0.30, 4.25), (7.75, 12.35), (14.96, 19.76), (21.75, 24.25), (25.50, 39.20)]
 
 
 # ------------------------------------------------------------------ easing
@@ -122,7 +128,8 @@ def window(t, t0, t1, fin=0.14, fout=0.10):
 
 
 # ------------------------------------------------------------------ fonts & sprites
-FONT_FILES = {"anton": "Anton.ttf", "mont": "Montserrat.ttf", "kaushan": "Kaushan.ttf"}
+FONT_FILES = {"anton": "Anton.ttf", "mont": "Montserrat.ttf", "kaushan": "Kaushan.ttf", "lalezar": "Lalezar.ttf"}
+EMOJI_FONT = "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf"
 
 
 @functools.lru_cache(None)
@@ -272,6 +279,38 @@ def soft_dot(r_px):
     arr = np.zeros((n, n, 4), np.uint8)
     arr[..., :3] = GOLD_HI
     arr[..., 3] = (a * 255).astype(np.uint8)
+    return arr
+
+
+@functools.lru_cache(None)
+def emoji(ch, size):
+    """Colour emoji sprite (Noto Color Emoji is a 109 px bitmap font), scaled to `size` design px."""
+    f = ImageFont.truetype(EMOJI_FONT, 109)
+    im = Image.new("RGBA", (160, 160), (0, 0, 0, 0))
+    ImageDraw.Draw(im).text((10, 10), ch, font=f, embedded_color=True)
+    im = im.crop(im.getbbox())
+    px = int(size * U)
+    im = im.resize((px, int(px * im.height / im.width)), Image.LANCZOS)
+    return np.array(im)
+
+
+def speed_lines(n=56, seed=3):
+    """Manga-style radial speed lines (transparent centre)."""
+    r = np.random.default_rng(seed)
+    img = Image.new("L", (W, H), 0)
+    d = ImageDraw.Draw(img)
+    cx, cy = W / 2, H * 0.36
+    R = math.hypot(W, H)
+    for i in range(n):
+        a = 2 * math.pi * i / n + r.uniform(-0.04, 0.04)
+        w = r.uniform(0.006, 0.02)
+        r0 = r.uniform(0.42, 0.6) * W
+        pts = [(cx + r0 * math.cos(a), cy + r0 * math.sin(a)), (cx + R * math.cos(a - w), cy + R * math.sin(a - w)),
+               (cx + R * math.cos(a + w), cy + R * math.sin(a + w))]
+        d.polygon(pts, fill=int(r.uniform(150, 255)))
+    arr = np.zeros((H, W, 4), np.uint8)
+    arr[..., :3] = 255
+    arr[..., 3] = np.array(img.filter(ImageFilter.GaussianBlur(2)))
     return arr
 
 
@@ -447,6 +486,19 @@ class VideoReader:
             pass
 
 
+_FROZEN = {}
+
+
+def frozen_frame(seg):
+    held = SEG[seg["freeze_of"]]
+    if held["key"] not in _FROZEN:
+        k = int(round((held["T1"] - held["T0"]) * FPS)) - 1
+        r = VideoReader(held["key"], k)
+        _FROZEN[held["key"]] = r.read().copy()
+        r.close()
+    return _FROZEN[held["key"]]
+
+
 @functools.lru_cache(None)
 def photo_canvas(name, py):
     """Photo graded with the same chain, width-fitted to 2160, shifted by py*H, fading into black below."""
@@ -503,6 +555,14 @@ class GFX:
         self.card_dh = tsprite("DH", "anton", 132, grad=GOLD_GRAD, shadow=0.9, shadow_blur=14, stroke=1.0, stroke_fill=GOLD_D)
         self.card_date = tsprite("OFFRE VALABLE DU 22 AU 29 NOVEMBRE", "mont", 21, CREAM, var=b"SemiBold", tracking=4, shadow=0.7)
         self.glow = self.make_glow(560)
+        # time skip + comic freeze
+        self.ts_text = tsprite("من بعد شي سوايع...", "lalezar", 118, CREAM, shadow=0.85, shadow_blur=12, glow=(GOLD, 0.55))
+        self.ts_clock = emoji("⏰", 190)
+        self.ts_ff = emoji("⏩", 74)
+        self.lines = speed_lines()
+        self.angry = emoji("😤", 230)
+        yy = np.arange(H) % (6 * U)
+        self.scan = np.ascontiguousarray(np.broadcast_to((1 - 0.16 * (yy < 2 * U))[:, None, None], (H, W, 3)).astype(np.float32))
         # end card
         self.make_end()
 
@@ -552,11 +612,16 @@ class GFX:
         self.e_week = tsprite("OFFRE VALABLE 1 SEMAINE", "mont", 24, GOLD_HI, var=b"Bold", tracking=8, shadow=0.7)
         self.e_dates = tsprite("DU 22 AU 29 NOVEMBRE", "anton", 92, CREAM, tracking=3, shadow=0.85, shadow_blur=10)
         self.e_datebox = rbox(self.e_dates.shape[1] / U + 30, 132, INK, alpha=150, radius=20, outline=GOLD, ow=1.6, shadow=0.5)
-        pin = tsprite("●", "mont", 16, GOLD)
-        self.e_loc = hcat([pin, tsprite("Rabat  •  Salé  •  Témara", "mont", 30, CREAM, var=b"SemiBold", shadow=0.7)], 10)
+        self.e_order = tsprite("POUR COMMANDER", "mont", 30, GOLD_HI, var=b"Bold", tracking=10, shadow=0.7)
+        ph = hcat([emoji("📞", 84), tsprite(PHONE, "anton", 122, grad=GOLD_GRAD, tracking=3, stroke=0.8, stroke_fill=GOLD_D)], 22)
+        self.e_phone_box = rbox(ph.shape[1] / U + 70, 172, INK, alpha=170, radius=30, outline=GOLD, ow=1.8, shadow=0.55)
+        self.e_phone = ph
+        self.e_deliv = hcat([emoji("🛵", 54), tsprite("Livraison  Rabat  •  Témara", "mont", 41, CREAM, var=b"Bold", shadow=0.8)], 16)
+        self.e_addr = hcat([emoji("📍", 48), tsprite("Hay El Fath  –  Rabat", "mont", 41, CREAM, var=b"SemiBold", shadow=0.8)], 14)
         self.cta = tsprite("On vous attend !", "kaushan", 128, CREAM, shadow=0.9, shadow_blur=14, glow=(GOLD, 0.6))
         self.cta_brand = tsprite("RESTO CRÊPES", "anton", 70, CREAM, tracking=8, shadow=0.8, shadow_blur=10)
         self.cta_sub = tsprite("2 formules à 45 DH  •  du 22 au 29 novembre", "mont", 28, GOLD_HI, var=b"Bold", tracking=1, shadow=0.8)
+        self.cta_phone = hcat([emoji("📞", 50), tsprite(PHONE, "anton", 70, CREAM, tracking=2, shadow=0.85, shadow_blur=10)], 14)
 
     def make_end_card(self, photo, focus, title, lines):
         cw, ch = 960, 250
@@ -594,7 +659,7 @@ class GFX:
 
     # ---- subtitle
     def subtitle(self, frame, t):
-        for t0, t1, txt, kind in SUBS:
+        for t0, t1, txt, kind in SUBS_UNUSED:
             a = window(t, t0, t1, 0.10, 0.07)
             if a <= 0:
                 continue
@@ -668,7 +733,7 @@ class GFX:
 
     # ---- chips
     def chips_draw(self, frame, t):
-        first = [c for c in CHIPS if c[2] == 0 and c[0] - 0.05 <= t < c[1]]
+        first = [c for c in CHIPS if c[2] == 0 and c[0] - 0.05 <= t < c[1] and not c[3].startswith("FORMULE")]
         if first:
             a = window(t, first[0][0], first[0][1], 0.2, 0.15)
             blit(frame, self.chip_label, 62, 300, alpha=a * 0.95, anchor="l")
@@ -751,6 +816,7 @@ class GFX:
     # ---- end card
     def end(self, frame, t):
         lt = t - END_T
+        lb = t - STEP_B
         out = 1 - prog(t, CTA_T - 0.12, 0.12)
         self.particles(frame, t, strength=1.0 * out)
 
@@ -764,14 +830,26 @@ class GFX:
         a3 = ease_back(prog(lt, 0.45, 0.32), 1.8) * out
         blit(frame, self.e_a, 330, 572, alpha=min(1, a3 * 2))
         blit(frame, shine(self.e_45, prog(lt, 0.8, 0.6)), 600, 560, alpha=min(1, a3 * 2), scale=1.25 - 0.25 * a3)
+        # step A: the two formulas
+        gone = ease_io(prog(lb, -0.15, 0.3))
         for i, crd in enumerate(self.e_cards):
             p = ease_out(prog(lt, 0.60 + 0.30 * i, 0.38))
-            blit(frame, crd, 540 + 90 * (1 - p) * (1 if i % 2 else -1), 830 + i * 290, alpha=p * out)
+            x = 540 + 90 * (1 - p) * (1 if i % 2 else -1) - 700 * gone * (1 if i % 2 else -1)
+            blit(frame, crd, x, 830 + i * 290, alpha=p * out * (1 - gone))
+        # step B: how to order
+        if lb >= 0:
+            pb = ease_back(prog(lb, 0.05, 0.35), 1.6)
+            blit(frame, self.e_order, 540, 780, alpha=ease_out(prog(lb, 0.0, 0.3)) * out)
+            blit(frame, self.e_phone_box, 540, 900, alpha=min(1, pb * 2) * out, scale=0.85 + 0.15 * pb)
+            blit(frame, shine(self.e_phone, prog(lb, 0.5, 0.6)), 540, 900, alpha=min(1, pb * 2) * out, scale=0.85 + 0.15 * pb)
+            pd = ease_out(prog(lb, 0.35, 0.35))
+            blit(frame, self.e_deliv, 540 - 40 * (1 - pd), 1080, alpha=pd * out)
+            pa = ease_out(prog(lb, 0.6, 0.35))
+            blit(frame, self.e_addr, 540 + 40 * (1 - pa), 1170, alpha=pa * out)
         p = ease_back(prog(lt, 1.35, 0.35), 1.6)
         blit(frame, self.e_week, 540, 1352, alpha=ap(1.35))
         blit(frame, self.e_datebox, 540, 1440, alpha=min(1, p * 2) * out, scale=0.9 + 0.1 * p)
         blit(frame, shine(self.e_dates, prog(lt, 1.8, 0.6)), 540, 1440, alpha=min(1, p * 2) * out, scale=0.9 + 0.1 * p)
-        blit(frame, self.e_loc, 540, 1556, alpha=ap(1.75))
 
     def cta_draw(self, frame, t):
         lt = t - CTA_T
@@ -779,8 +857,23 @@ class GFX:
         blit(frame, self.cta_brand, 540, 250, alpha=a)
         blit(frame, self.e_rule, 540, 305, alpha=a * 0.9)
         p = ease_back(prog(lt, 0.2, 0.4), 2.0)
-        blit(frame, self.cta, 540, 1260, alpha=min(1, p * 2), scale=0.6 + 0.4 * p, rot=4 * (1 - p) + 3)
-        blit(frame, self.cta_sub, 540, 1400, alpha=ease_out(prog(lt, 0.5, 0.35)))
+        blit(frame, self.cta, 540, 1180, alpha=min(1, p * 2), scale=0.6 + 0.4 * p, rot=4 * (1 - p) + 3)
+        blit(frame, self.cta_phone, 540, 1325, alpha=ease_out(prog(lt, 0.45, 0.35)))
+        blit(frame, self.cta_sub, 540, 1420, alpha=ease_out(prog(lt, 0.6, 0.35)))
+
+    def timeskip(self, frame, t):
+        lt = t - SKIP0
+        a = min(1, lt / 0.15) * (1 - prog(t, SKIP1 - 0.12, 0.12))
+        blit(frame, self.ts_ff, 120, 330, alpha=a * (0.6 + 0.4 * (int(lt * 6) % 2)))
+        p = ease_back(prog(lt, 0.05, 0.35), 2.0)
+        blit(frame, self.ts_clock, 540, 760, alpha=a, scale=0.6 + 0.4 * p, rot=12 * math.sin(lt * 40) * (1 - prog(lt, 0.4, 0.5)))
+        blit(frame, self.ts_text, 540, 990, alpha=a * ease_out(prog(lt, 0.15, 0.3)), scale=0.92 + 0.08 * ease_out(prog(lt, 0.15, 0.4)))
+
+    def freeze(self, frame, t):
+        lt = t - FREEZE[2]
+        blit(frame, self.lines, 540, 960, alpha=0.38 * ease_out(prog(lt, 0.02, 0.12)) * (0.85 + 0.15 * math.sin(lt * 50)))
+        p = ease_back(prog(lt, 0.12, 0.3), 2.4)
+        blit(frame, self.angry, 820, 470, alpha=min(1, p * 2), scale=0.3 + 0.7 * p, rot=-14 + 8 * math.sin(lt * 18))
 
 
 # ------------------------------------------------------------------ per-frame compositing
@@ -812,7 +905,37 @@ def compose(g, seg, raw, t, fi):
         if 0 <= ls < 0.3:
             k = (1 - ls / 0.3) * 14 * U
             dx, dy = k * math.sin(ls * 90), k * math.cos(ls * 77)
+    if key == FREEZE[0]:                                  # comic freeze frame: punch-in + shake
+        z = 1.0 + 0.14 * ease_out(prog(tl, 0.0, 0.45))
+        fx, fy = 0.42, 0.33
+        if tl < 0.3:
+            k = (1 - tl / 0.3) * 18 * U
+            dx, dy = k * math.sin(tl * 110), k * math.cos(tl * 93)
+    if key == "v17g":                                     # he shoves the camera: extra shake
+        k = 10 * U
+        dx, dy = k * math.sin(t * 61), k * math.cos(t * 47)
     frame = warp(raw, z, fx, fy, dx, dy)
+    if key == "v16":                                      # fast-forward look: desaturated, scanlines, chroma split
+        g_ = cv2.cvtColor(cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY), cv2.COLOR_GRAY2RGB)
+        frame = cv2.addWeighted(frame, 0.45, g_, 0.55, 0)
+        frame = cv2.multiply(frame, g.scan, dtype=cv2.CV_8U)
+        sh = int(9 * U)
+        frame[:, sh:, 0] = frame[:, :-sh, 0]
+        frame = cv2.addWeighted(frame, 0.62, np.full_like(frame, INK), 0.38, 0)
+    if key == "v17g":
+        r_ = np.random.default_rng(fi)
+        sh = int(r_.uniform(8, 26) * U)
+        frame[:, sh:, 0] = frame[:, :-sh, 0]
+        frame[:, :-sh, 2] = frame[:, sh:, 2]
+        for _ in range(4):
+            y0 = int(r_.uniform(0, H - 200 * U))
+            hh = int(r_.uniform(20, 120) * U)
+            frame[y0:y0 + hh] = np.roll(frame[y0:y0 + hh], int(r_.uniform(-60, 60) * U), axis=1)
+    if key == FREEZE[0]:
+        g_ = cv2.cvtColor(cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY), cv2.COLOR_GRAY2RGB)
+        frame = cv2.addWeighted(frame, 0.7, g_, 0.3, 0)
+        if tl < 0.08:
+            frame = cv2.addWeighted(frame, 1.0, np.full_like(frame, 255), 0.6 * (1 - tl / 0.08), 0)
     if key == "v14":                                     # end card: soft, dark, warm backdrop
         sm = cv2.resize(frame, (W // 8, H // 8), interpolation=cv2.INTER_AREA)
         sm = cv2.GaussianBlur(sm, (0, 0), 7)
@@ -835,6 +958,8 @@ def compose(g, seg, raw, t, fi):
         frame = apply(frame, g.masks["card"])
     elif key == "v15":
         frame = apply(frame, g.masks["cta"])
+    elif key in (FREEZE[0], "v16"):
+        frame = apply(frame, g.masks["vig"])
     elif key != "v14":
         frame = apply(frame, g.masks["head"])
     # graphics
@@ -846,9 +971,12 @@ def compose(g, seg, raw, t, fi):
         g.end(frame, t)
     elif key == "v15":
         g.cta_draw(frame, t)
+    elif key == "v16":
+        g.timeskip(frame, t)
+    elif key == FREEZE[0]:
+        g.freeze(frame, t)
     g.topbar(frame, t)
     g.chips_draw(frame, t)
-    g.subtitle(frame, t)
     # fade from / to black at the very edges
     if t > TOTAL - 0.35:
         frame = cv2.addWeighted(frame, max(0.0, (TOTAL - t) / 0.35), frame, 0, 0)
@@ -872,6 +1000,8 @@ def render(out, audio, stills, still_dir, t0=0.0, t1=TOTAL):
             k = fi - int(round(seg["T0"] * FPS))
             if "photo" in seg:
                 raw = photo_canvas(seg["photo"], seg["py"])
+            elif "freeze_of" in seg:
+                raw = frozen_frame(seg)
             else:
                 r = VideoReader(seg["key"], max(0, k))
                 raw = r.read().copy()
@@ -887,7 +1017,7 @@ def render(out, audio, stills, still_dir, t0=0.0, t1=TOTAL):
     if audio:
         cmd += ["-ss", f"{t0:.3f}", "-i", audio]
     cmd += ["-map", "0:v"] + (["-map", "1:a"] if audio else [])
-    cmd += ["-c:v", "libx264", "-preset", "slow", "-crf", "15", "-pix_fmt", "yuv420p", "-profile:v", "high", "-level", "5.2",
+    cmd += ["-c:v", "libx264", "-preset", "slow", "-crf", "15", "-maxrate", "60M", "-bufsize", "120M", "-pix_fmt", "yuv420p", "-profile:v", "high", "-level", "5.2",
             "-x264-params", "aq-mode=3:deblock=-1,-1", "-color_primaries", "bt709", "-color_trc", "bt709", "-colorspace", "bt709",
             "-movflags", "+faststart", "-r", str(FPS)]
     if audio:
@@ -899,9 +1029,15 @@ def render(out, audio, stills, still_dir, t0=0.0, t1=TOTAL):
         if s1 <= f0 or s0 >= f1:
             continue
         a0 = max(s0, f0)
-        reader = None if "photo" in seg else VideoReader(seg["key"], a0 - s0)
+        still = "photo" in seg or "freeze_of" in seg
+        reader = None if still else VideoReader(seg["key"], a0 - s0)
         for fi in range(a0, min(s1, f1)):
-            raw = photo_canvas(seg["photo"], seg["py"]) if reader is None else reader.read()
+            if reader is not None:
+                raw = reader.read()
+            elif "photo" in seg:
+                raw = photo_canvas(seg["photo"], seg["py"])
+            else:
+                raw = frozen_frame(seg)
             fr = compose(g, seg, raw, fi / FPS, fi)
             enc.stdin.write(fr.tobytes())
             if fi % 30 == 0:

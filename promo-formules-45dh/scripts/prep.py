@@ -15,9 +15,13 @@ for key, clip, ss, dur, sp, T, note in V:
     out = f'{OUT}/{key}.mp4'
     n = int(round(dur * 30)) + 3
     vf = []
-    if sp != 1.0:
+    if sp < 1.0:
         vf.append(f"setpts=(PTS-STARTPTS)/{sp}")
         vf.append("minterpolate=fps=30:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1")
+    elif sp > 1.0:
+        vf.append(f"tmix=frames={max(2, int(round(sp)))}")      # motion-blurred fast forward
+        vf.append(f"setpts=(PTS-STARTPTS)/{sp}")
+        vf.append("fps=30")
     else:
         vf.append("fps=30")
     vf.append("hqdn3d=1.2:1.2:3:3")

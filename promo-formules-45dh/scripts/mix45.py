@@ -25,7 +25,9 @@ g = signal.lfilter([1 - rel], [1, -rel], active)          # slow release
 g = np.maximum(g, signal.lfilter([1 - att], [1, -att], active))
 g = np.clip(g, 0, 1)
 FULL, DUCK = 0.62, 0.075
-mg = FULL + (DUCK - FULL) * g
+tt = np.arange(n) / sr
+duck = np.where((tt > 25.4) & (tt < 39.2), 0.20, DUCK)      # comic groove stays audible in the comeback scene
+mg = FULL + (duck - FULL) * g
 sos = signal.butter(2, [900, 4500], 'bandstop', fs=sr, output='sos')
 mc = signal.sosfilt(sos, m, axis=0)
 mm = m * (1 - g)[:, None] + (0.55 * m + 0.45 * mc) * g[:, None]
