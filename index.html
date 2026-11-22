@@ -255,6 +255,29 @@ th{background:var(--cream);color:var(--brand-d)}
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.07' stroke-width='2'%3E%3Cpath d='M30 22v16M22 30h16'/%3E%3C/g%3E%3C/svg%3E");background-size:60px 60px}
 @media(max-width:520px){.hero-art{display:none}.hero h2{font-size:1.4rem}}
 
+/* ---------- Scanner ---------- */
+.viewfinder{position:relative;aspect-ratio:4/3;background:radial-gradient(circle at 50% 40%,#0e4438,#082b23);border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#bfe5da}
+.viewfinder video{width:100%;height:100%;object-fit:cover}
+.vf-hint{text-align:center;padding:22px;z-index:1}
+.vf-hint svg{width:56px;height:56px;opacity:.7;margin-bottom:10px}
+.vf-hint p{margin:0;font-size:.9rem;opacity:.85}
+.viewfinder::after{content:'';position:absolute;inset:18px;border:2px solid rgba(216,173,70,.85);border-radius:14px;pointer-events:none;box-shadow:0 0 0 2000px rgba(8,43,35,.28) inset}
+.scanline{position:absolute;left:18px;right:18px;height:3px;top:18px;border-radius:3px;background:linear-gradient(90deg,transparent,#e8c466,#d8ad46,#e8c466,transparent);box-shadow:0 0 14px 2px rgba(216,173,70,.8);animation:scanmove 2.1s ease-in-out infinite;z-index:2}
+@keyframes scanmove{0%{top:20px}50%{top:calc(100% - 22px)}100%{top:20px}}
+.fake-box{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1}
+.med-card{border-top:4px solid var(--brand)}
+.med-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px}
+.med-head h3{font-size:1.35rem;color:var(--brand-dd);letter-spacing:-.3px}
+.med-stock{text-align:center;padding:8px 14px;border-radius:12px;font-size:.78rem;line-height:1.2}
+.med-stock b{display:block;font-size:1.4rem}
+.med-stock.ok{background:#dcfce7;color:var(--ok)}
+.med-stock.warn{background:var(--warn-bg);color:var(--gold)}
+.med-sec{padding:9px 0;border-bottom:1px dashed var(--line)}
+.med-sec:last-child{border-bottom:none}
+.med-sec.dj{background:var(--gold-bg);margin:6px -6px 0;padding:10px 12px;border-radius:10px;border:1px dashed var(--gold-line)}
+.med-lab{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--brand-d);margin-bottom:3px}
+.med-sec.dj .med-lab{color:var(--gold)}
+
 .list-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
 .list-item:last-child{border-bottom:none}
 .avatar{width:42px;height:42px;border-radius:12px;background:var(--brand-l);color:var(--brand-d);display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
@@ -399,8 +422,9 @@ th{background:var(--cream);color:var(--brand-d)}
     <div class="card pad">
       <h3 style="font-size:1rem;margin-bottom:8px">⚡ Accès rapide</h3>
       <div class="btn-row">
+        <button class="btn blue sm" onclick="go('scan')">📷 Scanner une boîte</button>
         <button class="btn primary sm" onclick="openStockForm()">+ Produit</button>
-        <button class="btn blue sm" onclick="go('retours')">Bordereaux retour</button>
+        <button class="btn sm" onclick="go('retours')">Bordereaux retour</button>
         <button class="btn sm" onclick="go('conseil')">Conseil comptoir</button>
         <button class="btn sm" onclick="go('credit')">Carnet crédit</button>
       </div>
@@ -410,6 +434,30 @@ th{background:var(--cream);color:var(--brand-d)}
       <div id="dashFin"></div>
     </div>
   </div>
+</section>
+
+<!-- ============ SCANNER ============ -->
+<section class="view" id="view-scan">
+  <div class="page-head"><div><h2>Scanner un produit</h2><p>Cadrez la boîte du médicament — nom reconnu, infos & conseils</p></div></div>
+  <div class="card pad">
+    <div class="viewfinder" id="scanView">
+      <div class="vf-hint" id="vfHint">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 8V6a2 2 0 012-2h2M16 4h2a2 2 0 012 2v2M20 16v2a2 2 0 01-2 2h-2M8 20H6a2 2 0 01-2-2v-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="8" y="9" width="8" height="6" rx="1.5" stroke="currentColor" stroke-width="1.8"/></svg>
+        <p>Activez la caméra et cadrez la boîte du médicament</p>
+      </div>
+      <video id="scanVideo" playsinline muted class="hidden"></video>
+      <div class="scanline hidden" id="scanLine"></div>
+    </div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn primary" id="scanBtn" onclick="toggleScanCamera()">📷 Activer la caméra</button>
+      <button class="btn" onclick="document.getElementById('scanPhoto').click()">🖼 Photo</button>
+    </div>
+    <div class="field" style="margin:14px 0 4px"><label>Ou recherche manuelle du produit</label>
+      <input id="scanManualInput" placeholder="Tapez le nom… (ex : Doliprane)" oninput="scanManual(this.value)"></div>
+    <div id="scanStatus" class="note"></div>
+  </div>
+  <div id="scanResult"></div>
+  <input type="file" id="scanPhoto" accept="image/*" capture="environment" class="hidden">
 </section>
 
 <!-- ============ STOCK ============ -->
@@ -527,6 +575,7 @@ th{background:var(--cream);color:var(--brand-d)}
 <!-- ============ BOTTOM NAV ============ -->
 <nav class="nav" id="nav">
   <button data-v="dash" class="active" onclick="go('dash')"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="9" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="5" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="14" y="12" width="7" height="9" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="3" y="16" width="7" height="5" rx="1.5" stroke="currentColor" stroke-width="2"/></svg>Bord</button>
+  <button data-v="scan" onclick="go('scan')"><svg viewBox="0 0 24 24" fill="none"><path d="M3 8V5a2 2 0 012-2h3M16 3h3a2 2 0 012 2v3M21 16v3a2 2 0 01-2 2h-3M8 21H5a2 2 0 01-2-2v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="7" y="10" width="10" height="4" rx="1" stroke="currentColor" stroke-width="2"/></svg>Scan</button>
   <button data-v="stock" onclick="go('stock')"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4-9 4-9-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M3 7v10l9 4 9-4V7M12 11v10" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Stock</button>
   <button data-v="retours" onclick="go('retours')"><svg viewBox="0 0 24 24" fill="none"><path d="M9 14L4 9l5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h10a6 6 0 016 6v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Retours</button>
   <button data-v="conseil" onclick="go('conseil')"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3a7 7 0 00-4 12.7V18a1 1 0 001 1h6a1 1 0 001-1v-2.3A7 7 0 0012 3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 22h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Conseil</button>
@@ -581,11 +630,12 @@ function openWa(phone,text){window.open(waLink(phone,text),'_blank');}
 
 /* ---------- Navigation ---------- */
 function go(v){
+  if(v!=='scan'&&typeof scanStream!=='undefined'&&scanStream){stopScanCamera();}
   document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
   document.getElementById('view-'+v).classList.add('active');
   document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.v===v));
   window.scrollTo({top:0,behavior:'smooth'});
-  const r={dash:renderDash,stock:renderStock,retours:renderRetours,conseil:renderConseil,reseau:renderReseau,credit:renderCredit,profil:renderProfile}[v];
+  const r={dash:renderDash,scan:renderScan,stock:renderStock,retours:renderRetours,conseil:renderConseil,reseau:renderReseau,credit:renderCredit,profil:renderProfile}[v];
   if(r)r();
 }
 
@@ -1074,6 +1124,153 @@ function relanceCredit(id){const c=DB.credits.find(x=>x.id===id);const p=DB.prof
   openWa(c.tel,t);}
 
 /* ========================================================
+   SCANNER DE BOÎTE (caméra + OCR + fiche produit)
+   ======================================================== */
+const MEDBASE=[
+  {nom:'Doliprane',aliases:['doliprane','paracetamol'],famille:'Antalgique / Antipyrétique',
+   usage:'Fièvre et douleurs légères à modérées (maux de tête, dents, règles, courbatures).',
+   poso:'Adulte : 1 g jusqu\'à 3 fois/jour, maximum 3 g. Espacer d\'au moins 6 heures.',
+   prec:'Ne pas dépasser la dose. Prudence en cas de maladie du foie ou d\'alcoolisme.',
+   dj:'L\'7omma w l\'wja3 l\'khfif. L\'kbir : 1g 3 marrat f nhar, ma tfaw-tch 3 grammat.'},
+  {nom:'Voltarène Emulgel',aliases:['voltarene','voltaren','diclofenac','emulgel'],famille:'Anti-inflammatoire local',
+   usage:'Douleurs articulaires et musculaires, tendinites, entorses, arthrose.',
+   poso:'Appliquer en massage léger 3 à 4 fois par jour sur la zone douloureuse.',
+   prec:'Usage externe uniquement. Éviter plaies, yeux et muqueuses. Se laver les mains après.',
+   dj:'L\'wja3 dyal l\'3adam w l\'mfassel. Dhen chwiya 3 wla 4 marrat f nhar.'},
+  {nom:'Augmentin',aliases:['augmentin','amoxicilline','clavulanique','clamoxyl'],famille:'Antibiotique',
+   usage:'Infections bactériennes (ORL, respiratoires, urinaires) — sur prescription.',
+   poso:'Strictement selon la prescription du médecin. Terminer toute la cure.',
+   prec:'Sur ordonnance. Signaler toute allergie à la pénicilline.',
+   dj:'Antibiotique, ghir b wasfa dyal t-tbib. Kmel l\'cure kamla, w 9ol ila 3andek hassassiya.'},
+  {nom:'Smecta',aliases:['smecta','diosmectite'],famille:'Antidiarrhéique',
+   usage:'Diarrhée aiguë et inconfort digestif chez l\'adulte et l\'enfant.',
+   poso:'Adulte : 1 sachet 3 fois/jour, dilué dans un verre d\'eau.',
+   prec:'Bien s\'hydrater. Prendre à distance des autres médicaments (2 h).',
+   dj:'L\'is-hal. 1 sachet 3 marrat f nhar f kas dyal l\'ma. Chrab l\'ma bezzaf.'},
+  {nom:'Gaviscon',aliases:['gaviscon','alginate'],famille:'Anti-reflux / Anti-acide',
+   usage:'Brûlures d\'estomac et remontées acides après les repas.',
+   poso:'1 sachet ou 2 cuillères après les repas et au coucher.',
+   prec:'À prendre après manger. Espacer des autres traitements.',
+   dj:'L\'7er9a w l\'7mouda mora l\'makla. Khodo mora matakol w 9bel n-n3as.'},
+  {nom:'Oxymag',aliases:['oxymag','magnesium marin'],famille:'Magnésium / Anti-fatigue',
+   usage:'Fatigue, stress, nervosité et crampes musculaires.',
+   poso:'Cure de 1 mois, selon la notice (généralement 2 à 3 par jour).',
+   prec:'Déconseillé en cas d\'insuffisance rénale sévère.',
+   dj:'L\'t3ab, l\'stress w l\'crampe. Cure dyal cher, 2 wla 3 f nhar.'},
+  {nom:'Humex',aliases:['humex','rhume'],famille:'Rhume / Décongestionnant',
+   usage:'Nez bouché, écoulement nasal et symptômes du rhume.',
+   poso:'Selon la notice. Ne pas associer à d\'autres produits contre le rhume.',
+   prec:'Prudence en cas d\'hypertension. Respecter la durée courte.',
+   dj:'Rwa7, nif m9fol w l\'ma li kaysil. Ta t-khlt-ch m3a chi dwa akhor dyal rwa7.'},
+  {nom:'Supradyn',aliases:['supradyn','multivitamines'],famille:'Vitamines & Minéraux',
+   usage:'Coup de fatigue, baisse de tonus, besoin de vitalité.',
+   poso:'1 comprimé par jour, de préférence le matin.',
+   prec:'Ne pas dépasser la dose journalière recommandée.',
+   dj:'Mnin tkoun t3ban w baghi taqa. 1 f nhar f sba7.'},
+  {nom:'Mag 2',aliases:['mag 2','mag2','magnesium'],famille:'Magnésium',
+   usage:'Carence en magnésium, nervosité, fatigue passagère.',
+   poso:'Selon la notice (ampoule ou comprimé).',
+   prec:'Prudence en cas d\'insuffisance rénale.',
+   dj:'N9es dyal magnesium, l\'3asabiya w l\'t3ab. 7sab l\'notice.'},
+  {nom:'Flexium',aliases:['flexium'],famille:'Anti-douleur articulaire (topique)',
+   usage:'Douleurs articulaires, idéal après l\'effort et en cas d\'arthrose.',
+   poso:'Appliquer sur la zone douloureuse plusieurs fois par jour.',
+   prec:'Usage externe. Éviter les plaies.',
+   dj:'L\'wja3 dyal l\'mfassel w li kaydiro majhoud. Dhen 3la l\'blassa.'},
+  {nom:'Biofreeze',aliases:['biofreeze'],famille:'Gel antalgique effet froid',
+   usage:'Soulagement rapide des douleurs musculaires, sans odeur.',
+   poso:'Appliquer sur la zone, jusqu\'à 4 fois par jour.',
+   prec:'Usage externe. Éviter yeux et muqueuses.',
+   dj:'Kayfaraj daghya 3la l\'3adalat, bla ri7a. Dhen 7ta 4 marrat f nhar.'},
+  {nom:'Chondrostéo',aliases:['chondrosteo','chondro'],famille:'Confort articulaire (complément)',
+   usage:'Entretien du cartilage et confort articulaire durable.',
+   poso:'En cure, selon la notice.',
+   prec:'Complément alimentaire, ne remplace pas un traitement.',
+   dj:'Kayfid l\'ghodrof dyal l\'mfassel. Khodo b cure 7sab l\'notice.'}
+];
+let scanStream=null;
+function renderScan(){document.getElementById('scanResult').innerHTML='';const st=document.getElementById('scanStatus');if(st)st.textContent='';const mi=document.getElementById('scanManualInput');if(mi)mi.value='';}
+async function toggleScanCamera(){
+  if(scanStream){stopScanCamera();return;}
+  try{
+    scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});
+    const v=document.getElementById('scanVideo');v.srcObject=scanStream;v.classList.remove('hidden');await v.play();
+    document.getElementById('vfHint').classList.add('hidden');
+    document.getElementById('scanLine').classList.remove('hidden');
+    const b=document.getElementById('scanBtn');b.textContent='📸 Capturer & analyser';b.setAttribute('onclick','captureScan()');
+  }catch(e){toast('Caméra indisponible. Utilisez « Photo » ou la recherche manuelle.');}
+}
+function stopScanCamera(){try{if(scanStream)scanStream.getTracks().forEach(t=>t.stop());}catch(e){}scanStream=null;
+  const v=document.getElementById('scanVideo');if(v){v.classList.add('hidden');v.srcObject=null;}
+  const sl=document.getElementById('scanLine');if(sl)sl.classList.add('hidden');
+  const h=document.getElementById('vfHint');if(h)h.classList.remove('hidden');
+  const b=document.getElementById('scanBtn');if(b){b.textContent='📷 Activer la caméra';b.setAttribute('onclick','toggleScanCamera()');}
+}
+async function captureScan(){
+  const v=document.getElementById('scanVideo');const c=document.createElement('canvas');
+  c.width=v.videoWidth||640;c.height=v.videoHeight||480;c.getContext('2d').drawImage(v,0,0,c.width,c.height);
+  await ocrAndMatch(c);
+}
+function scanPhotoHandler(file){const img=new Image();img.onload=()=>{const c=document.createElement('canvas');c.width=img.width;c.height=img.height;c.getContext('2d').drawImage(img,0,0);ocrAndMatch(c);URL.revokeObjectURL(img.src);};img.src=URL.createObjectURL(file);}
+async function ocrAndMatch(canvas){
+  const st=document.getElementById('scanStatus');st.textContent='🔎 Analyse de l\'image en cours…';
+  try{
+    const T=await loadTesseract();
+    const {data}=await T.recognize(canvas,'fra');
+    const med=matchMed((data&&data.text)||'');st.textContent='';
+    if(med)showMedInfo(med);
+    else document.getElementById('scanResult').innerHTML='<div class="card pad note">Produit non reconnu automatiquement. Essayez un meilleur cadrage, ou saisissez le nom manuellement.</div>';
+  }catch(e){st.textContent='';document.getElementById('scanResult').innerHTML='<div class="card pad note">Reconnaissance automatique indisponible (hors-ligne). Utilisez la recherche manuelle ci-dessus.</div>';}
+}
+function scanManual(q){q=(q||'').trim();const r=document.getElementById('scanResult');if(q.length<2){r.innerHTML='';return;}
+  const med=matchMed(q);if(med)showMedInfo(med);else r.innerHTML='<div class="card pad note">Aucun produit dans la base pour « '+esc(q)+' ». Essayez le nom commercial (ex : Doliprane, Smecta…).</div>';}
+function normTxt(s){return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9 ]/g,' ');}
+function matchMed(text){const t=normTxt(text);let best=null,score=0;
+  MEDBASE.forEach(m=>{[m.nom,...(m.aliases||[])].forEach(k=>{const kn=normTxt(k).trim();if(kn&&t.includes(kn)&&kn.length>score){best=m;score=kn.length;}});});
+  return best;}
+function showMedInfo(m){
+  const inStock=DB.stock.find(x=>normTxt(x.nom).includes(normTxt(m.nom).split(' ')[0]));
+  const near=inStock&&monthsTo(inStock.expiration)<=6;
+  document.getElementById('scanResult').innerHTML=`
+   <div class="card pad med-card">
+     <div class="med-head">
+       <div><span class="badge b-blue">${esc(m.famille)}</span><h3>${esc(m.nom)}</h3></div>
+       ${inStock?`<div class="med-stock ${near?'warn':'ok'}"><b>${inStock.quantite}</b>en stock${near?'<div class="cell-mini" style="margin-top:2px">exp. '+fmtDate(inStock.expiration)+'</div>':''}</div>`:'<span class="badge b-mut">Hors stock</span>'}
+     </div>
+     <div class="med-sec"><div class="med-lab">💊 Usage</div>${esc(m.usage)}</div>
+     <div class="med-sec"><div class="med-lab">📏 Posologie</div>${esc(m.poso)}</div>
+     <div class="med-sec"><div class="med-lab">⚠️ Précautions</div>${esc(m.prec)}</div>
+     <div class="med-sec dj"><div class="med-lab">🗣️ Explication en darija</div>${esc(m.dj)}</div>
+     ${near?`<div class="gold-box" style="margin-top:14px"><span class="tag">⭐ À écouler en priorité</span><h4 style="margin:6px 0 0">Lot proche de péremption — ${money((+inStock.quantite||0)*(+inStock.pu||0))} à préserver</h4></div>`:''}
+   </div>`;
+}
+let _tess=null;
+function loadTesseract(){if(window.Tesseract)return Promise.resolve(window.Tesseract);if(_tess)return _tess;
+  _tess=new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tesseract.min.js';s.onload=()=>res(window.Tesseract);s.onerror=rej;document.head.appendChild(s);});return _tess;}
+/* --- Démo : fausse caméra pour la vidéo --- */
+function demoBoxSVG(name){return `<svg viewBox="0 0 260 180" xmlns="http://www.w3.org/2000/svg" style="width:62%;filter:drop-shadow(0 10px 20px rgba(0,0,0,.45))">
+  <rect x="10" y="20" width="240" height="140" rx="12" fill="#ffffff"/>
+  <rect x="10" y="20" width="240" height="38" rx="12" fill="#0d7a63"/>
+  <rect x="10" y="46" width="240" height="12" fill="#0d7a63"/>
+  <rect x="26" y="30" width="20" height="20" rx="4" fill="#fff"/><rect x="33" y="33" width="6" height="14" fill="#0d7a63"/><rect x="29" y="37" width="14" height="6" fill="#0d7a63"/>
+  <text x="58" y="45" font-family="Arial" font-size="19" font-weight="bold" fill="#fff">${esc(name)}</text>
+  <rect x="26" y="74" width="150" height="9" rx="4" fill="#0a5a49" opacity=".85"/>
+  <rect x="26" y="92" width="120" height="8" rx="4" fill="#9fb8b1"/>
+  <rect x="26" y="108" width="190" height="8" rx="4" fill="#cfe0da"/>
+  <rect x="26" y="124" width="90" height="20" rx="4" fill="#caa24a"/>
+  <text x="34" y="138" font-family="Arial" font-size="11" font-weight="bold" fill="#fff">20 comprimés</text>
+</svg>`;}
+window.__demoScanShow=function(name){
+  const vf=document.getElementById('scanView');
+  document.getElementById('vfHint').classList.add('hidden');
+  document.getElementById('scanLine').classList.remove('hidden');
+  let fb=document.getElementById('fakeBox');if(!fb){fb=document.createElement('div');fb.id='fakeBox';fb.className='fake-box';vf.insertBefore(fb,vf.firstChild);}
+  fb.innerHTML=demoBoxSVG(name);
+  const b=document.getElementById('scanBtn');b.textContent='📸 Capturer & analyser';
+};
+window.__demoScanResult=function(name){const m=matchMed(name);if(m)showMedInfo(m);const b=document.getElementById('scanBtn');if(b){b.textContent='📷 Activer la caméra';}};
+
+/* ========================================================
    PROFIL & DONNÉES
    ======================================================== */
 function renderProfile(){const p=DB.profile;
@@ -1091,6 +1288,7 @@ function downloadFile(name,content,type){const blob=new Blob([content],{type});c
 
 /* ---------- File input dispatcher ---------- */
 document.getElementById('fileInput').addEventListener('change',function(){if(this.files[0]&&_fileCb){_fileCb(this.files[0]);_fileCb=null;}});
+document.getElementById('scanPhoto').addEventListener('change',function(){if(this.files[0]){scanPhotoHandler(this.files[0]);this.value='';}});
 
 /* ========================================================
    DONNÉES DÉMO
