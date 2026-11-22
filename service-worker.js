@@ -1,11 +1,12 @@
 /* PharmaAlert Pro - Service Worker
    Cache applicatif pour fonctionnement 100% hors-ligne.
    Incrémenter CACHE_VERSION à chaque mise à jour de l'app. */
-const CACHE_VERSION = 'pharmaalert-v4.0.0';
+const CACHE_VERSION = 'pharmaalert-v5.1.0';
 const ASSETS = [
   './',
   './index.html',
   './manifest.webmanifest',
+  './assets/pharmacie-bg.jpg',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png'
