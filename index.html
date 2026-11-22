@@ -8,6 +8,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>PharmaAlert Pro</title>
+<script>try{var _t=localStorage.getItem('pa_theme');if(_t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
 <style>
 :root{
   --bg:#eef3f0; --surface:#ffffff; --surface-2:#f4f8f6; --ink:#122a24; --muted:#5b7169;
@@ -165,20 +166,50 @@ tr.row-warn{background:var(--warn-bg)}
    (surcharge le style de base — thème apothicaire)
    ============================================================ */
 body{background:transparent;color:var(--ink)}
-/* Fonds dégradés + motif médical subtil */
-body::before{content:'';position:fixed;inset:0;z-index:-3;
+/* Scène pharmacie plein écran (fond illustré, libre de droits) */
+.bg-scene{position:fixed;inset:0;z-index:-3;overflow:hidden;pointer-events:none}
+.bg-scene svg,.bg-scene img{width:100%;height:100%;display:block;object-fit:cover;object-position:center}
+/* Voile de lisibilité au-dessus de la scène */
+body::before{content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;
   background:
-   radial-gradient(1100px 620px at 108% -12%, rgba(13,122,99,.16), transparent 60%),
-   radial-gradient(900px 560px at -12% 112%, rgba(201,162,74,.14), transparent 60%),
-   linear-gradient(180deg,#f2f7f4 0%, #eaf1ed 52%, #f4f1e9 100%);}
-body::after{content:'';position:fixed;inset:0;z-index:-2;opacity:.6;pointer-events:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%230d7a63' stroke-opacity='0.07' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M36 27v18M27 36h18'/%3E%3C/g%3E%3Cg fill='%23a9802a' fill-opacity='0.05'%3E%3Ccircle cx='8' cy='8' r='2.3'/%3E%3Ccircle cx='64' cy='64' r='2.3'/%3E%3C/g%3E%3C/svg%3E");
+   radial-gradient(1100px 620px at 108% -10%, rgba(13,122,99,.14), transparent 60%),
+   radial-gradient(900px 560px at -12% 112%, rgba(201,162,74,.12), transparent 60%),
+   linear-gradient(180deg, rgba(243,247,245,.82) 0%, rgba(235,242,239,.90) 48%, rgba(244,241,233,.86) 100%);}
+/* Motif médical subtil */
+body::after{content:'';position:fixed;inset:0;z-index:-1;opacity:.5;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%230d7a63' stroke-opacity='0.06' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M36 27v18M27 36h18'/%3E%3C/g%3E%3Cg fill='%23a9802a' fill-opacity='0.04'%3E%3Ccircle cx='8' cy='8' r='2.3'/%3E%3Ccircle cx='64' cy='64' r='2.3'/%3E%3C/g%3E%3C/svg%3E");
   background-size:72px 72px;}
-/* Illustration d'ambiance pharmacie (étagères de flacons), fixée en bas, très discrète */
-.bg-scene{position:fixed;left:0;right:0;bottom:0;z-index:-1;height:46vh;max-height:430px;
-  display:flex;align-items:flex-end;justify-content:center;overflow:hidden;pointer-events:none;
-  opacity:.09;-webkit-mask-image:linear-gradient(180deg,transparent,#000 55%);mask-image:linear-gradient(180deg,transparent,#000 55%);}
-.bg-scene svg{width:min(1240px,118%);height:auto}
+
+/* ============== MODE SOMBRE ============== */
+html[data-theme="dark"]{
+  --bg:#0b1613; --surface:#132421; --surface-2:#0f1d19; --ink:#e8f1ed; --muted:#8ea69d;
+  --line:#22352f; --brand:#1fa184; --brand-d:#178a70; --brand-dd:#0d6553; --brand-l:#17342c;
+  --cream:#132421; --warn-bg:#3a2e12; --crit-bg:#3a1f1b; --gold-bg:#241f0e; --gold:#d8ad46;
+}
+html[data-theme="dark"] body::before{background:
+  radial-gradient(1100px 620px at 108% -10%, rgba(31,161,132,.16), transparent 60%),
+  radial-gradient(900px 560px at -12% 112%, rgba(216,173,70,.08), transparent 60%),
+  linear-gradient(180deg, rgba(7,16,13,.84) 0%, rgba(6,13,11,.92) 100%);}
+html[data-theme="dark"] .card,html[data-theme="dark"] .stat,html[data-theme="dark"] .tbl-wrap{border-color:#22352f}
+html[data-theme="dark"] .nav{background:rgba(13,26,22,.82);border-top-color:#1c2e28}
+html[data-theme="dark"] .nav button{color:#8ea69d}
+html[data-theme="dark"] th{background:#0f1d19;color:var(--brand)}
+html[data-theme="dark"] .field input,html[data-theme="dark"] .field select,html[data-theme="dark"] .field textarea,
+html[data-theme="dark"] .search input,html[data-theme="dark"] .chip{background:#0f1d19;color:var(--ink);border-color:#22352f}
+html[data-theme="dark"] .toast{background:#05100d;color:#fff}
+html[data-theme="dark"] .med-sec.dj,html[data-theme="dark"] .gold-box{background:linear-gradient(135deg,#241f0e,#2c2512)}
+html[data-theme="dark"] .btn{background:#162a25;color:var(--ink);border-color:#24382f}
+html[data-theme="dark"] .btn.primary,html[data-theme="dark"] .btn.blue,html[data-theme="dark"] .btn.wa{color:#fff}
+html[data-theme="dark"] .btn.ghost{background:transparent}
+html[data-theme="dark"] .modal-head{background:var(--surface)}
+html[data-theme="dark"] .stat.good{background:#10322a;border-color:#1c4a3b}
+html[data-theme="dark"] .list-item{border-color:#1c2e28}
+html[data-theme="dark"] .divider,html[data-theme="dark"] td,html[data-theme="dark"] .med-sec{border-color:#22352f}
+html[data-theme="dark"] .empty{color:var(--muted)}
+
+/* Illustration de secours en bas (silhouette), visible par-dessus la scène si besoin */
+.bg-foot{position:fixed;left:0;right:0;bottom:0;z-index:-1;height:34vh;max-height:320px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;pointer-events:none;opacity:.06;-webkit-mask-image:linear-gradient(180deg,transparent,#000 60%);mask-image:linear-gradient(180deg,transparent,#000 60%)}
+.bg-foot svg{width:min(1240px,120%);height:auto}
 
 /* ---------- Header : verre + hairline doré ---------- */
 .topbar{background:linear-gradient(135deg,var(--brand-dd),var(--brand-d) 55%,var(--brand));
@@ -278,6 +309,42 @@ th{background:var(--cream);color:var(--brand-d)}
 .med-lab{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--brand-d);margin-bottom:3px}
 .med-sec.dj .med-lab{color:var(--gold)}
 
+/* ---------- En-tête : actions ---------- */
+.top-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.ticon{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.14);border:none;color:#fff;display:flex;align-items:center;justify-content:center;position:relative;transition:.15s}
+.ticon:active{transform:scale(.92)}
+.ticon svg{width:20px;height:20px}
+.tbadge{position:absolute;top:-4px;right:-4px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:linear-gradient(135deg,var(--gold-2),var(--gold-line));color:#083f34;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.phname{margin-left:4px}
+
+/* ---------- Menu Plus ---------- */
+.plus-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:420px){.plus-grid{grid-template-columns:1fr}}
+.plus-card{display:flex;align-items:center;gap:12px;text-align:left;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2);transition:.15s}
+.plus-card:active{transform:scale(.98)}
+.plus-card .pic{width:44px;height:44px;border-radius:12px;background:var(--brand-l);display:flex;align-items:center;justify-content:center;font-size:22px;flex:none}
+.plus-card .pt{font-weight:800;color:var(--ink)}
+.plus-card .ps{font-size:.78rem;color:var(--muted)}
+
+/* ---------- Graphiques ---------- */
+.donut-wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.legend{display:flex;flex-direction:column;gap:7px}
+.leg{font-size:.85rem;color:var(--ink);display:flex;align-items:center;gap:8px}
+.leg .dot{width:11px;height:11px;border-radius:3px;flex:none}
+.bars{display:flex;flex-direction:column;gap:10px}
+.bar-row{display:grid;grid-template-columns:1fr 2.1fr auto;align-items:center;gap:10px;font-size:.84rem}
+.bar-lbl{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{height:14px;background:var(--surface-2);border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+.bar-fill{height:100%;border-radius:999px;transition:width .5s ease}
+.bar-val{font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* ---------- Pro ---------- */
+.plist{list-style:none;padding:0;margin:8px 0 0;font-size:.86rem}
+.plist li{padding:5px 0;border-bottom:1px dashed var(--line)}
+.plist li:last-child{border-bottom:none}
+.plist li.no{color:var(--muted)}
+.plist li.yes{color:var(--ink)}
+
 .list-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
 .list-item:last-child{border-bottom:none}
 .avatar{width:42px;height:42px;border-radius:12px;background:var(--brand-l);color:var(--brand-d);display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
@@ -320,53 +387,63 @@ th{background:var(--cream);color:var(--brand-d)}
 
 <!-- ============ FOND D'AMBIANCE PHARMACIE (silhouette étagères) ============ -->
 <div class="bg-scene" aria-hidden="true">
-<svg viewBox="0 0 1240 360" xmlns="http://www.w3.org/2000/svg" fill="#0a5a49">
-  <!-- étagères -->
-  <rect x="60" y="150" width="760" height="9" rx="4"/>
-  <rect x="60" y="268" width="760" height="9" rx="4"/>
-  <!-- rangée haute de flacons -->
+<svg viewBox="0 0 1440 1024" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eaf3ef"/><stop offset="1" stop-color="#d7e7e0"/>
+    </linearGradient>
+    <radialGradient id="light" cx="50%" cy="0%" r="75%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".9"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="counter" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1d6b58"/><stop offset="1" stop-color="#0d4b3d"/>
+    </linearGradient>
+    <linearGradient id="board" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b9cfc6"/><stop offset="1" stop-color="#9cbbb0"/>
+    </linearGradient>
+    <pattern id="meds" width="230" height="120" patternUnits="userSpaceOnUse">
+      <g>
+        <rect x="8"  y="36" width="30" height="80" rx="4" fill="#eef5f1"/><rect x="8" y="36" width="30" height="9" rx="4" fill="#000" opacity=".1"/><rect x="14" y="66" width="18" height="6" rx="3" fill="#0d7a63" opacity=".5"/>
+        <rect x="44" y="30" width="26" height="86" rx="4" fill="#0d7a63"/><rect x="44" y="30" width="26" height="9" rx="4" fill="#000" opacity=".15"/><rect x="49" y="62" width="16" height="7" rx="3" fill="#fff" opacity=".7"/>
+        <rect x="76" y="42" width="32" height="74" rx="4" fill="#e3b45c"/><rect x="76" y="42" width="32" height="9" rx="4" fill="#000" opacity=".12"/><rect x="82" y="70" width="20" height="7" rx="3" fill="#fff" opacity=".65"/>
+        <rect x="114" y="34" width="24" height="82" rx="4" fill="#3671b3"/><rect x="114" y="34" width="24" height="9" rx="4" fill="#000" opacity=".15"/><rect x="118" y="64" width="16" height="7" rx="3" fill="#fff" opacity=".7"/>
+        <rect x="144" y="40" width="30" height="76" rx="4" fill="#d98c6a"/><rect x="144" y="40" width="30" height="9" rx="4" fill="#000" opacity=".12"/><rect x="150" y="70" width="18" height="7" rx="3" fill="#fff" opacity=".65"/>
+        <rect x="180" y="32" width="28" height="84" rx="4" fill="#84b3a4"/><rect x="180" y="32" width="28" height="9" rx="4" fill="#000" opacity=".12"/><rect x="185" y="62" width="18" height="7" rx="3" fill="#fff" opacity=".6"/>
+      </g>
+    </pattern>
+  </defs>
+
+  <rect width="1440" height="1024" fill="url(#wall)"/>
+  <rect width="1440" height="420" fill="url(#light)"/>
+
+  <!-- étagères remplies de boîtes -->
   <g>
-    <g transform="translate(80,70)"><rect x="0" y="22" width="40" height="58" rx="7"/><rect x="9" y="8" width="22" height="18" rx="4"/><rect x="13" y="0" width="14" height="10" rx="3"/></g>
-    <g transform="translate(140,60)"><rect x="0" y="32" width="46" height="58" rx="9"/><rect x="14" y="14" width="18" height="22" rx="5"/><rect x="11" y="6" width="24" height="10" rx="3"/></g>
-    <g transform="translate(205,78)"><rect x="0" y="14" width="34" height="58" rx="6"/><rect x="8" y="2" width="18" height="14" rx="4"/></g>
-    <g transform="translate(255,66)"><rect x="0" y="26" width="42" height="64" rx="8"/><rect x="12" y="8" width="18" height="20" rx="5"/><rect x="9" y="0" width="24" height="10" rx="3"/></g>
-    <g transform="translate(320,82)"><rect x="0" y="10" width="30" height="62" rx="6"/><rect x="7" y="0" width="16" height="12" rx="4"/></g>
-    <g transform="translate(366,60)"><path d="M0 90V44C0 30 8 30 8 18V6h26v12c0 12 8 12 8 26v46z" /><rect x="10" y="0" width="22" height="8" rx="3"/></g>
-    <g transform="translate(430,74)"><rect x="0" y="18" width="38" height="56" rx="7"/><rect x="10" y="4" width="18" height="16" rx="4"/></g>
-    <g transform="translate(490,64)"><rect x="0" y="28" width="44" height="62" rx="9"/><rect x="13" y="10" width="18" height="20" rx="5"/><rect x="10" y="2" width="24" height="10" rx="3"/></g>
-    <g transform="translate(556,80)"><rect x="0" y="12" width="32" height="60" rx="6"/><rect x="8" y="0" width="16" height="14" rx="4"/></g>
-    <g transform="translate(610,58)"><path d="M0 92V40C0 28 10 28 10 16V4h24v12c0 12 10 12 10 24v52z"/><rect x="11" y="0" width="22" height="6" rx="3"/></g>
-    <g transform="translate(676,76)"><rect x="0" y="16" width="36" height="58" rx="7"/><rect x="9" y="2" width="18" height="16" rx="4"/></g>
-    <g transform="translate(736,66)"><rect x="0" y="26" width="42" height="64" rx="8"/><rect x="12" y="8" width="18" height="20" rx="5"/></g>
+    <rect x="120" y="150" width="1200" height="116" fill="url(#meds)"/><rect x="104" y="266" width="1232" height="14" rx="4" fill="url(#board)"/>
+    <rect x="120" y="326" width="1200" height="116" fill="url(#meds)"/><rect x="104" y="442" width="1232" height="14" rx="4" fill="url(#board)"/>
+    <rect x="120" y="502" width="1200" height="116" fill="url(#meds)"/><rect x="104" y="618" width="1232" height="14" rx="4" fill="url(#board)"/>
   </g>
-  <!-- rangée basse de flacons -->
-  <g transform="translate(0,118)">
-    <g transform="translate(90,70)"><rect x="0" y="22" width="44" height="60" rx="8"/><rect x="13" y="6" width="18" height="18" rx="5"/></g>
-    <g transform="translate(156,80)"><rect x="0" y="12" width="34" height="60" rx="6"/><rect x="8" y="0" width="18" height="14" rx="4"/></g>
-    <g transform="translate(212,64)"><path d="M0 92V44C0 30 9 30 9 18V6h26v12c0 12 9 12 9 26v48z"/><rect x="10" y="0" width="24" height="8" rx="3"/></g>
-    <g transform="translate(284,74)"><rect x="0" y="18" width="40" height="58" rx="7"/><rect x="11" y="4" width="18" height="16" rx="4"/></g>
-    <g transform="translate(348,66)"><rect x="0" y="26" width="46" height="62" rx="9"/><rect x="14" y="8" width="18" height="20" rx="5"/></g>
-    <g transform="translate(416,82)"><rect x="0" y="10" width="30" height="60" rx="6"/><rect x="7" y="0" width="16" height="12" rx="4"/></g>
-    <g transform="translate(468,70)"><rect x="0" y="22" width="42" height="62" rx="8"/><rect x="12" y="6" width="18" height="18" rx="5"/></g>
-    <g transform="translate(534,78)"><rect x="0" y="14" width="34" height="58" rx="6"/><rect x="8" y="2" width="18" height="14" rx="4"/></g>
-    <g transform="translate(590,62)"><path d="M0 94V42C0 30 10 30 10 18V6h24v12c0 12 10 12 10 24v52z"/></g>
-    <g transform="translate(656,76)"><rect x="0" y="16" width="38" height="58" rx="7"/><rect x="10" y="2" width="18" height="16" rx="4"/></g>
-    <g transform="translate(720,68)"><rect x="0" y="24" width="44" height="62" rx="8"/><rect x="13" y="8" width="18" height="18" rx="5"/></g>
+
+  <!-- enseigne croix verte -->
+  <g transform="translate(96,70)">
+    <rect x="0" y="0" width="150" height="150" rx="26" fill="#0d7a63"/>
+    <rect x="0" y="0" width="150" height="150" rx="26" fill="#fff" opacity=".06"/>
+    <rect x="60" y="28" width="30" height="94" rx="7" fill="#fff"/>
+    <rect x="28" y="60" width="94" height="30" rx="7" fill="#fff"/>
   </g>
-  <!-- mortier & pilon -->
-  <g transform="translate(900,196)">
-    <rect x="86" y="-70" width="12" height="96" rx="6" transform="rotate(26 92 -22)"/>
-    <path d="M0 8h150a75 75 0 0 1-150 0z"/>
-    <rect x="-8" y="-2" width="166" height="14" rx="7"/>
+
+  <!-- comptoir -->
+  <rect x="0" y="770" width="1440" height="254" fill="url(#counter)"/>
+  <rect x="0" y="770" width="1440" height="16" fill="#2a7d68"/>
+  <g opacity=".5"><rect x="120" y="820" width="220" height="150" rx="8" fill="#0a4537"/><rect x="560" y="820" width="320" height="150" rx="8" fill="#0a4537"/><rect x="1100" y="820" width="220" height="150" rx="8" fill="#0a4537"/></g>
+
+  <!-- mortier & pilon sur le comptoir -->
+  <g transform="translate(1120,690)" fill="#0e5a49">
+    <rect x="88" y="-64" width="14" height="96" rx="7" transform="rotate(28 95 -16)"/>
+    <path d="M0 10h150a75 75 0 0 1-150 0z"/>
+    <rect x="-8" y="0" width="166" height="16" rx="8"/>
   </g>
-  <!-- croix pharmacie (enseigne) -->
-  <g transform="translate(1092,54)">
-    <rect x="0" y="0" width="96" height="96" rx="18"/>
-    <rect x="38" y="18" width="20" height="60" rx="5" fill="#f4f1e9"/>
-    <rect x="18" y="38" width="60" height="20" rx="5" fill="#f4f1e9"/>
-  </g>
-  <!-- feuille (naturel) -->
-  <g transform="translate(828,214)"><path d="M0 60C0 24 30 2 64 0 58 36 34 62 0 60z"/><path d="M8 54C24 40 44 24 58 10" stroke="#f4f1e9" stroke-width="3" fill="none"/></g>
+  <!-- plante / feuille -->
+  <g transform="translate(250,672)" fill="#1d7a63"><path d="M0 96C0 44 44 6 100 0 92 54 54 98 0 96z"/><path d="M14 86C40 62 72 36 92 14" stroke="#eaf3ef" stroke-width="4" fill="none"/></g>
 </svg>
 </div>
 
@@ -377,7 +454,11 @@ th{background:var(--cream);color:var(--brand-d)}
       <svg viewBox="0 0 24 24" fill="none"><path d="M12 2l8 3v6c0 5-3.4 8.6-8 11-4.6-2.4-8-6-8-11V5l8-3z" fill="#fff" opacity=".2"/><path d="M12 2l8 3v6c0 5-3.4 8.6-8 11-4.6-2.4-8-6-8-11V5l8-3z" stroke="#fff" stroke-width="1.6"/><path d="M12 8v8M8 12h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
       <div>PharmaAlert <span style="font-weight:600;opacity:.8">Pro</span><div class="topbar-sub">Gestion d'officine</div></div>
     </div>
-    <div class="phname" id="phNameTop">Ma Pharmacie</div>
+    <div class="top-actions">
+      <button class="ticon" id="bellBtn" onclick="openAlerts()" aria-label="Alertes"><svg viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 1112 0c0 5 2 6 2 6H4s2-1 2-6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 20a2 2 0 004 0" stroke="currentColor" stroke-width="2"/></svg><span class="tbadge hidden" id="bellBadge">0</span></button>
+      <button class="ticon" id="themeBtn" onclick="toggleTheme()" aria-label="Thème"><svg id="themeIco" viewBox="0 0 24 24" fill="none"><path d="M21 12.8A8 8 0 1111.2 3a6 6 0 009.8 9.8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
+      <div class="phname" id="phNameTop">Ma Pharmacie</div>
+    </div>
   </div>
 </header>
 
@@ -449,7 +530,8 @@ th{background:var(--cream);color:var(--brand-d)}
       <div class="scanline hidden" id="scanLine"></div>
     </div>
     <div class="btn-row" style="margin-top:14px">
-      <button class="btn primary" id="scanBtn" onclick="toggleScanCamera()">📷 Activer la caméra</button>
+      <button class="btn primary" id="scanBtn" onclick="toggleScanCamera()">📷 Caméra (boîte)</button>
+      <button class="btn" onclick="startBarcode()">🏷 Code-barres</button>
       <button class="btn" onclick="document.getElementById('scanPhoto').click()">🖼 Photo</button>
     </div>
     <div class="field" style="margin:14px 0 4px"><label>Ou recherche manuelle du produit</label>
@@ -567,7 +649,37 @@ th{background:var(--cream);color:var(--brand-d)}
       <button class="btn danger sm" onclick="wipeData()">Tout effacer</button>
     </div>
   </div>
-  <p class="note" style="text-align:center;margin:20px 0 8px">PharmaAlert Pro v4.0 — PWA mono-fichier · Dirhams (MAD)</p>
+  <p class="note" style="text-align:center;margin:20px 0 8px">PharmaAlert Pro v5.0 — PWA mono-fichier · Dirhams (MAD)</p>
+</section>
+
+<!-- ============ STATISTIQUES ============ -->
+<section class="view" id="view-stats">
+  <div class="page-head"><div><h2>Statistiques</h2><p>Pilotage & valeur préservée de votre officine</p></div></div>
+  <div class="grid g4" id="statsKpi" style="margin-bottom:14px"></div>
+  <div class="grid g2">
+    <div class="card pad"><h3 style="font-size:1rem;margin-bottom:10px">Répartition du stock par échéance</h3><div id="chartDonut"></div></div>
+    <div class="card pad"><h3 style="font-size:1rem;margin-bottom:10px">Valeur immobilisée par grossiste</h3><div id="chartGros"></div></div>
+  </div>
+  <div class="card pad" style="margin-top:12px"><h3 style="font-size:1rem;margin-bottom:10px">Péremptions à venir (6 prochains mois)</h3><div id="chartMonths"></div></div>
+</section>
+
+<!-- ============ RÉASSORT ============ -->
+<section class="view" id="view-reassort">
+  <div class="page-head"><div><h2>Réassort intelligent</h2><p>Suggestions de commande basées sur votre stock</p></div></div>
+  <div id="reassortList"></div>
+</section>
+
+<!-- ============ HISTORIQUE ============ -->
+<section class="view" id="view-historique">
+  <div class="page-head"><div><h2>Historique</h2><p>Journal des opérations de l'officine</p></div>
+    <button class="btn danger sm" onclick="clearHistory()">Vider</button></div>
+  <div class="card" id="historyList"></div>
+</section>
+
+<!-- ============ PRO & PARRAINAGE ============ -->
+<section class="view" id="view-pro">
+  <div class="page-head"><div><h2>Offre Pro & Parrainage</h2><p>Débloquez tout le potentiel de PharmaAlert</p></div></div>
+  <div id="proContent"></div>
 </section>
 
 </main>
@@ -581,7 +693,7 @@ th{background:var(--cream);color:var(--brand-d)}
   <button data-v="conseil" onclick="go('conseil')"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3a7 7 0 00-4 12.7V18a1 1 0 001 1h6a1 1 0 001-1v-2.3A7 7 0 0012 3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 22h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Conseil</button>
   <button data-v="reseau" onclick="go('reseau')"><svg viewBox="0 0 24 24" fill="none"><circle cx="6" cy="6" r="2.5" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="6" r="2.5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="18" r="2.5" stroke="currentColor" stroke-width="2"/><path d="M8 7.5l3 8M16 7.5l-3 8" stroke="currentColor" stroke-width="2"/></svg>Réseau</button>
   <button data-v="credit" onclick="go('credit')"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 10h18" stroke="currentColor" stroke-width="2"/></svg>Crédit</button>
-  <button data-v="profil" onclick="go('profil')"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="2"/><path d="M5 20a7 7 0 0114 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Profil</button>
+  <button data-v="plus" onclick="openPlus()"><svg viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="19" cy="12" r="1.8" fill="currentColor"/></svg>Plus</button>
 </nav>
 
 <!-- modal + print mounts -->
@@ -602,6 +714,8 @@ let DB=null, _fileCb=null;
 /* ---------- Persistance ---------- */
 function blankDB(){return{
   profile:{nom:'Ma Pharmacie',pharm:'',inpe:'',patente:'',ville:'',adr:'',tel:''},
+  settings:{pro:false,parrainage:null},
+  history:[],
   stock:[], partners:[], credits:[], bourse:[],
   ruptures:[
     {molecule:'Amoxicilline 1g',alt:'Augmentin / Clamoxyl selon prescription'},
@@ -630,12 +744,12 @@ function openWa(phone,text){window.open(waLink(phone,text),'_blank');}
 
 /* ---------- Navigation ---------- */
 function go(v){
-  if(v!=='scan'&&typeof scanStream!=='undefined'&&scanStream){stopScanCamera();}
+  if(v!=='scan'){if(typeof scanStream!=='undefined'&&scanStream)stopScanCamera();if(typeof _bcRun!=='undefined'&&_bcRun)stopBarcode();}
   document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
   document.getElementById('view-'+v).classList.add('active');
   document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.v===v));
   window.scrollTo({top:0,behavior:'smooth'});
-  const r={dash:renderDash,scan:renderScan,stock:renderStock,retours:renderRetours,conseil:renderConseil,reseau:renderReseau,credit:renderCredit,profil:renderProfile}[v];
+  const r={dash:renderDash,scan:renderScan,stock:renderStock,retours:renderRetours,conseil:renderConseil,reseau:renderReseau,credit:renderCredit,profil:renderProfile,stats:renderStats,reassort:renderReassort,historique:renderHistorique,pro:renderPro}[v];
   if(r)r();
 }
 
@@ -738,7 +852,7 @@ function renderStock(){
       </td>
     </tr>`;}).join('');
 }
-function quickSale(id){const x=DB.stock.find(s=>s.id===id);if(!x)return;if((+x.quantite||0)<=0){toast('Stock épuisé pour ce lot');return;}x.quantite=(+x.quantite||0)-1;save();renderStock();toast('Vente enregistrée · '+x.nom+' ('+x.quantite+' restantes)');}
+function quickSale(id){const x=DB.stock.find(s=>s.id===id);if(!x)return;if((+x.quantite||0)<=0){toast('Stock épuisé pour ce lot');return;}x.quantite=(+x.quantite||0)-1;save();logEvent('vente','Vente −1 · '+x.nom+' (reste '+x.quantite+')');renderStock();toast('Vente enregistrée · '+x.nom+' ('+x.quantite+' restantes)');}
 function openStockForm(id){
   const x=id?DB.stock.find(s=>s.id===id):{};const isE=!!id;
   modal(isE?'Modifier le produit':'Nouveau produit',`
@@ -820,7 +934,7 @@ function importRows(rows){
       forme:get(row,ci.forme),dosage:get(row,ci.dosage),lot:get(row,ci.lot),
       expiration:normDate(get(row,ci.exp)),quantite:parseFloat(String(get(row,ci.qte)).replace(',','.'))||0,
       pu:parseFloat(String(get(row,ci.pu)).replace(',','.'))||0,grossiste:get(row,ci.gros)});n++;}
-  save();renderStock();toast(n+' produits importés ✓');
+  save();logEvent('import',n+' produits importés depuis un fichier');renderStock();toast(n+' produits importés ✓');
 }
 function get(row,i){return i>=0&&row[i]!=null?String(row[i]).trim():'';}
 function normDate(s){if(!s)return '';s=String(s).trim();
@@ -885,6 +999,7 @@ function printBordereau(g){
     </div>
     <div class="foot">Document généré par PharmaAlert Pro — ${esc(p.nom||'')} · ${new Date().toLocaleString('fr-FR')}</div>
   </div>`;
+  logEvent('retour','Bordereau de retour · '+g+' ('+items.length+' réf.)');
   window.print();
 }
 function waBordereau(g){
@@ -1116,8 +1231,8 @@ function saveCredit(id){const nom=val('c_nom');if(!nom){toast('Nom requis');retu
   if(id)Object.assign(DB.credits.find(x=>x.id===id),o);else{o.id=uid();o.recouvre=0;DB.credits.push(o);}
   save();closeModal();renderCredit();toast(id?'Fiche mise à jour':'Créance ajoutée');}
 function payCredit(id){const c=DB.credits.find(x=>x.id===id);const p=+val('c_pay');if(!p||p<=0){toast('Montant invalide');return;}
-  c.solde=Math.max(0,(+c.solde||0)-p);c.recouvre=(+c.recouvre||0)+p;c.date=today();save();closeModal();renderCredit();toast('Acompte de '+money(p)+' encaissé');}
-function settleCredit(id){const c=DB.credits.find(x=>x.id===id);c.recouvre=(+c.recouvre||0)+(+c.solde||0);c.solde=0;c.date=today();save();closeModal();renderCredit();toast('Créance soldée ✓');}
+  c.solde=Math.max(0,(+c.solde||0)-p);c.recouvre=(+c.recouvre||0)+p;c.date=today();save();logEvent('credit','Acompte '+money(p)+' · '+c.nom+' (reste '+money(c.solde)+')');closeModal();renderCredit();toast('Acompte de '+money(p)+' encaissé');}
+function settleCredit(id){const c=DB.credits.find(x=>x.id===id);c.recouvre=(+c.recouvre||0)+(+c.solde||0);c.solde=0;c.date=today();save();logEvent('credit','Créance soldée · '+c.nom);closeModal();renderCredit();toast('Créance soldée ✓');}
 function delCredit(id){if(!confirm('Supprimer ce client ?'))return;DB.credits=DB.credits.filter(x=>x.id!==id);save();closeModal();renderCredit();}
 function relanceCredit(id){const c=DB.credits.find(x=>x.id===id);const p=DB.profile;
   const t=`Bonjour ${c.nom}, 🙏\nCeci est un rappel courtois de ${p.nom||'votre pharmacie'}.\nIl reste un solde de *${money(c.solde)}* sur votre compte.\nMerci de passer à votre convenance pour régulariser. Bonne journée !`;
@@ -1271,6 +1386,138 @@ window.__demoScanShow=function(name){
 window.__demoScanResult=function(name){const m=matchMed(name);if(m)showMedInfo(m);const b=document.getElementById('scanBtn');if(b){b.textContent='📷 Activer la caméra';}};
 
 /* ========================================================
+   PRO : STATS · RÉASSORT · HISTORIQUE · PRO · ALERTES · THÈME
+   ======================================================== */
+/* --- Historique / journal --- */
+const HIST_IC={vente:'🛒',stock:'📦',credit:'💳',retour:'↩️',import:'⤓',commande:'🛎️',pro:'⭐'};
+function logEvent(type,text){try{DB.history.unshift({t:Date.now(),type,text});if(DB.history.length>400)DB.history.length=400;save();updateBell();}catch(e){}}
+function renderHistorique(){const el=document.getElementById('historyList');
+  if(!DB.history.length){el.innerHTML=emptyBox('Aucune opération enregistrée pour le moment.');return;}
+  el.innerHTML=DB.history.slice(0,200).map(h=>`<div class="list-item"><div class="avatar">${HIST_IC[h.type]||'•'}</div><div class="li-main"><div class="li-title" style="font-size:.92rem">${esc(h.text)}</div><div class="li-sub">${new Date(h.t).toLocaleString('fr-FR')}</div></div></div>`).join('');}
+function clearHistory(){if(!DB.history.length){toast('Historique déjà vide');return;}if(!confirm('Vider tout l\'historique ?'))return;DB.history=[];save();renderHistorique();toast('Historique vidé');}
+
+/* --- Statistiques & graphiques --- */
+function donutChart(segs,centerVal,centerLbl){
+  const tot=segs.reduce((a,s)=>a+s.value,0)||1,r=54,C=2*Math.PI*r;let off=0;
+  const arcs=segs.map(s=>{const len=s.value/tot*C;const el=`<circle cx="70" cy="70" r="${r}" fill="none" stroke="${s.color}" stroke-width="20" stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 70 70)"/>`;off+=len;return el;}).join('');
+  const leg=segs.map(s=>`<div class="leg"><span class="dot" style="background:${s.color}"></span>${esc(s.label)} <b>&nbsp;${s.value}</b></div>`).join('');
+  return `<div class="donut-wrap"><svg viewBox="0 0 140 140" width="132" height="132"><circle cx="70" cy="70" r="54" fill="none" stroke="var(--line)" stroke-width="20"/>${arcs}<text x="70" y="66" text-anchor="middle" font-size="26" font-weight="800" fill="var(--ink)">${esc(centerVal)}</text><text x="70" y="86" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(centerLbl)}</text></svg><div class="legend">${leg}</div></div>`;}
+function barsChart(items,fmt){if(!items.length)return '<p class="note">Aucune donnée.</p>';
+  const max=Math.max(1,...items.map(i=>i.value));
+  return '<div class="bars">'+items.map(i=>`<div class="bar-row"><div class="bar-lbl">${esc(i.label)}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.max(3,i.value/max*100).toFixed(1)}%;background:${i.color||'var(--brand)'}"></div></div><div class="bar-val">${fmt?fmt(i.value):i.value}</div></div>`).join('')+'</div>';}
+function renderStats(){
+  const s=DB.stock,val=a=>a.reduce((t,x)=>t+(+x.quantite||0)*(+x.pu||0),0);
+  const crit=s.filter(x=>monthsTo(x.expiration)<=3),warn=s.filter(x=>{const m=monthsTo(x.expiration);return m>3&&m<=6;}),ok=s.filter(x=>monthsTo(x.expiration)>6);
+  const valTot=val(s),valRisk=val(crit)+val(warn),taux=s.length?Math.round((crit.length+warn.length)/s.length*100):0;
+  document.getElementById('statsKpi').innerHTML=
+    stat('brand','Valeur du stock',money(valTot).replace(' '+DEVISE,''),DEVISE,'coin')+
+    stat('danger','Valeur à risque',money(valRisk).replace(' '+DEVISE,''),DEVISE+' ≤6 mois','alert')+
+    stat('warn','Taux à risque',taux+'%','du stock','clock')+
+    stat('good','Références',s.length,(DB.credits.reduce((a,c)=>a+(+c.solde||0),0)).toFixed(0)+' '+DEVISE+' en crédit','box');
+  document.getElementById('chartDonut').innerHTML=donutChart([
+    {label:'Critique ≤3 mois',value:crit.length,color:'#d1402e'},
+    {label:'Alerte 3-6 mois',value:warn.length,color:'#d8ad46'},
+    {label:'Sain > 6 mois',value:ok.length,color:'#0d7a63'}],s.length,'réf.');
+  const byG={};s.forEach(x=>{const g=x.grossiste||'Non attribué';byG[g]=(byG[g]||0)+(+x.quantite||0)*(+x.pu||0);});
+  const gros=Object.entries(byG).map(([k,v])=>({label:k,value:Math.round(v)})).sort((a,b)=>b.value-a.value).slice(0,6);
+  document.getElementById('chartGros').innerHTML=barsChart(gros,v=>money(v));
+  const months=[],now=new Date();
+  for(let i=0;i<6;i++){const d=new Date(now.getFullYear(),now.getMonth()+i,1);
+    const cnt=s.filter(x=>{const e=new Date(x.expiration);return !isNaN(e)&&e.getFullYear()===d.getFullYear()&&e.getMonth()===d.getMonth();}).length;
+    months.push({label:d.toLocaleDateString('fr-FR',{month:'short',year:'2-digit'}),value:cnt,color:i<3?'#d1402e':'#d8ad46'});}
+  document.getElementById('chartMonths').innerHTML=barsChart(months,v=>v+' réf.');
+}
+
+/* --- Réassort intelligent --- */
+function suggestQty(x){return Math.max(5,12-(+x.quantite||0));}
+function reassortCandidates(){return DB.stock.filter(x=>(+x.quantite||0)<=3&&monthsTo(x.expiration)>6);}
+function renderReassort(){
+  const cand=reassortCandidates(),el=document.getElementById('reassortList');
+  const byG={};cand.forEach(x=>{const g=x.grossiste||'Non attribué';(byG[g]=byG[g]||[]).push(x);});
+  const groups=Object.keys(byG).sort();
+  const head=`<div class="card pad" style="margin-bottom:12px"><p class="note" style="margin:0">🔄 Produits à faible stock (≤ 3 boîtes) qui ne périment pas bientôt — à recommander en priorité. <b>${cand.length}</b> référence(s) détectée(s).</p></div>`;
+  if(!groups.length){el.innerHTML=head+`<div class="card">${emptyBox('Aucun réassort nécessaire. Stock suffisant ✓')}</div>`;return;}
+  el.innerHTML=head+groups.map(g=>{const items=byG[g];
+    return `<div class="card pad" style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px"><h3 style="font-size:1.05rem;margin:0">${esc(g)}</h3><button class="btn wa sm" onclick="commandeWA('${esc(g).replace(/'/g,"\\'")}')">Commander via WhatsApp</button></div><div class="tbl-wrap"><table style="min-width:420px"><thead><tr><th>Produit</th><th>Stock actuel</th><th>À commander</th></tr></thead><tbody>${items.map(x=>`<tr><td class="cell-strong">${esc(x.nom)} <span class="cell-mini">${esc(x.dosage||'')}</span></td><td><span style="color:var(--crit);font-weight:700">${x.quantite}</span></td><td><span class="badge b-blue">+${suggestQty(x)}</span></td></tr>`).join('')}</tbody></table></div></div>`;}).join('');
+}
+function commandeWA(g){const items=reassortCandidates().filter(x=>(x.grossiste||'Non attribué')===g),p=DB.profile;
+  let t=`*BON DE COMMANDE*\n${p.nom||'Pharmacie'}${p.ville?' — '+p.ville:''}\nGrossiste : ${g}\n\n`;
+  items.forEach((x,i)=>{t+=`${i+1}. ${x.nom} ${x.dosage||''} — Qté : ${suggestQty(x)}\n`;});
+  t+='\nMerci de préparer la commande.';
+  window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(t),'_blank');logEvent('commande','Commande '+g+' ('+items.length+' réf.)');}
+
+/* --- Offre Pro & Parrainage --- */
+const APP_URL='https://adnanino1999.github.io/Resto-Crepe/';
+function renderPro(){const pro=DB.settings.pro,code=DB.settings.parrainage;
+  const B=[['Stock, péremptions & FEFO',1],['Retours & bordereaux A4',1],['Scan de la boîte & conseil',1],['Carnet de crédit & réseau',1],['Statistiques avancées',0],['Réassort & bons de commande',0],['Sauvegarde cloud multi-appareils',0],['Support prioritaire',0]];
+  document.getElementById('proContent').innerHTML=`
+   <div class="card pad" style="margin-bottom:14px;${pro?'border:2px solid var(--gold-line);background:var(--gold-bg)':''}">
+     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+       <div><h3 style="margin:0;font-size:1.2rem">${pro?'⭐ PharmaAlert Pro — Actif':'Version gratuite'}</h3>
+       <p class="note" style="margin:3px 0 0">${pro?'Merci ! Toutes les fonctions sont débloquées.':'Passez Pro pour débloquer les fonctions avancées.'}</p></div>
+       <span class="badge ${pro?'b-ok':'b-mut'}">${pro?'PRO':'FREE'}</span></div></div>
+   <div class="grid g2">
+     <div class="card pad"><h3 style="font-size:1rem;margin-bottom:4px">Gratuit</h3><ul class="plist">${B.map(b=>`<li class="${b[1]?'yes':'no'}">${b[1]?'✓':'✕'} ${esc(b[0])}</li>`).join('')}</ul></div>
+     <div class="card pad" style="border:2px solid var(--gold-line)"><h3 style="font-size:1rem;margin-bottom:4px;color:var(--gold)">Pro · ~149 DH/mois</h3><ul class="plist">${B.map(b=>`<li class="yes">✓ ${esc(b[0])}</li>`).join('')}</ul></div></div>
+   ${pro?'':`<div class="card pad" style="margin-top:12px"><h3 style="font-size:1rem">Activer Pro</h3><div class="field" style="margin-top:8px"><label>Code d'activation</label><input id="proCode" placeholder="Saisissez votre code"></div><button class="btn primary block" onclick="activatePro()">Activer PharmaAlert Pro</button><p class="note" style="margin-top:8px">Démo : utilisez le code <b>PHARMAPRO2026</b></p></div>`}
+   <div class="card pad" style="margin-top:12px"><h3 style="font-size:1rem">🎁 Parrainage</h3>
+     <p class="note">Invitez un confrère : 1 mois offert pour vous deux.</p>
+     ${code?`<div style="margin:8px 0"><span class="badge b-blue" style="font-size:.9rem">Votre code : ${esc(code)}</span></div>`:''}
+     <button class="btn wa block" onclick="inviteParrainage()">Inviter un confrère via WhatsApp</button></div>`;
+}
+function activatePro(){const c=(val('proCode')||'').toUpperCase().replace(/[\s-]/g,'');if(c==='PHARMAPRO2026'||c==='PHARMAPRO'){DB.settings.pro=true;save();logEvent('pro','Activation PharmaAlert Pro');toast('PharmaAlert Pro activé ⭐');renderPro();}else toast('Code invalide');}
+function genParrainage(){if(!DB.settings.parrainage){DB.settings.parrainage='PA-'+Math.random().toString(36).slice(2,7).toUpperCase();save();}return DB.settings.parrainage;}
+function inviteParrainage(){const code=genParrainage();const t=`Salam confrère 👋\nJe te conseille *PharmaAlert Pro* pour gérer l'officine : péremptions, retours, crédits, scan des boîtes…\nEssaie-la ici : ${APP_URL}\nMon code parrainage : *${code}*`;window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(t),'_blank');renderPro();}
+
+/* --- Menu Plus --- */
+function plusItem(v,ic,t,sub){return `<button class="plus-card" onclick="closeModal();go('${v}')"><div class="pic">${ic}</div><div><div class="pt">${esc(t)}</div><div class="ps">${esc(sub)}</div></div></button>`;}
+function openPlus(){modal('Plus',`<div class="plus-grid">
+   ${plusItem('stats','📊','Statistiques','Pilotage & valeur')}
+   ${plusItem('reassort','🔄','Réassort','Suggestions de commande')}
+   ${plusItem('historique','🧾','Historique','Journal des opérations')}
+   ${plusItem('pro','💳','Offre Pro','Débloquer & parrainage')}
+   ${plusItem('reseau','🤝','Réseau','Confrères & SOS')}
+   ${plusItem('profil','🏷️','Profil & données','Officine, sauvegarde')}
+ </div>
+ <div class="divider"></div>
+ <div class="btn-row"><button class="btn block" onclick="requestReminders()">🔔 Activer les rappels</button>
+ <button class="btn block" onclick="closeModal();toggleTheme()">🌓 Mode clair / sombre</button></div>`);}
+
+/* --- Centre d'alertes & rappels --- */
+function computeAlerts(){const a=[];
+  DB.stock.forEach(x=>{const d=daysTo(x.expiration);if(d<0)a.push({type:'crit',text:`${x.nom} expiré (lot ${x.lot||'—'})`});else if(monthsTo(x.expiration)<=3)a.push({type:'crit',text:`${x.nom} périme dans ${monthsTo(x.expiration)} mois`});});
+  DB.stock.filter(x=>(+x.quantite||0)<=3).forEach(x=>a.push({type:'warn',text:`Stock faible : ${x.nom} (${x.quantite} boîte(s))`}));
+  DB.credits.filter(c=>(+c.solde||0)>0&&daysTo(c.date)<-30).forEach(c=>a.push({type:'warn',text:`Crédit en retard : ${c.nom} — ${money(c.solde)}`}));
+  return a;}
+function updateBell(){const b=document.getElementById('bellBadge');if(!b)return;const n=computeAlerts().length;if(n>0){b.textContent=n>99?'99+':n;b.classList.remove('hidden');}else b.classList.add('hidden');}
+function openAlerts(){const a=computeAlerts();modal('Centre d\'alertes',a.length?a.map(x=>`<div class="list-item"><div class="avatar" style="background:${x.type==='crit'?'var(--crit-bg)':'var(--warn-bg)'};color:${x.type==='crit'?'var(--crit)':'var(--gold)'}">${x.type==='crit'?'!':'•'}</div><div class="li-main"><div class="li-title" style="font-size:.9rem;white-space:normal">${esc(x.text)}</div></div></div>`).join(''):emptyBox('Aucune alerte. Tout est sous contrôle ✓'));}
+function requestReminders(){closeModal();if(!('Notification' in window)){toast('Notifications non supportées sur cet appareil');return;}Notification.requestPermission().then(p=>{if(p==='granted'){toast('Rappels activés ✓');checkReminders(true);}else toast('Rappels non autorisés');});}
+function checkReminders(force){updateBell();if(!('Notification' in window)||Notification.permission!=='granted')return;const a=computeAlerts();if(a.length&&(force||!window.__remNotified)){window.__remNotified=true;try{new Notification('PharmaAlert Pro',{body:a.length+' alerte(s) : péremptions / stock / crédits à vérifier.',icon:'icons/icon-192.png'});}catch(e){}}}
+
+/* --- Thème clair / sombre --- */
+function toggleTheme(){const dark=document.documentElement.getAttribute('data-theme')==='dark';if(dark)document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme','dark');try{localStorage.setItem('pa_theme',dark?'light':'dark');}catch(e){}const tc=document.querySelector('meta[name=theme-color]');if(tc)tc.setAttribute('content',dark?'#0a5a49':'#07140f');updateThemeIcon();toast(dark?'Mode clair':'Mode sombre');}
+function updateThemeIcon(){const dark=document.documentElement.getAttribute('data-theme')==='dark';const i=document.getElementById('themeIco');if(i)i.innerHTML=dark?'<circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="2"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5 5l1.8 1.8M17.2 17.2L19 19M19 5l-1.8 1.8M6.8 17.2L5 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>':'<path d="M21 12.8A8 8 0 1111.2 3a6 6 0 009.8 9.8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>';}
+
+/* --- Scan code-barres (si supporté) --- */
+let _bcStream=null,_bcRun=false;
+function startBarcode(){
+  if(!('BarcodeDetector' in window)){toast('Lecture code-barres non supportée ici — utilisez le scan de la boîte.');return;}
+  let det;try{det=new window.BarcodeDetector({formats:['ean_13','ean_8','code_128','upc_a','upc_e']});}catch(e){toast('Code-barres non disponible.');return;}
+  navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}}).then(async stream=>{
+    _bcStream=stream;const v=document.getElementById('scanVideo');v.srcObject=stream;v.classList.remove('hidden');await v.play();
+    document.getElementById('vfHint').classList.add('hidden');document.getElementById('scanLine').classList.remove('hidden');
+    document.getElementById('scanStatus').textContent='Visez le code-barres…';_bcRun=true;
+    const loop=async()=>{if(!_bcRun)return;try{const codes=await det.detect(v);if(codes&&codes.length){_bcRun=false;const code=codes[0].rawValue;stopBarcode();onBarcode(code);return;}}catch(e){}requestAnimationFrame(loop);};
+    requestAnimationFrame(loop);
+  }).catch(()=>toast('Caméra indisponible.'));
+}
+function stopBarcode(){_bcRun=false;try{if(_bcStream)_bcStream.getTracks().forEach(t=>t.stop());}catch(e){}_bcStream=null;const v=document.getElementById('scanVideo');if(v){v.classList.add('hidden');v.srcObject=null;}const sl=document.getElementById('scanLine');if(sl)sl.classList.add('hidden');const st=document.getElementById('scanStatus');if(st)st.textContent='';}
+function onBarcode(code){const m=DB.stock.find(x=>x.barcode&&String(x.barcode)===String(code));
+  if(m){const med=matchMed(m.nom);if(med){showMedInfo(med);return;}}
+  const med=matchMed(code);if(med){showMedInfo(med);return;}
+  document.getElementById('scanResult').innerHTML=`<div class="card pad"><b>Code-barres détecté : ${esc(code)}</b><p class="note" style="margin-top:6px">Aucun produit associé à ce code. Recherchez le produit par son nom ci-dessus.</p></div>`;}
+
+/* ========================================================
    PROFIL & DONNÉES
    ======================================================== */
 function renderProfile(){const p=DB.profile;
@@ -1323,6 +1570,7 @@ function loadDemo(){
    ======================================================== */
 function boot(){
   document.getElementById('phNameTop').textContent=DB.profile.nom||'Ma Pharmacie';
+  updateThemeIcon();updateBell();checkReminders(false);
   renderDash();renderProfile();
 }
 load();boot();
