@@ -3,19 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
-<meta name="theme-color" content="#0d9488">
+<meta name="theme-color" content="#0a5a49">
 <meta name="description" content="PharmaAlert Pro - Gestion d'officine, péremptions, retours grossistes, conseil comptoir, crédit client et réseau confraternel.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>PharmaAlert Pro</title>
 <style>
 :root{
-  --bg:#f1f5f9; --surface:#ffffff; --surface-2:#f8fafc; --ink:#0f172a; --muted:#64748b;
-  --line:#e2e8f0; --brand:#0d9488; --brand-d:#0f766e; --brand-l:#ccfbf1;
-  --accent:#2563eb; --ok:#16a34a; --warn:#d97706; --warn-bg:#fef3c7; --crit:#dc2626; --crit-bg:#fee2e2;
-  --gold:#b45309; --gold-bg:#fffbeb; --gold-line:#f59e0b;
-  --radius:14px; --shadow:0 1px 3px rgba(15,23,42,.08),0 1px 2px rgba(15,23,42,.06);
-  --shadow-lg:0 10px 30px rgba(15,23,42,.12);
+  --bg:#eef3f0; --surface:#ffffff; --surface-2:#f4f8f6; --ink:#122a24; --muted:#5b7169;
+  --line:#dde7e2; --brand:#0d7a63; --brand-d:#0a5a49; --brand-dd:#083f34; --brand-l:#d7f0e8;
+  --accent:#2563eb; --ok:#16a34a; --warn:#c7820a; --warn-bg:#fdf3dc; --crit:#d1402e; --crit-bg:#fbe5e1;
+  --gold:#a9802a; --gold-2:#caa24a; --gold-bg:#fbf6ea; --gold-line:#d8ad46;
+  --cream:#f7f4ec;
+  --radius:16px; --radius-lg:22px;
+  --shadow:0 1px 2px rgba(10,60,48,.06),0 4px 14px rgba(10,60,48,.06);
+  --shadow-lg:0 18px 48px rgba(10,60,48,.16);
+  --glass:rgba(255,255,255,.72);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
@@ -156,6 +159,102 @@ tr.row-warn{background:var(--warn-bg)}
 .section-title{font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:800;margin:18px 0 8px}
 .note{font-size:.82rem;color:var(--muted)}
 .divider{height:1px;background:var(--line);margin:14px 0}
+
+/* ============================================================
+   ===============  PREMIUM PHARMACY SKIN  ====================
+   (surcharge le style de base — thème apothicaire)
+   ============================================================ */
+body{background:transparent;color:var(--ink)}
+/* Fonds dégradés + motif médical subtil */
+body::before{content:'';position:fixed;inset:0;z-index:-3;
+  background:
+   radial-gradient(1100px 620px at 108% -12%, rgba(13,122,99,.16), transparent 60%),
+   radial-gradient(900px 560px at -12% 112%, rgba(201,162,74,.14), transparent 60%),
+   linear-gradient(180deg,#f2f7f4 0%, #eaf1ed 52%, #f4f1e9 100%);}
+body::after{content:'';position:fixed;inset:0;z-index:-2;opacity:.6;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%230d7a63' stroke-opacity='0.07' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M36 27v18M27 36h18'/%3E%3C/g%3E%3Cg fill='%23a9802a' fill-opacity='0.05'%3E%3Ccircle cx='8' cy='8' r='2.3'/%3E%3Ccircle cx='64' cy='64' r='2.3'/%3E%3C/g%3E%3C/svg%3E");
+  background-size:72px 72px;}
+/* Illustration d'ambiance pharmacie (étagères de flacons), fixée en bas, très discrète */
+.bg-scene{position:fixed;left:0;right:0;bottom:0;z-index:-1;height:46vh;max-height:430px;
+  display:flex;align-items:flex-end;justify-content:center;overflow:hidden;pointer-events:none;
+  opacity:.09;-webkit-mask-image:linear-gradient(180deg,transparent,#000 55%);mask-image:linear-gradient(180deg,transparent,#000 55%);}
+.bg-scene svg{width:min(1240px,118%);height:auto}
+
+/* ---------- Header : verre + hairline doré ---------- */
+.topbar{background:linear-gradient(135deg,var(--brand-dd),var(--brand-d) 55%,var(--brand));
+  box-shadow:0 10px 30px rgba(8,63,52,.28);position:sticky;top:0;z-index:40;
+  border-bottom:1px solid rgba(255,255,255,.08)}
+.topbar::after{content:'';display:block;height:3px;background:linear-gradient(90deg,transparent,var(--gold-2),var(--gold-line),var(--gold-2),transparent);opacity:.9}
+.topbar-in{height:66px}
+.logo svg{width:34px;height:34px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.25))}
+.logo{font-size:1.22rem}
+.topbar-sub{color:var(--gold-2);opacity:1;font-weight:700}
+.phname{font-weight:600;letter-spacing:.2px}
+.phname::before{content:'⚕ ';color:var(--gold-2)}
+
+/* ---------- Titres de page premium ---------- */
+.page-head h2{font-size:1.5rem;font-weight:800;letter-spacing:-.4px;color:var(--brand-dd)}
+.page-head h2::before{content:'';width:6px;height:26px;border-radius:4px;background:linear-gradient(var(--gold-2),var(--gold-line));display:inline-block;margin-right:4px}
+.section-title{color:var(--brand-d);display:flex;align-items:center;gap:8px}
+.section-title::before{content:'';width:18px;height:2px;background:var(--gold-line);border-radius:2px}
+
+/* ---------- Cartes : relief doux + survol ---------- */
+.card{border:1px solid rgba(221,231,226,.9);border-radius:var(--radius);background:var(--surface);
+  box-shadow:var(--shadow);transition:transform .18s ease, box-shadow .18s ease}
+.card.pad{padding:18px}
+.stat{border:1px solid rgba(221,231,226,.9);border-radius:var(--radius);overflow:hidden;
+  box-shadow:var(--shadow);background:var(--surface);transition:transform .18s ease,box-shadow .18s ease}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--brand),var(--brand-l))}
+.stat:hover,.card.pad:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(10,60,48,.12)}
+.stat.danger::before{background:linear-gradient(90deg,var(--crit),#f3a79a)}
+.stat.warn::before{background:linear-gradient(90deg,var(--gold-line),#f0d79a)}
+.stat.good::before{background:linear-gradient(90deg,var(--ok),#9be3b5)}
+.stat.brand::before{background:linear-gradient(90deg,var(--brand-dd),var(--brand))}
+.stat .val{letter-spacing:-.5px}
+.stat .ic{opacity:.12}
+
+/* ---------- Boutons premium ---------- */
+.btn{border-radius:12px;font-weight:700;box-shadow:0 1px 2px rgba(10,60,48,.05)}
+.btn.primary{background:linear-gradient(135deg,var(--brand),var(--brand-d));border-color:var(--brand-d);
+  box-shadow:0 6px 16px rgba(13,122,99,.3)}
+.btn.primary:hover{background:linear-gradient(135deg,var(--brand-d),var(--brand-dd))}
+.btn.blue{background:linear-gradient(135deg,#2f6bed,#1d4fd0);border-color:#1d4fd0;box-shadow:0 6px 16px rgba(37,99,235,.28)}
+.btn.wa{background:linear-gradient(135deg,#2bd96f,#17a74f);border-color:#17a74f;box-shadow:0 6px 16px rgba(37,211,102,.3)}
+
+/* ---------- Chips premium ---------- */
+.chip{border-radius:999px;font-weight:700;background:var(--surface);box-shadow:0 1px 2px rgba(10,60,48,.05);transition:.15s}
+.chip.active{background:linear-gradient(135deg,var(--brand),var(--brand-d));border-color:var(--brand-d);color:#fff;box-shadow:0 6px 14px rgba(13,122,99,.28)}
+
+/* ---------- Avatars / tags dorés ---------- */
+.avatar{background:linear-gradient(135deg,var(--brand-l),#eafaf4);color:var(--brand-dd);box-shadow:inset 0 0 0 1px rgba(13,122,99,.12)}
+.gold-box{background:linear-gradient(135deg,#fdf8ec,#fbf2dc);border-color:var(--gold-line);box-shadow:0 10px 26px rgba(169,128,42,.14)}
+.gold-box .tag{background:linear-gradient(135deg,var(--gold-line),var(--gold));box-shadow:0 4px 10px rgba(169,128,42,.3)}
+
+/* ---------- Bottom nav : verre dépoli ---------- */
+.nav{background:var(--glass);-webkit-backdrop-filter:saturate(160%) blur(14px);backdrop-filter:saturate(160%) blur(14px);
+  border-top:1px solid rgba(221,231,226,.8);box-shadow:0 -6px 24px rgba(10,60,48,.08)}
+.nav button.active{color:var(--brand-d)}
+.nav button.active::after{content:'';position:absolute;bottom:2px;width:22px;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--brand),var(--gold-line))}
+.nav button{position:relative}
+
+/* ---------- Tableaux ---------- */
+.tbl-wrap{box-shadow:var(--shadow)}
+th{background:var(--cream);color:var(--brand-d)}
+
+/* ---------- Hero du tableau de bord ---------- */
+.hero{position:relative;overflow:hidden;border-radius:var(--radius-lg);margin-bottom:16px;
+  background:linear-gradient(130deg,var(--brand-dd),var(--brand-d) 60%,var(--brand));color:#fff;
+  box-shadow:0 18px 40px rgba(8,63,52,.3);border:1px solid rgba(255,255,255,.08)}
+.hero-in{position:relative;z-index:2;padding:22px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.hero-txt{flex:1;min-width:200px}
+.hero .eyebrow{font-size:.72rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-2)}
+.hero h2{font-size:1.7rem;margin:4px 0 2px;letter-spacing:-.5px;color:#fff}
+.hero p{margin:0;opacity:.88;font-size:.9rem}
+.hero-art{width:190px;max-width:38%;flex:none;filter:drop-shadow(0 8px 16px rgba(0,0,0,.25))}
+.hero::after{content:'';position:absolute;inset:0;z-index:1;opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.07' stroke-width='2'%3E%3Cpath d='M30 22v16M22 30h16'/%3E%3C/g%3E%3C/svg%3E");background-size:60px 60px}
+@media(max-width:520px){.hero-art{display:none}.hero h2{font-size:1.4rem}}
+
 .list-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
 .list-item:last-child{border-bottom:none}
 .avatar{width:42px;height:42px;border-radius:12px;background:var(--brand-l);color:var(--brand-d);display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
@@ -196,6 +295,58 @@ tr.row-warn{background:var(--warn-bg)}
 </head>
 <body>
 
+<!-- ============ FOND D'AMBIANCE PHARMACIE (silhouette étagères) ============ -->
+<div class="bg-scene" aria-hidden="true">
+<svg viewBox="0 0 1240 360" xmlns="http://www.w3.org/2000/svg" fill="#0a5a49">
+  <!-- étagères -->
+  <rect x="60" y="150" width="760" height="9" rx="4"/>
+  <rect x="60" y="268" width="760" height="9" rx="4"/>
+  <!-- rangée haute de flacons -->
+  <g>
+    <g transform="translate(80,70)"><rect x="0" y="22" width="40" height="58" rx="7"/><rect x="9" y="8" width="22" height="18" rx="4"/><rect x="13" y="0" width="14" height="10" rx="3"/></g>
+    <g transform="translate(140,60)"><rect x="0" y="32" width="46" height="58" rx="9"/><rect x="14" y="14" width="18" height="22" rx="5"/><rect x="11" y="6" width="24" height="10" rx="3"/></g>
+    <g transform="translate(205,78)"><rect x="0" y="14" width="34" height="58" rx="6"/><rect x="8" y="2" width="18" height="14" rx="4"/></g>
+    <g transform="translate(255,66)"><rect x="0" y="26" width="42" height="64" rx="8"/><rect x="12" y="8" width="18" height="20" rx="5"/><rect x="9" y="0" width="24" height="10" rx="3"/></g>
+    <g transform="translate(320,82)"><rect x="0" y="10" width="30" height="62" rx="6"/><rect x="7" y="0" width="16" height="12" rx="4"/></g>
+    <g transform="translate(366,60)"><path d="M0 90V44C0 30 8 30 8 18V6h26v12c0 12 8 12 8 26v46z" /><rect x="10" y="0" width="22" height="8" rx="3"/></g>
+    <g transform="translate(430,74)"><rect x="0" y="18" width="38" height="56" rx="7"/><rect x="10" y="4" width="18" height="16" rx="4"/></g>
+    <g transform="translate(490,64)"><rect x="0" y="28" width="44" height="62" rx="9"/><rect x="13" y="10" width="18" height="20" rx="5"/><rect x="10" y="2" width="24" height="10" rx="3"/></g>
+    <g transform="translate(556,80)"><rect x="0" y="12" width="32" height="60" rx="6"/><rect x="8" y="0" width="16" height="14" rx="4"/></g>
+    <g transform="translate(610,58)"><path d="M0 92V40C0 28 10 28 10 16V4h24v12c0 12 10 12 10 24v52z"/><rect x="11" y="0" width="22" height="6" rx="3"/></g>
+    <g transform="translate(676,76)"><rect x="0" y="16" width="36" height="58" rx="7"/><rect x="9" y="2" width="18" height="16" rx="4"/></g>
+    <g transform="translate(736,66)"><rect x="0" y="26" width="42" height="64" rx="8"/><rect x="12" y="8" width="18" height="20" rx="5"/></g>
+  </g>
+  <!-- rangée basse de flacons -->
+  <g transform="translate(0,118)">
+    <g transform="translate(90,70)"><rect x="0" y="22" width="44" height="60" rx="8"/><rect x="13" y="6" width="18" height="18" rx="5"/></g>
+    <g transform="translate(156,80)"><rect x="0" y="12" width="34" height="60" rx="6"/><rect x="8" y="0" width="18" height="14" rx="4"/></g>
+    <g transform="translate(212,64)"><path d="M0 92V44C0 30 9 30 9 18V6h26v12c0 12 9 12 9 26v48z"/><rect x="10" y="0" width="24" height="8" rx="3"/></g>
+    <g transform="translate(284,74)"><rect x="0" y="18" width="40" height="58" rx="7"/><rect x="11" y="4" width="18" height="16" rx="4"/></g>
+    <g transform="translate(348,66)"><rect x="0" y="26" width="46" height="62" rx="9"/><rect x="14" y="8" width="18" height="20" rx="5"/></g>
+    <g transform="translate(416,82)"><rect x="0" y="10" width="30" height="60" rx="6"/><rect x="7" y="0" width="16" height="12" rx="4"/></g>
+    <g transform="translate(468,70)"><rect x="0" y="22" width="42" height="62" rx="8"/><rect x="12" y="6" width="18" height="18" rx="5"/></g>
+    <g transform="translate(534,78)"><rect x="0" y="14" width="34" height="58" rx="6"/><rect x="8" y="2" width="18" height="14" rx="4"/></g>
+    <g transform="translate(590,62)"><path d="M0 94V42C0 30 10 30 10 18V6h24v12c0 12 10 12 10 24v52z"/></g>
+    <g transform="translate(656,76)"><rect x="0" y="16" width="38" height="58" rx="7"/><rect x="10" y="2" width="18" height="16" rx="4"/></g>
+    <g transform="translate(720,68)"><rect x="0" y="24" width="44" height="62" rx="8"/><rect x="13" y="8" width="18" height="18" rx="5"/></g>
+  </g>
+  <!-- mortier & pilon -->
+  <g transform="translate(900,196)">
+    <rect x="86" y="-70" width="12" height="96" rx="6" transform="rotate(26 92 -22)"/>
+    <path d="M0 8h150a75 75 0 0 1-150 0z"/>
+    <rect x="-8" y="-2" width="166" height="14" rx="7"/>
+  </g>
+  <!-- croix pharmacie (enseigne) -->
+  <g transform="translate(1092,54)">
+    <rect x="0" y="0" width="96" height="96" rx="18"/>
+    <rect x="38" y="18" width="20" height="60" rx="5" fill="#f4f1e9"/>
+    <rect x="18" y="38" width="60" height="20" rx="5" fill="#f4f1e9"/>
+  </g>
+  <!-- feuille (naturel) -->
+  <g transform="translate(828,214)"><path d="M0 60C0 24 30 2 64 0 58 36 34 62 0 60z"/><path d="M8 54C24 40 44 24 58 10" stroke="#f4f1e9" stroke-width="3" fill="none"/></g>
+</svg>
+</div>
+
 <!-- ============ HEADER ============ -->
 <header class="topbar">
   <div class="topbar-in">
@@ -211,7 +362,34 @@ tr.row-warn{background:var(--warn-bg)}
 
 <!-- ============ DASHBOARD ============ -->
 <section class="view active" id="view-dash">
-  <div class="page-head"><div><h2>Tableau de bord</h2><p id="dashDate"></p></div></div>
+  <div class="hero">
+    <div class="hero-in">
+      <div class="hero-txt">
+        <div class="eyebrow">PharmaAlert Pro · Officine</div>
+        <h2 id="heroHi">Bonjour 👋</h2>
+        <p id="dashDate"></p>
+      </div>
+      <svg class="hero-art" viewBox="0 0 220 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- croix pharmacie -->
+        <rect x="150" y="8" width="60" height="60" rx="13" fill="#caa24a"/>
+        <rect x="172" y="20" width="16" height="36" rx="4" fill="#fff"/>
+        <rect x="162" y="30" width="36" height="16" rx="4" fill="#fff"/>
+        <!-- flacons -->
+        <g>
+          <rect x="16" y="70" width="40" height="70" rx="9" fill="#e9f6f0"/><rect x="24" y="86" width="24" height="12" rx="3" fill="#caa24a"/><rect x="26" y="56" width="20" height="18" rx="5" fill="#d7f0e8"/><rect x="29" y="48" width="14" height="10" rx="3" fill="#0a5a49"/>
+          <rect x="64" y="86" width="36" height="54" rx="8" fill="#d7f0e8"/><rect x="72" y="100" width="20" height="10" rx="3" fill="#caa24a"/><rect x="74" y="74" width="16" height="14" rx="4" fill="#0a5a49"/>
+        </g>
+        <!-- mortier & pilon -->
+        <g transform="translate(108,96)">
+          <rect x="54" y="-34" width="9" height="62" rx="4" fill="#0a5a49" transform="rotate(28 58 -3)"/>
+          <path d="M0 10h96a48 48 0 0 1-96 0z" fill="#0d7a63"/>
+          <rect x="-6" y="2" width="108" height="12" rx="6" fill="#0a5a49"/>
+        </g>
+        <!-- étagère -->
+        <rect x="8" y="140" width="130" height="7" rx="3" fill="#ffffff" opacity=".55"/>
+      </svg>
+    </div>
+  </div>
   <div class="grid g4" id="dashStats"></div>
 
   <div class="section-title">Alertes de péremption prioritaires</div>
@@ -427,6 +605,8 @@ function closeModal(){document.getElementById('modalMount').innerHTML='';}
    DASHBOARD
    ======================================================== */
 function renderDash(){
+  const h=new Date().getHours();const salut=h<12?'Bonjour':(h<18?'Bon après-midi':'Bonsoir');
+  const hi=document.getElementById('heroHi');if(hi)hi.innerHTML=esc(salut)+', <span style="color:#fff">'+esc(DB.profile.nom||'votre officine')+'</span>';
   document.getElementById('dashDate').textContent='Aujourd\'hui · '+new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   const s=DB.stock;
   const crit=s.filter(x=>monthsTo(x.expiration)<=3);
