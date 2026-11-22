@@ -8,7 +8,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>PharmaAlert Pro</title>
-<script>try{var _t=localStorage.getItem('pa_theme');if(_t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<script>try{var _t=localStorage.getItem('pa_theme');if(_t==='dark')document.documentElement.setAttribute('data-theme','dark');var _l=localStorage.getItem('pa_lang')||'fr';document.documentElement.setAttribute('lang',_l);document.documentElement.setAttribute('dir',_l==='ar'?'rtl':'ltr');}catch(e){}</script>
 <style>
 :root{
   --bg:#eef3f0; --surface:#ffffff; --surface-2:#f4f8f6; --ink:#122a24; --muted:#5b7169;
@@ -345,6 +345,27 @@ th{background:var(--cream);color:var(--brand-d)}
 .plist li.no{color:var(--muted)}
 .plist li.yes{color:var(--ink)}
 
+/* ---------- RTL (arabe) ---------- */
+[dir="rtl"] .top-actions{margin-left:0;margin-right:auto}
+[dir="rtl"] .phname{margin-left:0;margin-right:4px}
+[dir="rtl"] .page-head h2::before{margin-right:0;margin-left:6px}
+[dir="rtl"] .section-title::before{margin-right:0}
+[dir="rtl"] .search input{padding:11px 40px 11px 12px}
+[dir="rtl"] .search svg{left:auto;right:12px}
+[dir="rtl"] .gold-box .tag{left:auto;right:14px}
+[dir="rtl"] .stat .ic{right:auto;left:12px}
+[dir="rtl"] .med-sec.dj{margin:6px -6px 0}
+[dir="rtl"] .logo{direction:ltr}
+[dir="rtl"] .bar-val,[dir="rtl"] .money{direction:ltr;unicode-bidi:plaintext}
+[dir="rtl"] .toast{direction:rtl}
+
+/* sélecteur de langue */
+.lang-grid{display:flex;flex-direction:column;gap:8px}
+.lang-opt{display:flex;align-items:center;gap:12px;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);font-weight:700;color:var(--ink);text-align:start}
+.lang-opt .flag{font-size:22px}
+.lang-opt.active{border-color:var(--brand);background:var(--brand-l);color:var(--brand-dd)}
+.lang-opt .chk{margin-inline-start:auto;color:var(--brand);font-weight:900}
+
 .list-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
 .list-item:last-child{border-bottom:none}
 .avatar{width:42px;height:42px;border-radius:12px;background:var(--brand-l);color:var(--brand-d);display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
@@ -455,6 +476,7 @@ th{background:var(--cream);color:var(--brand-d)}
       <div>PharmaAlert <span style="font-weight:600;opacity:.8">Pro</span><div class="topbar-sub">Gestion d'officine</div></div>
     </div>
     <div class="top-actions">
+      <button class="ticon" id="langBtn" onclick="openLang()" aria-label="Langue"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3C9.5 5.5 9.5 18.5 12 21" stroke="currentColor" stroke-width="2"/></svg></button>
       <button class="ticon" id="bellBtn" onclick="openAlerts()" aria-label="Alertes"><svg viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 1112 0c0 5 2 6 2 6H4s2-1 2-6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 20a2 2 0 004 0" stroke="currentColor" stroke-width="2"/></svg><span class="tbadge hidden" id="bellBadge">0</span></button>
       <button class="ticon" id="themeBtn" onclick="toggleTheme()" aria-label="Thème"><svg id="themeIco" viewBox="0 0 24 24" fill="none"><path d="M21 12.8A8 8 0 1111.2 3a6 6 0 009.8 9.8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
       <div class="phname" id="phNameTop">Ma Pharmacie</div>
@@ -714,7 +736,7 @@ let DB=null, _fileCb=null;
 /* ---------- Persistance ---------- */
 function blankDB(){return{
   profile:{nom:'Ma Pharmacie',pharm:'',inpe:'',patente:'',ville:'',adr:'',tel:''},
-  settings:{pro:false,parrainage:null},
+  settings:{pro:false,parrainage:null,lang:'fr'},
   history:[],
   stock:[], partners:[], credits:[], bourse:[],
   ruptures:[
@@ -742,9 +764,95 @@ function cleanPhoneMA(raw){let n=String(raw||'').replace(/[^\d]/g,'');if(n.start
 function waLink(phone,text){return 'https://wa.me/'+cleanPhoneMA(phone)+'?text='+encodeURIComponent(text);}
 function openWa(phone,text){window.open(waLink(phone,text),'_blank');}
 
+/* ========================================================
+   INTERNATIONALISATION (FR / EN / AR) — traduction à la volée
+   ======================================================== */
+// valeurs: [anglais, arabe]
+const I18N={
+ "Gestion d'officine":["Pharmacy management","تدبير الصيدلية"],
+ "Bord":["Home","الرئيسية"],"Scan":["Scan","مسح"],"Stock":["Stock","المخزون"],"Retours":["Returns","الإرجاع"],"Conseil":["Advice","نصيحة"],"Réseau":["Network","الشبكة"],"Crédit":["Credit","الكريدي"],"Plus":["More","المزيد"],
+ // Dashboard
+ "PharmaAlert Pro · Officine":["PharmaAlert Pro · Pharmacy","فارما أليرت برو · صيدلية"],
+ "Références":["References","المنتجات"],"Alerte 6 mois":["6-month alert","تنبيه 6 أشهر"],"Critique 3 mois":["Critical 3 months","حرِج 3 أشهر"],"Valeur du stock":["Stock value","قيمة المخزون"],
+ "Alertes de péremption prioritaires":["Priority expiry alerts","تنبيهات الصلاحية ذات الأولوية"],
+ "⚡ Accès rapide":["⚡ Quick access","⚡ وصول سريع"],"💰 Synthèse financière":["💰 Financial summary","💰 ملخص مالي"],
+ "📷 Scanner une boîte":["📷 Scan a box","📷 صَوّر علبة"],"+ Produit":["+ Product","+ منتج"],"Bordereaux retour":["Return slips","وصولات الإرجاع"],"Conseil comptoir":["Counter advice","نصيحة الكونوار"],"Carnet crédit":["Credit book","دفتر الكريدي"],
+ "Valeur à retourner (3-6 mois)":["Value to return (3-6 months)","قيمة للإرجاع (3-6 أشهر)"],"Risque péremption (≤3 mois)":["Expiry risk (≤3 months)","خطر الصلاحية (≤3 أشهر)"],"Crédits clients en cours":["Outstanding client credit","ديون الزبناء الجارية"],
+ "Aucune péremption proche. Stock sain ✓":["No near expiry. Healthy stock ✓","ما كاين حتى صلاحية قريبة. المخزون سليم ✓"],
+ // Stock
+ "Stock & Péremptions":["Stock & Expiry","المخزون والصلاحية"],"Méthode FEFO · lot expirant en premier":["FEFO method · earliest expiry first","طريقة FEFO · اللوط لي غادي يسالي الأول"],"＋ Ajouter":["＋ Add","＋ إضافة"],
+ "au total":["total","المجموع"],"À surveiller ≤6 mois":["Watch ≤6 months","راقب ≤6 أشهر"],"produits":["products","منتجات"],"Valeur en risque":["Value at risk","قيمة في خطر"],"DH à préserver":["MAD to preserve","درهم للحفاظ عليها"],
+ "⤓ Importer":["⤓ Import","⤓ استيراد"],"⤒ Exporter":["⤒ Export","⤒ تصدير"],
+ "Tous":["All","الكل"],"Critique ≤3 mois":["Critical ≤3 months","حرِج ≤3 أشهر"],"Alerte ≤6 mois":["Alert ≤6 months","تنبيه ≤6 أشهر"],"Stock faible":["Low stock","مخزون ضعيف"],
+ "Spécialité":["Product","المنتج"],"Lot":["Batch","اللوط"],"Expiration":["Expiry","الصلاحية"],"Qté":["Qty","الكمية"],"PU":["Unit price","الثمن"],"Valeur":["Value","القيمة"],"Grossiste":["Supplier","الموزّع"],
+ "Rechercher spécialité, lot, grossiste…":["Search product, batch, supplier…","قلب على منتج، لوط، موزّع…"],
+ "Import compatible WinPharm / 3E / Officine (.xlsx, .csv). Colonnes: Spécialité, Forme, Dosage, Lot, Expiration, Quantité, PrixUnitaire, Grossiste.":["Import compatible with WinPharm / 3E / Officine (.xlsx, .csv). Columns: Product, Form, Dosage, Batch, Expiry, Quantity, UnitPrice, Supplier.","استيراد متوافق مع WinPharm / 3E / Officine (.xlsx, .csv). الأعمدة: المنتج، الشكل، الجرعة، اللوط، الصلاحية، الكمية، الثمن، الموزّع."],
+ "Aucun produit. Ajoutez un article ou importez votre inventaire.":["No product. Add an item or import your inventory.","ما كاين حتى منتج. زيد واحد ولا استورد الجرد ديالك."],
+ // Form produit
+ "Nouveau produit":["New product","منتج جديد"],"Modifier le produit":["Edit product","تعديل المنتج"],"Spécialité *":["Product *","المنتج *"],"Forme":["Form","الشكل"],"Dosage":["Dosage","الجرعة"],"N° de lot":["Batch no.","رقم اللوط"],"Date d'expiration *":["Expiry date *","تاريخ الصلاحية *"],"Quantité":["Quantity","الكمية"],"Grossiste / Répartiteur":["Supplier / Distributor","الموزّع"],"Ajouter au stock":["Add to stock","زيد للمخزون"],"Enregistrer":["Save","سجّل"],"Supprimer":["Delete","حذف"],"Choisir ou saisir…":["Choose or type…","ختار ولا كتب…"],"Comprimé, sirop, gel…":["Tablet, syrup, gel…","حبوب، شراب، جيل…"],
+ // Retours
+ "Retours grossistes":["Supplier returns","إرجاع للموزّع"],"Fenêtre légale de reprise · 3 à 6 mois avant péremption":["Legal return window · 3 to 6 months before expiry","مدة الإرجاع القانونية · من 3 ل 6 أشهر قبل الصلاحية"],
+ "Produits éligibles au retour, regroupés par répartiteur. Générez un bordereau A4 officiel ou envoyez un préavis WhatsApp.":["Products eligible for return, grouped by distributor. Generate an official A4 slip or send a WhatsApp notice.","المنتجات القابلة للإرجاع، مجموعة حسب الموزّع. صاوب وصل A4 رسمي ولا صيفط إشعار واتساب."],
+ "↻ Actualiser":["↻ Refresh","↻ تحديث"],"🖨 Bordereau A4":["🖨 A4 slip","🖨 وصل A4"],"WhatsApp":["WhatsApp","واتساب"],"Désignation":["Description","التسمية"],"Exp.":["Exp.","الصلاحية"],
+ "Aucun produit dans la fenêtre de retour (3 à 6 mois). Vérifiez vos dates d'expiration.":["No product in the return window (3 to 6 months). Check your expiry dates.","ما كاين حتى منتج ف مدة الإرجاع (3 ل 6 أشهر). تأكد من تواريخ الصلاحية."],
+ // Conseil
+ "Conseil comptoir":["Counter advice","نصيحة الكونوار"],"Aide à la dispensation & déstockage intelligent":["Dispensing help & smart destocking","مساعدة ف الصرف وتصريف المخزون بذكاء"],"Références conseil & argumentaires":["Advice references & scripts","المنتجات والحجج"],"en stock":["in stock","ف المخزون"],"Hors stock":["Out of stock","ماشي ف المخزون"],"unités en stock":["units in stock","وحدة ف المخزون"],"Valeur à préserver :":["Value to preserve:","قيمة للحفاظ عليها:"],"En surstock":["Overstock","مخزون زائد"],
+ "Aucun produit de cette famille en stock actuellement. Ajoutez vos références pour activer le déstockage prioritaire.":["No product from this family in stock right now. Add your references to enable priority destocking.","ما كاين حتى منتج من هاد العائلة ف المخزون دابا. زيد المنتجات باش تفعّل التصريف بالأولوية."],
+ "Douleurs musculaires & articulaires":["Muscle & joint pain","وجع العضلات والمفاصل"],"Magnésium & Fatigue":["Magnesium & Fatigue","المغنيزيوم والتعب"],"Rhume & Toux":["Cold & Cough","الرواح والكحة"],"Confort digestif":["Digestive comfort","راحة الهضم"],"Vitamines & Immunité":["Vitamins & Immunity","الفيتامينات والمناعة"],
+ // Scan
+ "Scanner un produit":["Scan a product","مسح منتج"],"Cadrez la boîte du médicament — nom reconnu, infos & conseils":["Frame the medicine box — name recognized, info & advice","صوّر علبة الدواء — كيتعرّف على السمية، معلومات ونصائح"],"Activez la caméra et cadrez la boîte du médicament":["Turn on the camera and frame the medicine box","شعّل الكاميرا وصوّر علبة الدواء"],"📷 Caméra (boîte)":["📷 Camera (box)","📷 كاميرا (علبة)"],"🏷 Code-barres":["🏷 Barcode","🏷 الباركود"],"🖼 Photo":["🖼 Photo","🖼 صورة"],"Ou recherche manuelle du produit":["Or search the product manually","ولا قلب على المنتج بيدك"],"Tapez le nom… (ex : Doliprane)":["Type the name… (e.g. Doliprane)","كتب السمية… (مثلا دوليبران)"],"💊 Usage":["💊 Use","💊 الاستعمال"],"📏 Posologie":["📏 Dosage","📏 الجرعة"],"⚠️ Précautions":["⚠️ Precautions","⚠️ احتياطات"],"⭐ À écouler en priorité":["⭐ Sell first","⭐ صرّفها بالأولوية"],
+ // Réseau
+ "Réseau confraternel":["Peer network","شبكة الزملاء"],"Échange, dépannage & bourse de surstock":["Exchange, help & overstock market","تبادل، إنقاذ وسوق الفائض"],"Pharmacies":["Pharmacies","الصيدليات"],"Bourse surstock":["Overstock market","سوق الفائض"],"SOS rupture":["SOS shortage","SOS نقص"],"Ruptures nationales":["National shortages","النقص الوطني"],"＋ Ajouter une pharmacie":["＋ Add a pharmacy","＋ زيد صيدلية"],"Nouvelle pharmacie partenaire":["New partner pharmacy","صيدلية شريكة جديدة"],"Modifier la pharmacie":["Edit pharmacy","تعديل الصيدلية"],"Nom de la pharmacie *":["Pharmacy name *","سمية الصيدلية *"],"Ville":["City","المدينة"],"Quartier":["District","الحي"],"Titulaire":["Owner","المالك"],"Ajouter":["Add","إضافة"],"Aucune pharmacie partenaire. Constituez votre carnet confraternel.":["No partner pharmacy. Build your peer directory.","ما كاين حتى صيدلية شريكة. صاوب دفتر الزملاء ديالك."],
+ "＋ Proposer un surstock":["＋ Offer overstock","＋ عرض فائض"],"↻ Suggérer depuis le stock":["↻ Suggest from stock","↻ اقتراح من المخزون"],"Proposer un surstock":["Offer overstock","عرض فائض"],"Produit *":["Product *","المنتج *"],"Prix proposé (DH)":["Offered price (MAD)","الثمن المقترح (درهم)"],"Publier l'offre":["Publish offer","نشر العرض"],"📢 Diffuser aux confrères":["📢 Share with peers","📢 نشر للزملاء"],"Aucune offre. Ajoutez un surstock à proposer.":["No offer. Add overstock to propose.","ما كاين حتى عرض. زيد فائض باش تعرضو."],
+ "🆘 Radar SOS dépannage":["🆘 SOS help radar","🆘 رادار الإنقاذ"],"Produit recherché *":["Product needed *","المنتج المطلوب *"],"Quantité nécessaire":["Quantity needed","الكمية المطلوبة"],"📢 Diffuser l'alerte SOS WhatsApp":["📢 Send SOS WhatsApp alert","📢 صيفط تنبيه SOS واتساب"],"＋ Signaler une rupture":["＋ Report a shortage","＋ بلّغ عن نقص"],"Signaler une rupture nationale":["Report a national shortage","التبليغ عن نقص وطني"],"Molécule / Spécialité en rupture *":["Molecule / Product in shortage *","الدواء الناقص *"],"Alternatives thérapeutiques":["Therapeutic alternatives","البدائل العلاجية"],"Aucune rupture enregistrée.":["No shortage recorded.","ما كاين حتى نقص مسجّل."],
+ // Crédit
+ "Carnet de crédit · Kounach":["Credit book · Kounach","دفتر الكريدي · الكوناش"],"Créances clients dématérialisées":["Digital client debts","ديون الزبناء رقمياً"],"＋ Client":["＋ Client","＋ زبون"],"Encours total":["Total outstanding","المجموع المستحق"],"à recouvrer":["to recover","للاسترجاع"],"Déjà recouvré":["Already recovered","تم استرجاعه"],"Retards > 30j":["Overdue > 30d","متأخر > 30 يوم"],"client(s)":["client(s)","زبون/زبناء"],"Nouveau client à crédit":["New credit client","زبون كريدي جديد"],"Fiche crédit client":["Client credit sheet","بطاقة كريدي الزبون"],"Nom du client *":["Client name *","سمية الزبون *"],"Téléphone":["Phone","التيليفون"],"Solde dû (DH) *":["Balance due (MAD) *","الباقي (درهم) *"],"Date d'engagement":["Commitment date","تاريخ الالتزام"],"Enregistrer un versement (acompte)":["Record a payment","سجّل تسبيق"],"Montant versé":["Amount paid","المبلغ المدفوع"],"Encaisser l'acompte":["Collect payment","خلّص التسبيق"],"Ajouter la créance":["Add the debt","زيد الدين"],"Solder (0 DH)":["Settle (0 MAD)","صفّي (0 درهم)"],"Suppr.":["Del.","حذف"],"Aucun client à crédit. Ajoutez une créance.":["No credit client. Add a debt.","ما كاين حتى زبون كريدي. زيد دين."],"Rechercher client…":["Search client…","قلب على زبون…"],
+ // Profil
+ "Profil de l'officine":["Pharmacy profile","ملف الصيدلية"],"Informations légales injectées dans vos documents":["Legal info injected into your documents","معلومات قانونية كتدخل ف وثائقك"],"Dénomination de la pharmacie":["Pharmacy name","سمية الصيدلية"],"Pharmacien responsable":["Responsible pharmacist","الصيدلي المسؤول"],"N° INPE":["INPE no.","رقم INPE"],"Patente":["Business tax","الباتينتا"],"Adresse complète":["Full address","العنوان الكامل"],"Enregistrer le profil":["Save profile","سجّل الملف"],"Données & sauvegarde":["Data & backup","المعطيات والنسخ الاحتياطي"],"Toutes les données sont stockées localement sur l'appareil (hors-ligne). Exportez une sauvegarde régulièrement.":["All data is stored locally on the device (offline). Export a backup regularly.","جميع المعطيات محفوظة محلياً ف الجهاز (بلا أنترنيت). صدّر نسخة احتياطية بانتظام."],"⤒ Sauvegarde (JSON)":["⤒ Backup (JSON)","⤒ نسخة (JSON)"],"⤓ Restaurer":["⤓ Restore","⤓ استرجاع"],"Charger données démo":["Load demo data","حمّل معطيات تجريبية"],"Tout effacer":["Erase all","مسح الكل"],
+ // Stats
+ "Statistiques":["Statistics","الإحصائيات"],"Pilotage & valeur préservée de votre officine":["Steering & preserved value of your pharmacy","قيادة وقيمة محفوظة لصيدليتك"],"Valeur à risque":["Value at risk","قيمة في خطر"],"Taux à risque":["Risk rate","نسبة الخطر"],"du stock":["of stock","من المخزون"],"Répartition du stock par échéance":["Stock by expiry","توزيع المخزون حسب الأجل"],"Valeur immobilisée par grossiste":["Value by supplier","القيمة حسب الموزّع"],"Péremptions à venir (6 prochains mois)":["Upcoming expiries (next 6 months)","صلاحيات قادمة (6 أشهر)"],"Alerte 3-6 mois":["Alert 3-6 months","تنبيه 3-6 أشهر"],"Sain > 6 mois":["Healthy > 6 months","سليم > 6 أشهر"],
+ // Réassort
+ "Réassort intelligent":["Smart restocking","إعادة تموين ذكية"],"Suggestions de commande basées sur votre stock":["Order suggestions based on your stock","اقتراحات طلب حسب مخزونك"],"Commander via WhatsApp":["Order via WhatsApp","اطلب عبر واتساب"],"Produit":["Product","المنتج"],"Stock actuel":["Current stock","المخزون الحالي"],"À commander":["To order","للطلب"],"Aucun réassort nécessaire. Stock suffisant ✓":["No restocking needed. Stock sufficient ✓","ما خاصش تموين. المخزون كافي ✓"],
+ // Historique
+ "Historique":["History","السجل"],"Journal des opérations de l'officine":["Pharmacy operations log","سجل عمليات الصيدلية"],"Vider":["Clear","تفريغ"],"Aucune opération enregistrée pour le moment.":["No operation recorded yet.","ما كاين حتى عملية مسجّلة دابا."],
+ // Pro
+ "Offre Pro & Parrainage":["Pro offer & Referral","عرض Pro والإحالة"],"Débloquez tout le potentiel de PharmaAlert":["Unlock the full power of PharmaAlert","فتح كامل إمكانيات PharmaAlert"],"Version gratuite":["Free version","النسخة المجانية"],"Gratuit":["Free","مجاني"],"Activer Pro":["Activate Pro","تفعيل Pro"],"Code d'activation":["Activation code","كود التفعيل"],"Activer PharmaAlert Pro":["Activate PharmaAlert Pro","فعّل PharmaAlert Pro"],"🎁 Parrainage":["🎁 Referral","🎁 الإحالة"],"Inviter un confrère via WhatsApp":["Invite a peer via WhatsApp","عيّط لزميل عبر واتساب"],"Support prioritaire":["Priority support","دعم ذو أولوية"],
+ // Plus / alertes / langue
+ "Réassort":["Restocking","التموين"],"Offre Pro":["Pro offer","عرض Pro"],"Profil & données":["Profile & data","الملف والمعطيات"],"🔔 Activer les rappels":["🔔 Enable reminders","🔔 تفعيل التذكيرات"],"🌓 Mode clair / sombre":["🌓 Light / dark mode","🌓 وضع فاتح / غامق"],"Centre d'alertes":["Alert center","مركز التنبيهات"],"Aucune alerte. Tout est sous contrôle ✓":["No alert. Everything is under control ✓","ما كاين حتى تنبيه. كلشي مزيان ✓"],"Pilotage & valeur":["Steering & value","قيادة وقيمة"],"Suggestions de commande":["Order suggestions","اقتراحات الطلب"],"Journal des opérations":["Operations log","سجل العمليات"],"Débloquer & parrainage":["Unlock & referral","فتح وإحالة"],"Confrères & SOS":["Peers & SOS","الزملاء وSOS"],"Officine, sauvegarde":["Pharmacy, backup","الصيدلية، نسخة احتياطية"],
+ "Langue":["Language","اللغة"],"Choisissez la langue de l'application":["Choose the app language","اختر لغة التطبيق"]
+};
+let curLang=(function(){try{return localStorage.getItem('pa_lang')||'fr';}catch(e){return 'fr';}})();
+let CURV='dash';
+const _i18orig=new WeakMap();
+function i18nStr(key,lang){if(lang==='fr')return null;const e=I18N[key];if(!e)return null;return lang==='en'?e[0]:e[1];}
+function t(key){const tr=i18nStr(key,curLang);return tr!=null?tr:key;}
+function i18nText(n,lang){let o=_i18orig.get(n);if(o===undefined){o=n.nodeValue;_i18orig.set(n,o);}const key=(o||'').trim();if(!key)return;if(lang==='fr'){if(n.nodeValue!==o)n.nodeValue=o;return;}const tr=i18nStr(key,lang);n.nodeValue=tr!=null?o.replace(key,tr):o;}
+function i18nPh(el,lang){let o=el.getAttribute('data-pho');if(o===null){o=el.getAttribute('placeholder')||'';el.setAttribute('data-pho',o);}const key=o.trim();if(lang==='fr'){el.setAttribute('placeholder',o);return;}const tr=i18nStr(key,lang);el.setAttribute('placeholder',tr!=null?tr:o);}
+function i18nWalk(root,lang){
+  if(root.nodeType===3){i18nText(root,lang);return;}
+  if(root.nodeType!==1)return;const tg=root.nodeName;if(tg==='SCRIPT'||tg==='STYLE')return;
+  const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:function(n){var p=n.parentNode;if(!p)return 2;var x=p.nodeName;if(x==='SCRIPT'||x==='STYLE')return 2;if(!n.nodeValue||!n.nodeValue.trim())return 2;return 1;}});
+  var list=[],c;while(c=tw.nextNode())list.push(c);list.forEach(function(n){i18nText(n,lang);});
+  if(root.querySelectorAll)root.querySelectorAll('[placeholder]').forEach(function(el){i18nPh(el,lang);});
+  if(root.hasAttribute&&root.hasAttribute('placeholder'))i18nPh(root,lang);
+}
+let _i18obs=null;
+function i18nApply(lang){curLang=lang;document.documentElement.setAttribute('lang',lang);document.documentElement.setAttribute('dir',lang==='ar'?'rtl':'ltr');
+  if(_i18obs)_i18obs.disconnect();i18nWalk(document.body,lang);if(_i18obs)_i18obs.observe(document.body,{childList:true,subtree:true,characterData:true});}
+function startI18n(){_i18obs=new MutationObserver(function(muts){if(curLang==='fr')return;_i18obs.disconnect();
+  muts.forEach(function(m){if(m.type==='childList'){m.addedNodes.forEach(function(n){if(n.nodeType===1)i18nWalk(n,curLang);else if(n.nodeType===3)i18nText(n,curLang);});}else if(m.type==='characterData'){i18nText(m.target,curLang);}});
+  _i18obs.observe(document.body,{childList:true,subtree:true,characterData:true});});
+  _i18obs.observe(document.body,{childList:true,subtree:true,characterData:true});}
+function locale(){return curLang==='ar'?'ar-MA':(curLang==='en'?'en-GB':'fr-FR');}
+function rerenderCurrent(){const r={dash:renderDash,scan:renderScan,stock:renderStock,retours:renderRetours,conseil:renderConseil,reseau:renderReseau,credit:renderCredit,profil:renderProfile,stats:renderStats,reassort:renderReassort,historique:renderHistorique,pro:renderPro}[CURV];if(r)r();}
+const LANGS=[['fr','🇫🇷','Français'],['en','🇬🇧','English'],['ar','🇲🇦','العربية (الدارجة)']];
+function openLang(){modal(t('Langue'),`<p class="note" style="margin-top:0">${t("Choisissez la langue de l'application")}</p><div class="lang-grid">${LANGS.map(l=>`<button class="lang-opt ${curLang===l[0]?'active':''}" onclick="setLang('${l[0]}')"><span class="flag">${l[1]}</span>${l[2]}${curLang===l[0]?'<span class="chk">✓</span>':''}</button>`).join('')}</div>`);}
+function setLang(l){curLang=l;try{localStorage.setItem('pa_lang',l);}catch(e){}if(DB&&DB.settings){DB.settings.lang=l;save();}closeModal();rerenderCurrent();i18nApply(l);}
+
 /* ---------- Navigation ---------- */
 function go(v){
   if(v!=='scan'){if(typeof scanStream!=='undefined'&&scanStream)stopScanCamera();if(typeof _bcRun!=='undefined'&&_bcRun)stopBarcode();}
+  CURV=v;
   document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
   document.getElementById('view-'+v).classList.add('active');
   document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.v===v));
@@ -769,9 +877,11 @@ function closeModal(){document.getElementById('modalMount').innerHTML='';}
    DASHBOARD
    ======================================================== */
 function renderDash(){
-  const h=new Date().getHours();const salut=h<12?'Bonjour':(h<18?'Bon après-midi':'Bonsoir');
+  const GRE={fr:['Bonjour','Bon après-midi','Bonsoir'],en:['Good morning','Good afternoon','Good evening'],ar:['صباح الخير','مساء الخير','مسا الخير']};
+  const AUJ={fr:"Aujourd'hui",en:'Today',ar:'اليوم'};
+  const h=new Date().getHours(),gi=h<12?0:(h<18?1:2);const salut=(GRE[curLang]||GRE.fr)[gi];
   const hi=document.getElementById('heroHi');if(hi)hi.innerHTML=esc(salut)+', <span style="color:#fff">'+esc(DB.profile.nom||'votre officine')+'</span>';
-  document.getElementById('dashDate').textContent='Aujourd\'hui · '+new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('dashDate').textContent=(AUJ[curLang]||AUJ.fr)+' · '+new Date().toLocaleDateString(locale(),{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   const s=DB.stock;
   const crit=s.filter(x=>monthsTo(x.expiration)<=3);
   const warn=s.filter(x=>{const m=monthsTo(x.expiration);return m>3&&m<=6;});
@@ -1018,64 +1128,60 @@ function waBordereau(g){
    ======================================================== */
 const CONSEIL=[
   {fam:'Douleurs musculaires & articulaires',icon:'💪',prods:[
-    {nom:'Voltarène Emulgel',fr:'Anti-inflammatoire local pour douleurs articulaires et tendinites. Appliquer 3-4x/jour.',dj:'Had la pommade kat9ad l\'wja3 dyal l\'3adam w l\'mfassel, dirha 3la l\'blassa li kat9lek 3la 7sab 3 ou 4 marrat f nhar.'},
-    {nom:'Biofreeze',fr:'Gel effet froid, soulage rapidement les douleurs musculaires sans odeur.',dj:'Gel bared, kayfaraj daghya 3la l\'3adalat, bla ri7a 9wiya.'},
-    {nom:'Flexium',fr:'Topique anti-douleur articulaire, idéal pour l\'effort et l\'arthrose.',dj:'Mezyan l\'wja3 dyal l\'mfassel w li kaydiro majhoud.'},
-    {nom:'Chondrostéo',fr:'Complément pour le cartilage et le confort articulaire durable.',dj:'Moukammil kayfid l\'ghodrof dyal l\'mfassel bach ykono m\'rta7in.'}
+    {nom:'Voltarène Emulgel',txt:{fr:'Anti-inflammatoire local pour douleurs articulaires et tendinites. Appliquer 3-4x/jour.',en:'Local anti-inflammatory for joint pain and tendinitis. Apply 3-4x/day.',ar:'مضاد للالتهاب موضعي لوجع المفاصل والأوتار. دهنو 3-4 مرات ف النهار.'}},
+    {nom:'Biofreeze',txt:{fr:'Gel effet froid, soulage rapidement les douleurs musculaires sans odeur.',en:'Cold-effect gel, fast relief of muscle pain, odorless.',ar:'جيل بارد، كيفرّج دغيا على وجع العضلات، بلا ريحة.'}},
+    {nom:'Flexium',txt:{fr:'Topique anti-douleur articulaire, idéal pour l\'effort et l\'arthrose.',en:'Topical joint pain relief, ideal for effort and arthrosis.',ar:'مسكّن موضعي للمفاصل، مزيان للمجهود والخشونة.'}},
+    {nom:'Chondrostéo',txt:{fr:'Complément pour le cartilage et le confort articulaire durable.',en:'Supplement for cartilage and lasting joint comfort.',ar:'مكمّل للغضروف وراحة المفاصل على المدى الطويل.'}}
   ]},
   {fam:'Magnésium & Fatigue',icon:'🔋',prods:[
-    {nom:'Oxymag',fr:'Magnésium marin contre fatigue, stress et crampes. Cure de 1 mois.',dj:'Magnesium dyal l\'b7ar l\'t3ab, l\'stress w l\'crampe, cure dyal cher.'},
-    {nom:'Mag 2',fr:'Magnésium bien toléré, recommandé en cas de nervosité et fatigue passagère.',dj:'Magnesium khfif 3la l\'m3da, mezyan mnin katkoun 3asbi wla t3ban.'}
+    {nom:'Oxymag',txt:{fr:'Magnésium marin contre fatigue, stress et crampes. Cure de 1 mois.',en:'Marine magnesium against fatigue, stress and cramps. 1-month course.',ar:'مغنيزيوم ضد التعب والستريس والتقلّصات. كور ديال شهر.'}},
+    {nom:'Mag 2',txt:{fr:'Magnésium bien toléré, recommandé en cas de nervosité et fatigue passagère.',en:'Well-tolerated magnesium for nervousness and temporary fatigue.',ar:'مغنيزيوم خفيف للعصبية والتعب العابر.'}}
   ]},
   {fam:'Rhume & Toux',icon:'🤧',prods:[
-    {nom:'Humex',fr:'Soulage le rhume, nez bouché et écoulement. Respecter la posologie.',dj:'Kayfaraj 3la rwa7, nif m9fol w l\'ma li kaysil mn nif.'},
-    {nom:'Doliprane',fr:'Paracétamol : fièvre et douleurs du rhume. Max 3g/jour adulte.',dj:'Paracétamol l\'s5ana w l\'wja3, ma tfout-ch 3g f nhar l\'kbar.'}
+    {nom:'Humex',txt:{fr:'Soulage le rhume, nez bouché et écoulement. Respecter la posologie.',en:'Relieves cold, blocked and runny nose. Follow the dosage.',ar:'كيفرّج على الرواح والنيف المسدود. اتبع الجرعة.'}},
+    {nom:'Doliprane',txt:{fr:'Paracétamol : fièvre et douleurs du rhume. Max 3g/jour adulte.',en:'Paracetamol: fever and cold pain. Max 3 g/day for adults.',ar:'باراسيتامول: السخانة ووجع الرواح. ماكس 3غ ف النهار للكبار.'}}
   ]},
   {fam:'Confort digestif',icon:'🌿',prods:[
-    {nom:'Smecta',fr:'Diarrhée et inconfort digestif. Bien s\'hydrater en parallèle.',dj:'L\'is-hal w l\'m3da, chrab l\'ma bezzaf m3ah.'},
-    {nom:'Gaviscon',fr:'Brûlures et remontées acides après repas. Prendre après manger.',dj:'L\'7er9a w l\'7mouda mora l\'makla, khodo mora ma takol.'}
+    {nom:'Smecta',txt:{fr:'Diarrhée et inconfort digestif. Bien s\'hydrater en parallèle.',en:'Diarrhea and digestive discomfort. Stay well hydrated.',ar:'الإسهال وتقلّص المعدة. شرب الما بزاف.'}},
+    {nom:'Gaviscon',txt:{fr:'Brûlures et remontées acides après repas. Prendre après manger.',en:'Heartburn and reflux after meals. Take after eating.',ar:'الحرقة والارتجاع من بعد الماكلة. خودو من بعد ما تاكل.'}}
   ]},
   {fam:'Vitamines & Immunité',icon:'🍊',prods:[
-    {nom:'Supradyn',fr:'Multivitamines pour l\'énergie et la vitalité au quotidien.',dj:'Vitaminat bach tkoun 3andek taqa koll nhar.'},
-    {nom:'Vitamine C',fr:'Renfort immunitaire, idéal en période de fatigue ou de rhume.',dj:'Katqawi l\'mna3a, mezyana mnin katkoun t3ban wla 3andek rwa7.'}
+    {nom:'Supradyn',txt:{fr:'Multivitamines pour l\'énergie et la vitalité au quotidien.',en:'Multivitamins for daily energy and vitality.',ar:'فيتامينات للطاقة والنشاط اليومي.'}},
+    {nom:'Vitamine C',txt:{fr:'Renfort immunitaire, idéal en période de fatigue ou de rhume.',en:'Immune boost, ideal during fatigue or cold.',ar:'تقوية المناعة، مزيانة ف التعب والرواح.'}}
   ]}
 ];
 let conseilFam=0;
 function renderConseil(){
-  document.getElementById('conseilFamilies').innerHTML=CONSEIL.map((c,i)=>`<span class="chip ${i===conseilFam?'active':''}" onclick="conseilFam=${i};renderConseil()">${c.icon} ${esc(c.fam)}</span>`).join('');
+  document.getElementById('conseilFamilies').innerHTML=CONSEIL.map((c,i)=>`<span class="chip ${i===conseilFam?'active':''}" onclick="conseilFam=${i};renderConseil()">${c.icon} ${esc(t(c.fam))}</span>`).join('');
   const c=CONSEIL[conseilFam];
-  // Déstockage: chercher dans le stock un produit de cette famille (surstock ou proche péremption)
   const names=c.prods.map(p=>p.nom.toLowerCase());
   const matches=DB.stock.filter(x=>{const n=(x.nom||'').toLowerCase();return names.some(nm=>n.includes(nm.split(' ')[0].toLowerCase()))&&(+x.quantite||0)>0;});
   let destock='';
   if(matches.length){
-    // priorité: péremption la plus proche, sinon surstock (qté max)
     matches.sort((a,b)=>{const ma=monthsTo(a.expiration),mb=monthsTo(b.expiration);if(ma!==mb)return ma-mb;return (b.quantite||0)-(a.quantite||0);});
-    const t=matches[0];const prod=c.prods.find(p=>(t.nom||'').toLowerCase().includes(p.nom.split(' ')[0].toLowerCase()))||c.prods[0];
-    const m=monthsTo(t.expiration);
+    const top=matches[0];const prod=c.prods.find(p=>(top.nom||'').toLowerCase().includes(p.nom.split(' ')[0].toLowerCase()))||c.prods[0];
+    const m=monthsTo(top.expiration);
     destock=`<div class="gold-box" style="margin-bottom:16px">
-      <span class="tag">⭐ À déstocker en priorité</span>
-      <h4>${esc(t.nom)}</h4>
+      <span class="tag">${t('⭐ À écouler en priorité')}</span>
+      <h4>${esc(top.nom)}</h4>
       <div style="display:flex;gap:18px;flex-wrap:wrap;font-size:.9rem">
-        <span><b style="font-size:1.3rem">${t.quantite}</b> unités en stock</span>
-        <span>Valeur à préserver : <b class="money">${money((+t.quantite||0)*(+t.pu||0))}</b></span>
-        <span>${m<=6?`<span class="badge ${m<=3?'b-crit':'b-warn'}">Exp. ${fmtDate(t.expiration)}</span>`:'En surstock'}</span>
+        <span><b style="font-size:1.3rem">${top.quantite}</b> ${t('unités en stock')}</span>
+        <span>${t('Valeur à préserver :')} <b class="money">${money((+top.quantite||0)*(+top.pu||0))}</b></span>
+        <span>${m<=6?`<span class="badge ${m<=3?'b-crit':'b-warn'}">${t('Exp.')} ${fmtDate(top.expiration)}</span>`:'<span class="badge b-mut">'+t('En surstock')+'</span>'}</span>
       </div>
-      <div class="argu"><div class="lab">Argumentaire — Français</div>${esc(prod.fr)}</div>
-      <div class="argu"><div class="lab">Argumentaire — Darija</div>${esc(prod.dj)}</div>
+      <div class="argu"><div class="lab">${esc(top.nom)}</div>${esc(L(prod.txt))}</div>
     </div>`;
   }else{
-    destock=`<div class="card pad" style="margin-bottom:16px"><p class="note" style="margin:0">Aucun produit de cette famille en stock actuellement. Ajoutez vos références pour activer le déstockage prioritaire.</p></div>`;
+    destock=`<div class="card pad" style="margin-bottom:16px"><p class="note" style="margin:0">${t('Aucun produit de cette famille en stock actuellement. Ajoutez vos références pour activer le déstockage prioritaire.')}</p></div>`;
   }
   document.getElementById('conseilContent').innerHTML=destock+`
-    <div class="section-title">Références conseil & argumentaires</div>
+    <div class="section-title">${t('Références conseil & argumentaires')}</div>
     <div class="grid g2">${c.prods.map(p=>{
       const inStock=DB.stock.find(x=>(x.nom||'').toLowerCase().includes(p.nom.split(' ')[0].toLowerCase())&&(+x.quantite||0)>0);
       return `<div class="card pad">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <b>${esc(p.nom)}</b>${inStock?`<span class="badge b-ok">${inStock.quantite} en stock</span>`:'<span class="badge b-mut">Hors stock</span>'}</div>
-        <div class="argu" style="border-style:solid;border-color:var(--line)"><div class="lab" style="color:var(--brand-d)">Français</div>${esc(p.fr)}</div>
-        <div class="argu" style="border-style:solid;border-color:var(--line)"><div class="lab" style="color:var(--brand-d)">Darija</div>${esc(p.dj)}</div>
+          <b>${esc(p.nom)}</b>${inStock?`<span class="badge b-ok">${inStock.quantite} ${t('en stock')}</span>`:'<span class="badge b-mut">'+t('Hors stock')+'</span>'}</div>
+        <div class="argu" style="border-style:solid;border-color:var(--line)">${esc(L(p.txt))}</div>
       </div>`;}).join('')}</div>`;
 }
 
@@ -1241,67 +1347,68 @@ function relanceCredit(id){const c=DB.credits.find(x=>x.id===id);const p=DB.prof
 /* ========================================================
    SCANNER DE BOÎTE (caméra + OCR + fiche produit)
    ======================================================== */
+function L(o){return o&&typeof o==='object'?(o[curLang]||o.fr||''):(o||'');}
 const MEDBASE=[
-  {nom:'Doliprane',aliases:['doliprane','paracetamol'],famille:'Antalgique / Antipyrétique',
-   usage:'Fièvre et douleurs légères à modérées (maux de tête, dents, règles, courbatures).',
-   poso:'Adulte : 1 g jusqu\'à 3 fois/jour, maximum 3 g. Espacer d\'au moins 6 heures.',
-   prec:'Ne pas dépasser la dose. Prudence en cas de maladie du foie ou d\'alcoolisme.',
-   dj:'L\'7omma w l\'wja3 l\'khfif. L\'kbir : 1g 3 marrat f nhar, ma tfaw-tch 3 grammat.'},
-  {nom:'Voltarène Emulgel',aliases:['voltarene','voltaren','diclofenac','emulgel'],famille:'Anti-inflammatoire local',
-   usage:'Douleurs articulaires et musculaires, tendinites, entorses, arthrose.',
-   poso:'Appliquer en massage léger 3 à 4 fois par jour sur la zone douloureuse.',
-   prec:'Usage externe uniquement. Éviter plaies, yeux et muqueuses. Se laver les mains après.',
-   dj:'L\'wja3 dyal l\'3adam w l\'mfassel. Dhen chwiya 3 wla 4 marrat f nhar.'},
-  {nom:'Augmentin',aliases:['augmentin','amoxicilline','clavulanique','clamoxyl'],famille:'Antibiotique',
-   usage:'Infections bactériennes (ORL, respiratoires, urinaires) — sur prescription.',
-   poso:'Strictement selon la prescription du médecin. Terminer toute la cure.',
-   prec:'Sur ordonnance. Signaler toute allergie à la pénicilline.',
-   dj:'Antibiotique, ghir b wasfa dyal t-tbib. Kmel l\'cure kamla, w 9ol ila 3andek hassassiya.'},
-  {nom:'Smecta',aliases:['smecta','diosmectite'],famille:'Antidiarrhéique',
-   usage:'Diarrhée aiguë et inconfort digestif chez l\'adulte et l\'enfant.',
-   poso:'Adulte : 1 sachet 3 fois/jour, dilué dans un verre d\'eau.',
-   prec:'Bien s\'hydrater. Prendre à distance des autres médicaments (2 h).',
-   dj:'L\'is-hal. 1 sachet 3 marrat f nhar f kas dyal l\'ma. Chrab l\'ma bezzaf.'},
-  {nom:'Gaviscon',aliases:['gaviscon','alginate'],famille:'Anti-reflux / Anti-acide',
-   usage:'Brûlures d\'estomac et remontées acides après les repas.',
-   poso:'1 sachet ou 2 cuillères après les repas et au coucher.',
-   prec:'À prendre après manger. Espacer des autres traitements.',
-   dj:'L\'7er9a w l\'7mouda mora l\'makla. Khodo mora matakol w 9bel n-n3as.'},
-  {nom:'Oxymag',aliases:['oxymag','magnesium marin'],famille:'Magnésium / Anti-fatigue',
-   usage:'Fatigue, stress, nervosité et crampes musculaires.',
-   poso:'Cure de 1 mois, selon la notice (généralement 2 à 3 par jour).',
-   prec:'Déconseillé en cas d\'insuffisance rénale sévère.',
-   dj:'L\'t3ab, l\'stress w l\'crampe. Cure dyal cher, 2 wla 3 f nhar.'},
-  {nom:'Humex',aliases:['humex','rhume'],famille:'Rhume / Décongestionnant',
-   usage:'Nez bouché, écoulement nasal et symptômes du rhume.',
-   poso:'Selon la notice. Ne pas associer à d\'autres produits contre le rhume.',
-   prec:'Prudence en cas d\'hypertension. Respecter la durée courte.',
-   dj:'Rwa7, nif m9fol w l\'ma li kaysil. Ta t-khlt-ch m3a chi dwa akhor dyal rwa7.'},
-  {nom:'Supradyn',aliases:['supradyn','multivitamines'],famille:'Vitamines & Minéraux',
-   usage:'Coup de fatigue, baisse de tonus, besoin de vitalité.',
-   poso:'1 comprimé par jour, de préférence le matin.',
-   prec:'Ne pas dépasser la dose journalière recommandée.',
-   dj:'Mnin tkoun t3ban w baghi taqa. 1 f nhar f sba7.'},
-  {nom:'Mag 2',aliases:['mag 2','mag2','magnesium'],famille:'Magnésium',
-   usage:'Carence en magnésium, nervosité, fatigue passagère.',
-   poso:'Selon la notice (ampoule ou comprimé).',
-   prec:'Prudence en cas d\'insuffisance rénale.',
-   dj:'N9es dyal magnesium, l\'3asabiya w l\'t3ab. 7sab l\'notice.'},
-  {nom:'Flexium',aliases:['flexium'],famille:'Anti-douleur articulaire (topique)',
-   usage:'Douleurs articulaires, idéal après l\'effort et en cas d\'arthrose.',
-   poso:'Appliquer sur la zone douloureuse plusieurs fois par jour.',
-   prec:'Usage externe. Éviter les plaies.',
-   dj:'L\'wja3 dyal l\'mfassel w li kaydiro majhoud. Dhen 3la l\'blassa.'},
-  {nom:'Biofreeze',aliases:['biofreeze'],famille:'Gel antalgique effet froid',
-   usage:'Soulagement rapide des douleurs musculaires, sans odeur.',
-   poso:'Appliquer sur la zone, jusqu\'à 4 fois par jour.',
-   prec:'Usage externe. Éviter yeux et muqueuses.',
-   dj:'Kayfaraj daghya 3la l\'3adalat, bla ri7a. Dhen 7ta 4 marrat f nhar.'},
-  {nom:'Chondrostéo',aliases:['chondrosteo','chondro'],famille:'Confort articulaire (complément)',
-   usage:'Entretien du cartilage et confort articulaire durable.',
-   poso:'En cure, selon la notice.',
-   prec:'Complément alimentaire, ne remplace pas un traitement.',
-   dj:'Kayfid l\'ghodrof dyal l\'mfassel. Khodo b cure 7sab l\'notice.'}
+  {nom:'Doliprane',aliases:['doliprane','paracetamol'],
+   fam:{fr:'Antalgique / Antipyrétique',en:'Painkiller / Antipyretic',ar:'مسكّن / خافض للحرارة'},
+   usage:{fr:'Fièvre et douleurs légères à modérées (maux de tête, dents, règles, courbatures).',en:'Fever and mild to moderate pain (headache, teeth, periods, body aches).',ar:'السخانة والوجع الخفيف (الراس، السنان، العادة، كسلان الجسم).'},
+   poso:{fr:'Adulte : 1 g jusqu\'à 3 fois/jour, maximum 3 g. Espacer d\'au moins 6 heures.',en:'Adult: 1 g up to 3 times/day, max 3 g. At least 6 h apart.',ar:'الكبير: 1غ حتى 3 مرات ف النهار، ماتفوتش 3 غرامات، كل 6 سوايع.'},
+   prec:{fr:'Ne pas dépasser la dose. Prudence en cas de maladie du foie ou d\'alcoolisme.',en:'Do not exceed the dose. Caution with liver disease or alcohol.',ar:'ما تفوتش الجرعة. ردّ البال إلى عندك مرض الكبد.'}},
+  {nom:'Voltarène Emulgel',aliases:['voltarene','voltaren','diclofenac','emulgel'],
+   fam:{fr:'Anti-inflammatoire local',en:'Topical anti-inflammatory',ar:'مضاد للالتهاب موضعي'},
+   usage:{fr:'Douleurs articulaires et musculaires, tendinites, entorses, arthrose.',en:'Joint and muscle pain, tendinitis, sprains, arthrosis.',ar:'وجع المفاصل والعضلات، التهاب الأوتار، الالتواء.'},
+   poso:{fr:'Appliquer en massage léger 3 à 4 fois par jour sur la zone douloureuse.',en:'Apply with light massage 3-4 times/day on the painful area.',ar:'دهنها بشوية 3 ولا 4 مرات ف النهار على البلاصة لي كتوجّع.'},
+   prec:{fr:'Usage externe uniquement. Éviter plaies, yeux et muqueuses. Se laver les mains après.',en:'External use only. Avoid wounds, eyes and mucous membranes.',ar:'للاستعمال الخارجي فقط. بعّد على الجروح والعينين.'}},
+  {nom:'Augmentin',aliases:['augmentin','amoxicilline','clavulanique','clamoxyl'],
+   fam:{fr:'Antibiotique',en:'Antibiotic',ar:'مضاد حيوي'},
+   usage:{fr:'Infections bactériennes (ORL, respiratoires, urinaires) — sur prescription.',en:'Bacterial infections (ENT, respiratory, urinary) — by prescription.',ar:'عدوى بكتيرية (الأنف والحلق، التنفّس، البول) — بوصفة.'},
+   poso:{fr:'Strictement selon la prescription du médecin. Terminer toute la cure.',en:'Strictly as prescribed by the doctor. Finish the full course.',ar:'حسب وصفة الطبيب فقط. كمّل الكور كامل.'},
+   prec:{fr:'Sur ordonnance. Signaler toute allergie à la pénicilline.',en:'Prescription only. Report any penicillin allergy.',ar:'بوصفة فقط. قول إلى عندك حساسية من البنسيلين.'}},
+  {nom:'Smecta',aliases:['smecta','diosmectite'],
+   fam:{fr:'Antidiarrhéique',en:'Antidiarrheal',ar:'مضاد للإسهال'},
+   usage:{fr:'Diarrhée aiguë et inconfort digestif chez l\'adulte et l\'enfant.',en:'Acute diarrhea and digestive discomfort in adults and children.',ar:'الإسهال وتقلّص المعدة عند الكبار والصغار.'},
+   poso:{fr:'Adulte : 1 sachet 3 fois/jour, dilué dans un verre d\'eau.',en:'Adult: 1 sachet 3 times/day, in a glass of water.',ar:'الكبير: كيس 3 مرات ف النهار ف كاس دالما.'},
+   prec:{fr:'Bien s\'hydrater. Prendre à distance des autres médicaments (2 h).',en:'Stay hydrated. Take apart from other medicines (2 h).',ar:'شرب الما بزاف. بعّدو على الأدوية الأخرى بساعتين.'}},
+  {nom:'Gaviscon',aliases:['gaviscon','alginate'],
+   fam:{fr:'Anti-reflux / Anti-acide',en:'Anti-reflux / Antacid',ar:'مضاد للحموضة والارتجاع'},
+   usage:{fr:'Brûlures d\'estomac et remontées acides après les repas.',en:'Heartburn and acid reflux after meals.',ar:'الحرقة والحموضة من بعد الماكلة.'},
+   poso:{fr:'1 sachet ou 2 cuillères après les repas et au coucher.',en:'1 sachet or 2 spoons after meals and at bedtime.',ar:'كيس ولا ملعقتين من بعد الماكلة وقبل النعاس.'},
+   prec:{fr:'À prendre après manger. Espacer des autres traitements.',en:'Take after eating. Space from other treatments.',ar:'خودو من بعد ما تاكل. بعّدو على الأدوية الأخرى.'}},
+  {nom:'Oxymag',aliases:['oxymag','magnesium marin'],
+   fam:{fr:'Magnésium / Anti-fatigue',en:'Magnesium / Anti-fatigue',ar:'مغنيزيوم / مضاد للتعب'},
+   usage:{fr:'Fatigue, stress, nervosité et crampes musculaires.',en:'Fatigue, stress, nervousness and muscle cramps.',ar:'التعب، الستريس، العصبية وتقلّص العضلات.'},
+   poso:{fr:'Cure de 1 mois, selon la notice (généralement 2 à 3 par jour).',en:'1-month course per leaflet (usually 2-3/day).',ar:'كور ديال شهر حسب الورقة (عادةً 2 ولا 3 ف النهار).'},
+   prec:{fr:'Déconseillé en cas d\'insuffisance rénale sévère.',en:'Not advised in severe kidney failure.',ar:'ما يُنصحش به إلى كان عندك مشكل ف الكلي.'}},
+  {nom:'Humex',aliases:['humex','rhume'],
+   fam:{fr:'Rhume / Décongestionnant',en:'Cold / Decongestant',ar:'الرواح / مزيل الاحتقان'},
+   usage:{fr:'Nez bouché, écoulement nasal et symptômes du rhume.',en:'Blocked nose, runny nose and cold symptoms.',ar:'النيف المسدود، الما لي كيسيل وأعراض الرواح.'},
+   poso:{fr:'Selon la notice. Ne pas associer à d\'autres produits contre le rhume.',en:'Per leaflet. Do not combine with other cold products.',ar:'حسب الورقة. ما تخلطوش مع دوا آخر ديال الرواح.'},
+   prec:{fr:'Prudence en cas d\'hypertension. Respecter la durée courte.',en:'Caution with high blood pressure. Keep the duration short.',ar:'ردّ البال إلى عندك الضغط. مدة قصيرة.'}},
+  {nom:'Supradyn',aliases:['supradyn','multivitamines'],
+   fam:{fr:'Vitamines & Minéraux',en:'Vitamins & Minerals',ar:'فيتامينات ومعادن'},
+   usage:{fr:'Coup de fatigue, baisse de tonus, besoin de vitalité.',en:'Tiredness, low energy, need for vitality.',ar:'التعب وقلّة الطاقة والحاجة للنشاط.'},
+   poso:{fr:'1 comprimé par jour, de préférence le matin.',en:'1 tablet per day, preferably in the morning.',ar:'حبة ف النهار، ويُفضّل ف الصباح.'},
+   prec:{fr:'Ne pas dépasser la dose journalière recommandée.',en:'Do not exceed the recommended daily dose.',ar:'ما تفوتش الجرعة اليومية المنصوح بها.'}},
+  {nom:'Mag 2',aliases:['mag 2','mag2','magnesium'],
+   fam:{fr:'Magnésium',en:'Magnesium',ar:'مغنيزيوم'},
+   usage:{fr:'Carence en magnésium, nervosité, fatigue passagère.',en:'Magnesium deficiency, nervousness, temporary fatigue.',ar:'نقص المغنيزيوم، العصبية والتعب العابر.'},
+   poso:{fr:'Selon la notice (ampoule ou comprimé).',en:'Per leaflet (ampoule or tablet).',ar:'حسب الورقة (أمبولة ولا حبة).'},
+   prec:{fr:'Prudence en cas d\'insuffisance rénale.',en:'Caution in kidney failure.',ar:'ردّ البال إلى عندك مشكل ف الكلي.'}},
+  {nom:'Flexium',aliases:['flexium'],
+   fam:{fr:'Anti-douleur articulaire (topique)',en:'Joint pain relief (topical)',ar:'مسكّن وجع المفاصل (موضعي)'},
+   usage:{fr:'Douleurs articulaires, idéal après l\'effort et en cas d\'arthrose.',en:'Joint pain, ideal after effort and for arthrosis.',ar:'وجع المفاصل، مزيان من بعد المجهود.'},
+   poso:{fr:'Appliquer sur la zone douloureuse plusieurs fois par jour.',en:'Apply to the painful area several times a day.',ar:'دهنو على البلاصة لي كتوجّع بزاف دالمرات ف النهار.'},
+   prec:{fr:'Usage externe. Éviter les plaies.',en:'External use. Avoid wounds.',ar:'للاستعمال الخارجي. بعّد على الجروح.'}},
+  {nom:'Biofreeze',aliases:['biofreeze'],
+   fam:{fr:'Gel antalgique effet froid',en:'Cold-effect pain gel',ar:'جيل مسكّن بتأثير بارد'},
+   usage:{fr:'Soulagement rapide des douleurs musculaires, sans odeur.',en:'Fast relief of muscle pain, odorless.',ar:'كيفرّج دغيا على وجع العضلات، بلا ريحة.'},
+   poso:{fr:'Appliquer sur la zone, jusqu\'à 4 fois par jour.',en:'Apply to the area, up to 4 times/day.',ar:'دهنو على البلاصة حتى 4 مرات ف النهار.'},
+   prec:{fr:'Usage externe. Éviter yeux et muqueuses.',en:'External use. Avoid eyes and mucous membranes.',ar:'للاستعمال الخارجي. بعّد على العينين.'}},
+  {nom:'Chondrostéo',aliases:['chondrosteo','chondro'],
+   fam:{fr:'Confort articulaire (complément)',en:'Joint comfort (supplement)',ar:'راحة المفاصل (مكمّل)'},
+   usage:{fr:'Entretien du cartilage et confort articulaire durable.',en:'Cartilage maintenance and lasting joint comfort.',ar:'العناية بالغضروف وراحة المفاصل على المدى الطويل.'},
+   poso:{fr:'En cure, selon la notice.',en:'As a course, per leaflet.',ar:'بكور، حسب الورقة.'},
+   prec:{fr:'Complément alimentaire, ne remplace pas un traitement.',en:'Food supplement, not a replacement for treatment.',ar:'مكمّل غذائي، ماشي بديل للعلاج.'}}
 ];
 let scanStream=null;
 function renderScan(){document.getElementById('scanResult').innerHTML='';const st=document.getElementById('scanStatus');if(st)st.textContent='';const mi=document.getElementById('scanManualInput');if(mi)mi.value='';}
@@ -1349,14 +1456,13 @@ function showMedInfo(m){
   document.getElementById('scanResult').innerHTML=`
    <div class="card pad med-card">
      <div class="med-head">
-       <div><span class="badge b-blue">${esc(m.famille)}</span><h3>${esc(m.nom)}</h3></div>
-       ${inStock?`<div class="med-stock ${near?'warn':'ok'}"><b>${inStock.quantite}</b>en stock${near?'<div class="cell-mini" style="margin-top:2px">exp. '+fmtDate(inStock.expiration)+'</div>':''}</div>`:'<span class="badge b-mut">Hors stock</span>'}
+       <div><span class="badge b-blue">${esc(L(m.fam))}</span><h3>${esc(m.nom)}</h3></div>
+       ${inStock?`<div class="med-stock ${near?'warn':'ok'}"><b>${inStock.quantite}</b>${t('en stock')}${near?'<div class="cell-mini" style="margin-top:2px">exp. '+fmtDate(inStock.expiration)+'</div>':''}</div>`:'<span class="badge b-mut">'+t('Hors stock')+'</span>'}
      </div>
-     <div class="med-sec"><div class="med-lab">💊 Usage</div>${esc(m.usage)}</div>
-     <div class="med-sec"><div class="med-lab">📏 Posologie</div>${esc(m.poso)}</div>
-     <div class="med-sec"><div class="med-lab">⚠️ Précautions</div>${esc(m.prec)}</div>
-     <div class="med-sec dj"><div class="med-lab">🗣️ Explication en darija</div>${esc(m.dj)}</div>
-     ${near?`<div class="gold-box" style="margin-top:14px"><span class="tag">⭐ À écouler en priorité</span><h4 style="margin:6px 0 0">Lot proche de péremption — ${money((+inStock.quantite||0)*(+inStock.pu||0))} à préserver</h4></div>`:''}
+     <div class="med-sec"><div class="med-lab">${t('💊 Usage')}</div>${esc(L(m.usage))}</div>
+     <div class="med-sec"><div class="med-lab">${t('📏 Posologie')}</div>${esc(L(m.poso))}</div>
+     <div class="med-sec"><div class="med-lab">${t('⚠️ Précautions')}</div>${esc(L(m.prec))}</div>
+     ${near?`<div class="gold-box" style="margin-top:14px"><span class="tag">${t('⭐ À écouler en priorité')}</span><h4 style="margin:6px 0 0">${t('Valeur à préserver :')} ${money((+inStock.quantite||0)*(+inStock.pu||0))}</h4></div>`:''}
    </div>`;
 }
 let _tess=null;
@@ -1480,7 +1586,8 @@ function openPlus(){modal('Plus',`<div class="plus-grid">
    ${plusItem('profil','🏷️','Profil & données','Officine, sauvegarde')}
  </div>
  <div class="divider"></div>
- <div class="btn-row"><button class="btn block" onclick="requestReminders()">🔔 Activer les rappels</button>
+ <div class="btn-row"><button class="btn block" onclick="closeModal();openLang()">🌐 Langue · Language · اللغة</button>
+ <button class="btn block" onclick="requestReminders()">🔔 Activer les rappels</button>
  <button class="btn block" onclick="closeModal();toggleTheme()">🌓 Mode clair / sombre</button></div>`);}
 
 /* --- Centre d'alertes & rappels --- */
@@ -1570,8 +1677,10 @@ function loadDemo(){
    ======================================================== */
 function boot(){
   document.getElementById('phNameTop').textContent=DB.profile.nom||'Ma Pharmacie';
+  curLang=(DB.settings&&DB.settings.lang)||curLang||'fr';
   updateThemeIcon();updateBell();checkReminders(false);
   renderDash();renderProfile();
+  i18nApply(curLang); if(!_i18obs)startI18n();
 }
 load();boot();
 
