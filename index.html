@@ -174,7 +174,7 @@ body::before{content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;
   background:
    radial-gradient(1100px 620px at 108% -10%, rgba(13,122,99,.14), transparent 60%),
    radial-gradient(900px 560px at -12% 112%, rgba(201,162,74,.12), transparent 60%),
-   linear-gradient(180deg, rgba(243,247,245,.82) 0%, rgba(235,242,239,.90) 48%, rgba(244,241,233,.86) 100%);}
+   linear-gradient(180deg, rgba(243,247,245,.70) 0%, rgba(235,242,239,.82) 48%, rgba(244,241,233,.76) 100%);}
 /* Motif médical subtil */
 body::after{content:'';position:fixed;inset:0;z-index:-1;opacity:.5;pointer-events:none;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%230d7a63' stroke-opacity='0.06' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M36 27v18M27 36h18'/%3E%3C/g%3E%3Cg fill='%23a9802a' fill-opacity='0.04'%3E%3Ccircle cx='8' cy='8' r='2.3'/%3E%3Ccircle cx='64' cy='64' r='2.3'/%3E%3C/g%3E%3C/svg%3E");
@@ -410,61 +410,81 @@ th{background:var(--cream);color:var(--brand-d)}
 <div class="bg-scene" aria-hidden="true">
 <svg viewBox="0 0 1440 1024" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
   <defs>
-    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#eaf3ef"/><stop offset="1" stop-color="#d7e7e0"/>
-    </linearGradient>
-    <radialGradient id="light" cx="50%" cy="0%" r="75%">
-      <stop offset="0" stop-color="#ffffff" stop-opacity=".9"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="counter" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#1d6b58"/><stop offset="1" stop-color="#0d4b3d"/>
-    </linearGradient>
-    <linearGradient id="board" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#b9cfc6"/><stop offset="1" stop-color="#9cbbb0"/>
-    </linearGradient>
-    <pattern id="meds" width="230" height="120" patternUnits="userSpaceOnUse">
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3efe4"/><stop offset=".55" stop-color="#e6ede7"/><stop offset="1" stop-color="#d4e3dc"/></linearGradient>
+    <radialGradient id="light" cx="50%" cy="-6%" r="80%"><stop offset="0" stop-color="#fff8e9" stop-opacity=".95"/><stop offset="1" stop-color="#fff8e9" stop-opacity="0"/></radialGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d7e6df"/><stop offset="1" stop-color="#c3d7cf"/></linearGradient>
+    <linearGradient id="board" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ecf3ef"/><stop offset="1" stop-color="#b9ccc3"/></linearGradient>
+    <linearGradient id="counter" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#17715c"/><stop offset="1" stop-color="#0a4a3c"/></linearGradient>
+    <linearGradient id="ctop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f8b72"/><stop offset="1" stop-color="#1d6b58"/></linearGradient>
+    <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dfe7e2"/><stop offset="1" stop-color="#cdd9d2"/></linearGradient>
+    <radialGradient id="vig" cx="50%" cy="44%" r="72%"><stop offset="52%" stop-color="#06201a" stop-opacity="0"/><stop offset="100%" stop-color="#05201a" stop-opacity=".40"/></radialGradient>
+    <radialGradient id="crossglow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#36d6a9" stop-opacity=".9"/><stop offset="100%" stop-color="#36d6a9" stop-opacity="0"/></radialGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="160%"><feGaussianBlur stdDeviation="7"/></filter>
+    <pattern id="meds" width="236" height="140" patternUnits="userSpaceOnUse">
       <g>
-        <rect x="8"  y="36" width="30" height="80" rx="4" fill="#eef5f1"/><rect x="8" y="36" width="30" height="9" rx="4" fill="#000" opacity=".1"/><rect x="14" y="66" width="18" height="6" rx="3" fill="#0d7a63" opacity=".5"/>
-        <rect x="44" y="30" width="26" height="86" rx="4" fill="#0d7a63"/><rect x="44" y="30" width="26" height="9" rx="4" fill="#000" opacity=".15"/><rect x="49" y="62" width="16" height="7" rx="3" fill="#fff" opacity=".7"/>
-        <rect x="76" y="42" width="32" height="74" rx="4" fill="#e3b45c"/><rect x="76" y="42" width="32" height="9" rx="4" fill="#000" opacity=".12"/><rect x="82" y="70" width="20" height="7" rx="3" fill="#fff" opacity=".65"/>
-        <rect x="114" y="34" width="24" height="82" rx="4" fill="#3671b3"/><rect x="114" y="34" width="24" height="9" rx="4" fill="#000" opacity=".15"/><rect x="118" y="64" width="16" height="7" rx="3" fill="#fff" opacity=".7"/>
-        <rect x="144" y="40" width="30" height="76" rx="4" fill="#d98c6a"/><rect x="144" y="40" width="30" height="9" rx="4" fill="#000" opacity=".12"/><rect x="150" y="70" width="18" height="7" rx="3" fill="#fff" opacity=".65"/>
-        <rect x="180" y="32" width="28" height="84" rx="4" fill="#84b3a4"/><rect x="180" y="32" width="28" height="9" rx="4" fill="#000" opacity=".12"/><rect x="185" y="62" width="18" height="7" rx="3" fill="#fff" opacity=".6"/>
+        <rect x="10" y="48" width="32" height="86" rx="4" fill="#eef5f1"/><rect x="10" y="48" width="32" height="10" rx="4" fill="#0d7a63" opacity=".25"/><rect x="10" y="48" width="5" height="86" rx="2" fill="#fff" opacity=".5"/><rect x="16" y="82" width="20" height="7" rx="3" fill="#0d7a63" opacity=".45"/><rect x="10" y="126" width="32" height="8" rx="3" fill="#000" opacity=".08"/>
+        <rect x="48" y="40" width="28" height="94" rx="4" fill="#0d7a63"/><rect x="48" y="40" width="28" height="10" rx="4" fill="#000" opacity=".18"/><rect x="48" y="40" width="5" height="94" rx="2" fill="#fff" opacity=".18"/><rect x="53" y="76" width="18" height="8" rx="3" fill="#fff" opacity=".72"/>
+        <rect x="82" y="54" width="34" height="80" rx="4" fill="#e3b45c"/><rect x="82" y="54" width="34" height="10" rx="4" fill="#000" opacity=".14"/><rect x="82" y="54" width="5" height="80" rx="2" fill="#fff" opacity=".35"/><rect x="88" y="86" width="22" height="8" rx="3" fill="#fff" opacity=".66"/>
+        <rect x="122" y="44" width="26" height="90" rx="4" fill="#3671b3"/><rect x="122" y="44" width="26" height="10" rx="4" fill="#000" opacity=".2"/><rect x="122" y="44" width="5" height="90" rx="2" fill="#fff" opacity=".2"/><rect x="127" y="80" width="16" height="8" rx="3" fill="#fff" opacity=".72"/>
+        <rect x="154" y="50" width="32" height="84" rx="4" fill="#d98c6a"/><rect x="154" y="50" width="32" height="10" rx="4" fill="#000" opacity=".14"/><rect x="154" y="50" width="5" height="84" rx="2" fill="#fff" opacity=".3"/><rect x="160" y="84" width="20" height="8" rx="3" fill="#fff" opacity=".66"/>
+        <rect x="192" y="42" width="30" height="92" rx="4" fill="#8fbdac"/><rect x="192" y="42" width="30" height="10" rx="4" fill="#000" opacity=".14"/><rect x="192" y="42" width="5" height="92" rx="2" fill="#fff" opacity=".3"/><rect x="198" y="78" width="18" height="8" rx="3" fill="#fff" opacity=".6"/>
       </g>
     </pattern>
   </defs>
 
+  <!-- murs & lumière -->
   <rect width="1440" height="1024" fill="url(#wall)"/>
-  <rect width="1440" height="420" fill="url(#light)"/>
+  <rect width="1440" height="520" fill="url(#light)"/>
+  <g opacity=".55"><rect x="360" y="20" width="300" height="26" rx="13" fill="#fff"/><rect x="780" y="20" width="300" height="26" rx="13" fill="#fff"/></g>
 
-  <!-- étagères remplies de boîtes -->
+  <!-- meuble d'étagères -->
+  <rect x="78" y="118" width="1284" height="612" rx="12" fill="url(#panel)"/>
+  <rect x="78" y="118" width="1284" height="612" rx="12" fill="#064034" opacity=".05"/>
   <g>
-    <rect x="120" y="150" width="1200" height="116" fill="url(#meds)"/><rect x="104" y="266" width="1232" height="14" rx="4" fill="url(#board)"/>
-    <rect x="120" y="326" width="1200" height="116" fill="url(#meds)"/><rect x="104" y="442" width="1232" height="14" rx="4" fill="url(#board)"/>
-    <rect x="120" y="502" width="1200" height="116" fill="url(#meds)"/><rect x="104" y="618" width="1232" height="14" rx="4" fill="url(#board)"/>
+    <rect x="98" y="150" width="1244" height="128" fill="url(#meds)"/>
+    <rect x="98" y="290" width="1244" height="128" fill="url(#meds)"/>
+    <rect x="98" y="430" width="1244" height="128" fill="url(#meds)"/>
+    <rect x="98" y="570" width="1244" height="128" fill="url(#meds)"/>
   </g>
-
-  <!-- enseigne croix verte -->
-  <g transform="translate(96,70)">
-    <rect x="0" y="0" width="150" height="150" rx="26" fill="#0d7a63"/>
-    <rect x="0" y="0" width="150" height="150" rx="26" fill="#fff" opacity=".06"/>
-    <rect x="60" y="28" width="30" height="94" rx="7" fill="#fff"/>
-    <rect x="28" y="60" width="94" height="30" rx="7" fill="#fff"/>
+  <!-- tablettes + ombres -->
+  <g>
+    <g opacity=".12"><rect x="98" y="278" width="1244" height="10" fill="#064034"/><rect x="98" y="418" width="1244" height="10" fill="#064034"/><rect x="98" y="558" width="1244" height="10" fill="#064034"/></g>
+    <rect x="90" y="276" width="1260" height="15" rx="4" fill="url(#board)"/>
+    <rect x="90" y="416" width="1260" height="15" rx="4" fill="url(#board)"/>
+    <rect x="90" y="556" width="1260" height="15" rx="4" fill="url(#board)"/>
+    <rect x="90" y="696" width="1260" height="16" rx="4" fill="url(#board)"/>
   </g>
+  <!-- montants + séparations de travées -->
+  <rect x="78" y="118" width="20" height="612" fill="url(#board)"/>
+  <rect x="1342" y="118" width="20" height="612" fill="url(#board)"/>
+  <g opacity=".10" fill="#064034"><rect x="408" y="150" width="6" height="560"/><rect x="718" y="150" width="6" height="560"/><rect x="1028" y="150" width="6" height="560"/></g>
 
-  <!-- comptoir -->
-  <rect x="0" y="770" width="1440" height="254" fill="url(#counter)"/>
-  <rect x="0" y="770" width="1440" height="16" fill="#2a7d68"/>
-  <g opacity=".5"><rect x="120" y="820" width="220" height="150" rx="8" fill="#0a4537"/><rect x="560" y="820" width="320" height="150" rx="8" fill="#0a4537"/><rect x="1100" y="820" width="220" height="150" rx="8" fill="#0a4537"/></g>
-
-  <!-- mortier & pilon sur le comptoir -->
-  <g transform="translate(1120,690)" fill="#0e5a49">
-    <rect x="88" y="-64" width="14" height="96" rx="7" transform="rotate(28 95 -16)"/>
-    <path d="M0 10h150a75 75 0 0 1-150 0z"/>
-    <rect x="-8" y="0" width="166" height="16" rx="8"/>
+  <!-- enseigne : croix lumineuse + mention générique -->
+  <circle cx="720" cy="86" r="92" fill="url(#crossglow)"/>
+  <g transform="translate(646,16)">
+    <rect x="0" y="0" width="148" height="148" rx="26" fill="#0f8469"/>
+    <rect x="0" y="0" width="148" height="70" rx="26" fill="#fff" opacity=".10"/>
+    <rect x="59" y="26" width="30" height="96" rx="8" fill="#fff"/>
+    <rect x="26" y="59" width="96" height="30" rx="8" fill="#fff"/>
   </g>
-  <!-- plante / feuille -->
-  <g transform="translate(250,672)" fill="#1d7a63"><path d="M0 96C0 44 44 6 100 0 92 54 54 98 0 96z"/><path d="M14 86C40 62 72 36 92 14" stroke="#eaf3ef" stroke-width="4" fill="none"/></g>
+  <text x="720" y="188" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#0d6553" opacity=".55" letter-spacing="3">PHARMACIE · صيدلية</text>
+
+  <!-- comptoir vitré -->
+  <rect x="0" y="812" width="1440" height="212" fill="url(#counter)"/>
+  <rect x="0" y="800" width="1440" height="26" rx="6" fill="url(#ctop)"/>
+  <rect x="0" y="800" width="1440" height="5" fill="#fff" opacity=".18"/>
+  <g opacity=".45" fill="#0a4537"><rect x="120" y="852" width="240" height="150" rx="8"/><rect x="420" y="852" width="240" height="150" rx="8"/><rect x="760" y="852" width="300" height="150" rx="8"/><rect x="1120" y="852" width="220" height="150" rx="8"/></g>
+  <!-- objets sur le comptoir -->
+  <g fill="#0e5a49">
+    <g transform="translate(250,720)"><rect x="0" y="22" width="40" height="60" rx="7"/><rect x="11" y="6" width="18" height="18" rx="5"/></g>
+    <g transform="translate(305,712)"><rect x="0" y="30" width="34" height="52" rx="6"/><rect x="9" y="16" width="16" height="16" rx="4"/></g>
+    <g transform="translate(1150,706)"><rect x="92" y="-60" width="14" height="92" rx="7" transform="rotate(28 99 -14)"/><path d="M0 10h150a75 75 0 0 1-150 0z"/><rect x="-8" y="0" width="166" height="16" rx="8"/></g>
+  </g>
+  <!-- plante -->
+  <g transform="translate(70,628)"><rect x="18" y="86" width="74" height="60" rx="8" fill="#0e5a49"/><g fill="#1d8a6f"><path d="M55 92C30 70 26 30 40 2 58 28 72 60 55 92z"/><path d="M55 92C80 74 104 44 110 12 86 30 60 58 55 92z"/></g></g>
+
+  <!-- vignettage photo -->
+  <rect width="1440" height="1024" fill="url(#vig)"/>
 </svg>
 </div>
 
