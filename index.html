@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d9488">
+<meta name="description" content="PharmaAlert Pro - Gestion d'officine, péremptions, retours grossistes, conseil comptoir, crédit client et réseau confraternel.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>PharmaAlert Pro</title>
+<style>
+:root{
+  --bg:#f1f5f9; --surface:#ffffff; --surface-2:#f8fafc; --ink:#0f172a; --muted:#64748b;
+  --line:#e2e8f0; --brand:#0d9488; --brand-d:#0f766e; --brand-l:#ccfbf1;
+  --accent:#2563eb; --ok:#16a34a; --warn:#d97706; --warn-bg:#fef3c7; --crit:#dc2626; --crit-bg:#fee2e2;
+  --gold:#b45309; --gold-bg:#fffbeb; --gold-line:#f59e0b;
+  --radius:14px; --shadow:0 1px 3px rgba(15,23,42,.08),0 1px 2px rgba(15,23,42,.06);
+  --shadow-lg:0 10px 30px rgba(15,23,42,.12);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg); color:var(--ink); font-size:16px; line-height:1.45;
+  -webkit-font-smoothing:antialiased; padding-bottom:84px;
+}
+h1,h2,h3{margin:0 0 .3em}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:16px}
+.hidden{display:none!important}
+
+/* ===== Header ===== */
+.topbar{
+  position:sticky;top:0;z-index:40;background:linear-gradient(135deg,var(--brand),var(--brand-d));
+  color:#fff;padding:env(safe-area-inset-top) 16px 0;box-shadow:var(--shadow);
+}
+.topbar-in{display:flex;align-items:center;gap:12px;height:60px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.15rem;letter-spacing:.2px}
+.logo svg{width:30px;height:30px;flex:none}
+.topbar-sub{opacity:.85;font-size:.72rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.phname{margin-left:auto;text-align:right;font-size:.8rem;opacity:.95;max-width:46%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+
+/* ===== Layout ===== */
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+.view{display:none;animation:fade .25s ease}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.page-head h2{font-size:1.35rem;display:flex;align-items:center;gap:9px}
+.page-head p{margin:2px 0 0;color:var(--muted);font-size:.85rem}
+
+/* ===== Cards & grid ===== */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card.pad{padding:16px}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:760px){.g3,.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:460px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+/* ===== Stat tiles ===== */
+.stat{padding:16px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);position:relative;overflow:hidden}
+.stat .lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700}
+.stat .val{font-size:1.7rem;font-weight:800;margin-top:4px;line-height:1.1}
+.stat .sub{font-size:.78rem;color:var(--muted);margin-top:2px}
+.stat .ic{position:absolute;top:12px;right:12px;opacity:.14;width:42px;height:42px}
+.stat.danger{background:var(--crit-bg);border-color:#fecaca}
+.stat.danger .val{color:var(--crit)}
+.stat.warn{background:var(--warn-bg);border-color:#fde68a}
+.stat.warn .val{color:var(--gold)}
+.stat.good{background:#dcfce7;border-color:#bbf7d0}
+.stat.good .val{color:var(--ok)}
+.stat.brand{background:var(--brand-l);border-color:#99f6e4}
+.stat.brand .val{color:var(--brand-d)}
+
+/* ===== Buttons ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);
+  background:var(--surface);color:var(--ink);padding:10px 14px;border-radius:10px;font-weight:600;font-size:.9rem;
+  transition:.15s;min-height:42px}
+.btn:active{transform:scale(.97)}
+.btn svg{width:17px;height:17px}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.primary:hover{background:var(--brand-d)}
+.btn.blue{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.wa{background:#25D366;border-color:#25D366;color:#fff}
+.btn.danger{background:#fff;border-color:#fecaca;color:var(--crit)}
+.btn.ghost{background:transparent}
+.btn.sm{padding:6px 10px;min-height:34px;font-size:.82rem}
+.btn.block{width:100%}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ===== Forms ===== */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:5px}
+.field input,.field select,.field textarea{
+  width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);color:var(--ink);outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--brand);background:#fff;box-shadow:0 0 0 3px var(--brand-l)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+@media(max-width:520px){.form-grid{grid-template-columns:1fr}}
+
+/* ===== Table ===== */
+.tbl-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--line);background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:620px}
+th{background:var(--surface-2);text-align:left;padding:11px 12px;font-size:.72rem;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:700;border-bottom:2px solid var(--line);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr.row-crit{background:var(--crit-bg)}
+tr.row-warn{background:var(--warn-bg)}
+.cell-strong{font-weight:700}
+.cell-mini{font-size:.76rem;color:var(--muted)}
+
+/* ===== Badges ===== */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:.72rem;font-weight:700;white-space:nowrap}
+.b-crit{background:var(--crit);color:#fff}
+.b-warn{background:var(--warn);color:#fff}
+.b-ok{background:var(--ok);color:#fff}
+.b-mut{background:#e2e8f0;color:#475569}
+.b-blue{background:var(--accent);color:#fff}
+
+/* ===== Toolbar / search ===== */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.search{flex:1;min-width:180px;position:relative}
+.search input{width:100%;padding:11px 12px 11px 40px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted)}
+.chip-row{display:flex;gap:7px;flex-wrap:wrap}
+.chip{padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:.82rem;font-weight:600;color:var(--muted)}
+.chip.active{background:var(--brand);border-color:var(--brand);color:#fff}
+
+/* ===== Bottom nav ===== */
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:50;background:var(--surface);border-top:1px solid var(--line);
+  display:flex;padding:6px 4px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -2px 10px rgba(15,23,42,.05);overflow-x:auto}
+.nav button{flex:1 0 auto;min-width:64px;background:none;border:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;border-radius:10px;font-size:.66rem;font-weight:600}
+.nav button svg{width:23px;height:23px}
+.nav button.active{color:var(--brand)}
+.nav button.active svg{transform:translateY(-1px)}
+
+/* ===== Modal ===== */
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:100;display:flex;align-items:flex-end;justify-content:center;padding:0}
+@media(min-width:560px){.modal-bg{align-items:center;padding:20px}}
+.modal{background:var(--surface);width:100%;max-width:560px;max-height:92vh;overflow-y:auto;border-radius:18px 18px 0 0;box-shadow:var(--shadow-lg);animation:slideup .25s ease}
+@media(min-width:560px){.modal{border-radius:18px}}
+@keyframes slideup{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
+.modal-head{position:sticky;top:0;background:var(--surface);display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line);z-index:2}
+.modal-head h3{font-size:1.1rem}
+.modal-body{padding:18px}
+.x{background:none;border:none;font-size:1.5rem;line-height:1;color:var(--muted);padding:4px 8px;border-radius:8px}
+
+/* ===== Misc ===== */
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty svg{width:48px;height:48px;opacity:.4;margin-bottom:10px}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:12px;font-size:.9rem;font-weight:600;z-index:200;box-shadow:var(--shadow-lg);opacity:0;transition:.3s;max-width:90%;text-align:center}
+.toast.show{opacity:1;transform:transl(-50%,-6px)}
+.money{font-variant-numeric:tabular-nums;font-weight:700}
+.section-title{font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:800;margin:18px 0 8px}
+.note{font-size:.82rem;color:var(--muted)}
+.divider{height:1px;background:var(--line);margin:14px 0}
+.list-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.list-item:last-child{border-bottom:none}
+.avatar{width:42px;height:42px;border-radius:12px;background:var(--brand-l);color:var(--brand-d);display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
+.li-main{flex:1;min-width:0}
+.li-title{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li-sub{font-size:.8rem;color:var(--muted)}
+
+/* Gold destock box */
+.gold-box{background:var(--gold-bg);border:2px solid var(--gold-line);border-radius:var(--radius);padding:16px;position:relative}
+.gold-box .tag{position:absolute;top:-11px;left:14px;background:var(--gold-line);color:#fff;font-size:.7rem;font-weight:800;padding:3px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.4px}
+.gold-box h4{margin:4px 0 6px;color:var(--gold);font-size:1.05rem}
+.argu{background:#fff;border:1px dashed var(--gold-line);border-radius:10px;padding:10px 12px;margin-top:8px;font-size:.88rem}
+.argu .lab{font-size:.68rem;font-weight:800;text-transform:uppercase;color:var(--gold);letter-spacing:.4px}
+
+/* Print / Bordereau A4 */
+#printArea{display:none}
+@media print{
+  body *{visibility:hidden}
+  #printArea,#printArea *{visibility:visible}
+  #printArea{display:block;position:absolute;left:0;top:0;width:100%}
+  .nav,.topbar,.toast{display:none!important}
+  @page{size:A4;margin:14mm}
+}
+.a4{font-family:"Times New Roman",Georgia,serif;color:#000;padding:0}
+.a4 .ph-head{display:flex;justify-content:space-between;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:6px}
+.a4 .ph-head h1{font-size:18pt;margin:0}
+.a4 .ph-head .meta{font-size:9pt;text-align:right;line-height:1.5}
+.a4 .doc-title{text-align:center;font-size:14pt;font-weight:bold;text-decoration:underline;margin:14px 0}
+.a4 .sup{font-size:11pt;margin:8px 0 4px;font-weight:bold}
+.a4 table{width:100%;border-collapse:collapse;font-size:9.5pt;min-width:0;margin-bottom:10px}
+.a4 th,.a4 td{border:1px solid #000;padding:5px 6px;text-align:left}
+.a4 th{background:#eee!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;text-transform:none;color:#000;font-weight:bold;letter-spacing:0}
+.a4 .sign{display:flex;justify-content:space-between;margin-top:30px;font-size:10pt}
+.a4 .sign div{width:45%}
+.a4 .sign .ln{border-top:1px solid #000;margin-top:48px;padding-top:4px}
+.a4 .foot{margin-top:18px;font-size:8pt;text-align:center;color:#333;border-top:1px solid #ccc;padding-top:6px}
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2l8 3v6c0 5-3.4 8.6-8 11-4.6-2.4-8-6-8-11V5l8-3z" fill="#fff" opacity=".2"/><path d="M12 2l8 3v6c0 5-3.4 8.6-8 11-4.6-2.4-8-6-8-11V5l8-3z" stroke="#fff" stroke-width="1.6"/><path d="M12 8v8M8 12h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      <div>PharmaAlert <span style="font-weight:600;opacity:.8">Pro</span><div class="topbar-sub">Gestion d'officine</div></div>
+    </div>
+    <div class="phname" id="phNameTop">Ma Pharmacie</div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ============ DASHBOARD ============ -->
+<section class="view active" id="view-dash">
+  <div class="page-head"><div><h2>Tableau de bord</h2><p id="dashDate"></p></div></div>
+  <div class="grid g4" id="dashStats"></div>
+
+  <div class="section-title">Alertes de péremption prioritaires</div>
+  <div class="card" id="dashAlerts"></div>
+
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card pad">
+      <h3 style="font-size:1rem;margin-bottom:8px">⚡ Accès rapide</h3>
+      <div class="btn-row">
+        <button class="btn primary sm" onclick="openStockForm()">+ Produit</button>
+        <button class="btn blue sm" onclick="go('retours')">Bordereaux retour</button>
+        <button class="btn sm" onclick="go('conseil')">Conseil comptoir</button>
+        <button class="btn sm" onclick="go('credit')">Carnet crédit</button>
+      </div>
+    </div>
+    <div class="card pad">
+      <h3 style="font-size:1rem;margin-bottom:8px">💰 Synthèse financière</h3>
+      <div id="dashFin"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STOCK ============ -->
+<section class="view" id="view-stock">
+  <div class="page-head">
+    <div><h2>Stock & Péremptions</h2><p>Méthode FEFO · lot expirant en premier</p></div>
+    <div class="btn-row">
+      <button class="btn primary" onclick="openStockForm()">＋ Ajouter</button>
+    </div>
+  </div>
+
+  <div class="grid g3" id="stockStats" style="margin-bottom:12px"></div>
+
+  <div class="toolbar">
+    <div class="search"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input id="stockSearch" placeholder="Rechercher spécialité, lot, grossiste…" oninput="renderStock()"></div>
+    <button class="btn sm" onclick="importExcel()" title="Importer .xlsx / .csv">⤓ Importer</button>
+    <button class="btn sm" onclick="exportStock()" title="Exporter inventaire">⤒ Exporter</button>
+  </div>
+  <div class="chip-row" style="margin-bottom:12px" id="stockFilters">
+    <span class="chip active" data-f="all" onclick="setStockFilter(this)">Tous</span>
+    <span class="chip" data-f="crit" onclick="setStockFilter(this)">Critique ≤3 mois</span>
+    <span class="chip" data-f="warn" onclick="setStockFilter(this)">Alerte ≤6 mois</span>
+    <span class="chip" data-f="low" onclick="setStockFilter(this)">Stock faible</span>
+  </div>
+
+  <div class="tbl-wrap">
+    <table id="stockTable">
+      <thead><tr>
+        <th>Spécialité</th><th>Lot</th><th>Expiration</th><th>Qté</th><th>PU</th><th>Valeur</th><th>Grossiste</th><th></th>
+      </tr></thead>
+      <tbody id="stockBody"></tbody>
+    </table>
+  </div>
+  <p class="note" style="margin-top:8px">Import compatible WinPharm / 3E / Officine (.xlsx, .csv). Colonnes: Spécialité, Forme, Dosage, Lot, Expiration, Quantité, PrixUnitaire, Grossiste.</p>
+</section>
+
+<!-- ============ RETOURS ============ -->
+<section class="view" id="view-retours">
+  <div class="page-head"><div><h2>Retours grossistes</h2><p>Fenêtre légale de reprise · 3 à 6 mois avant péremption</p></div></div>
+
+  <div class="card pad" style="margin-bottom:12px">
+    <p class="note" style="margin:0 0 10px">Produits éligibles au retour, regroupés par répartiteur. Générez un bordereau A4 officiel ou envoyez un préavis WhatsApp.</p>
+    <div class="btn-row">
+      <button class="btn sm" onclick="renderRetours()">↻ Actualiser</button>
+    </div>
+  </div>
+  <div id="retoursList"></div>
+</section>
+
+<!-- ============ CONSEIL ============ -->
+<section class="view" id="view-conseil">
+  <div class="page-head"><div><h2>Conseil comptoir</h2><p>Aide à la dispensation & déstockage intelligent</p></div></div>
+  <div class="chip-row" id="conseilFamilies" style="margin-bottom:14px"></div>
+  <div id="conseilContent"></div>
+</section>
+
+<!-- ============ RESEAU B2B ============ -->
+<section class="view" id="view-reseau">
+  <div class="page-head"><div><h2>Réseau confraternel</h2><p>Échange, dépannage & bourse de surstock</p></div></div>
+  <div class="chip-row" style="margin-bottom:14px">
+    <span class="chip active" data-t="partners" onclick="setReseauTab(this)">Pharmacies</span>
+    <span class="chip" data-t="bourse" onclick="setReseauTab(this)">Bourse surstock</span>
+    <span class="chip" data-t="sos" onclick="setReseauTab(this)">SOS rupture</span>
+    <span class="chip" data-t="ruptures" onclick="setReseauTab(this)">Ruptures nationales</span>
+  </div>
+  <div id="reseauContent"></div>
+</section>
+
+<!-- ============ CREDIT ============ -->
+<section class="view" id="view-credit">
+  <div class="page-head">
+    <div><h2>Carnet de crédit · Kounach</h2><p>Créances clients dématérialisées</p></div>
+    <button class="btn primary" onclick="openCreditForm()">＋ Client</button>
+  </div>
+  <div class="grid g3" id="creditStats" style="margin-bottom:12px"></div>
+  <div class="toolbar">
+    <div class="search"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input id="creditSearch" placeholder="Rechercher client…" oninput="renderCredit()"></div>
+  </div>
+  <div class="card" id="creditList"></div>
+</section>
+
+<!-- ============ PROFIL ============ -->
+<section class="view" id="view-profil">
+  <div class="page-head"><div><h2>Profil de l'officine</h2><p>Informations légales injectées dans vos documents</p></div></div>
+  <div class="card pad">
+    <div class="form-grid">
+      <div class="field"><label>Dénomination de la pharmacie</label><input id="pf_nom" placeholder="Pharmacie Al Amal"></div>
+      <div class="field"><label>Pharmacien responsable</label><input id="pf_pharm" placeholder="Dr. ..."></div>
+      <div class="field"><label>N° INPE</label><input id="pf_inpe" placeholder="..."></div>
+      <div class="field"><label>Patente</label><input id="pf_patente" placeholder="..."></div>
+      <div class="field"><label>Ville</label><input id="pf_ville" placeholder="Casablanca"></div>
+      <div class="field"><label>Téléphone</label><input id="pf_tel" placeholder="05.. / 06.."></div>
+      <div class="field" style="grid-column:1/-1"><label>Adresse complète</label><input id="pf_adr" placeholder="N°, rue, quartier…"></div>
+    </div>
+    <button class="btn primary block" onclick="saveProfile()">Enregistrer le profil</button>
+  </div>
+
+  <div class="section-title">Données & sauvegarde</div>
+  <div class="card pad">
+    <p class="note" style="margin-top:0">Toutes les données sont stockées localement sur l'appareil (hors-ligne). Exportez une sauvegarde régulièrement.</p>
+    <div class="btn-row">
+      <button class="btn sm" onclick="backupData()">⤒ Sauvegarde (JSON)</button>
+      <button class="btn sm" onclick="restoreData()">⤓ Restaurer</button>
+      <button class="btn sm" onclick="loadDemo()">Charger données démo</button>
+      <button class="btn danger sm" onclick="wipeData()">Tout effacer</button>
+    </div>
+  </div>
+  <p class="note" style="text-align:center;margin:20px 0 8px">PharmaAlert Pro v4.0 — PWA mono-fichier · Dirhams (MAD)</p>
+</section>
+
+</main>
+
+<!-- ============ BOTTOM NAV ============ -->
+<nav class="nav" id="nav">
+  <button data-v="dash" class="active" onclick="go('dash')"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="9" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="5" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="14" y="12" width="7" height="9" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="3" y="16" width="7" height="5" rx="1.5" stroke="currentColor" stroke-width="2"/></svg>Bord</button>
+  <button data-v="stock" onclick="go('stock')"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4-9 4-9-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M3 7v10l9 4 9-4V7M12 11v10" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Stock</button>
+  <button data-v="retours" onclick="go('retours')"><svg viewBox="0 0 24 24" fill="none"><path d="M9 14L4 9l5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h10a6 6 0 016 6v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Retours</button>
+  <button data-v="conseil" onclick="go('conseil')"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3a7 7 0 00-4 12.7V18a1 1 0 001 1h6a1 1 0 001-1v-2.3A7 7 0 0012 3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 22h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Conseil</button>
+  <button data-v="reseau" onclick="go('reseau')"><svg viewBox="0 0 24 24" fill="none"><circle cx="6" cy="6" r="2.5" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="6" r="2.5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="18" r="2.5" stroke="currentColor" stroke-width="2"/><path d="M8 7.5l3 8M16 7.5l-3 8" stroke="currentColor" stroke-width="2"/></svg>Réseau</button>
+  <button data-v="credit" onclick="go('credit')"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 10h18" stroke="currentColor" stroke-width="2"/></svg>Crédit</button>
+  <button data-v="profil" onclick="go('profil')"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="2"/><path d="M5 20a7 7 0 0114 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Profil</button>
+</nav>
+
+<!-- modal + print mounts -->
+<div id="modalMount"></div>
+<div id="printArea"></div>
+<div class="toast" id="toast"></div>
+<input type="file" id="fileInput" accept=".json,.csv,.xlsx,.xls" class="hidden">
+
+<script>
+/* =========================================================
+   PharmaAlert Pro v4.0 — moteur applicatif (vanilla JS)
+   Stockage: localStorage · Devise: MAD (Dirham)
+   ========================================================= */
+const LS='pharmaalert_v4';
+const DEVISE='DH';
+let DB=null, _fileCb=null;
+
+/* ---------- Persistance ---------- */
+function blankDB(){return{
+  profile:{nom:'Ma Pharmacie',pharm:'',inpe:'',patente:'',ville:'',adr:'',tel:''},
+  stock:[], partners:[], credits:[], bourse:[],
+  ruptures:[
+    {molecule:'Amoxicilline 1g',alt:'Augmentin / Clamoxyl selon prescription'},
+    {molecule:'Lévothyrox 100µg',alt:'L-Thyroxine Serb, Euthyrox'},
+    {molecule:'Ventoline spray',alt:'Salbutamol générique, Airomir'}
+  ]
+};}
+function load(){try{DB=JSON.parse(localStorage.getItem(LS))||blankDB();}catch(e){DB=blankDB();}
+  // migrate missing keys
+  const b=blankDB();for(const k in b){if(!(k in DB))DB[k]=b[k];}
+}
+function save(){localStorage.setItem(LS,JSON.stringify(DB));}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+
+/* ---------- Utilitaires ---------- */
+function money(n){return (Math.round((+n||0)*100)/100).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' '+DEVISE;}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function monthsTo(dateStr){if(!dateStr)return 9999;const d=new Date(dateStr);if(isNaN(d))return 9999;const now=new Date();return (d.getFullYear()-now.getFullYear())*12+(d.getMonth()-now.getMonth())+(d.getDate()>=now.getDate()?0:-0);}
+function daysTo(dateStr){const d=new Date(dateStr);if(isNaN(d))return 99999;return Math.round((d-new Date())/864e5);}
+function fmtDate(s){if(!s)return '—';const d=new Date(s);if(isNaN(d))return s;return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});}
+function urgency(m){if(m<=3)return 'crit';if(m<=6)return 'warn';return 'ok';}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2600);}
+function cleanPhoneMA(raw){let n=String(raw||'').replace(/[^\d]/g,'');if(n.startsWith('00'))n=n.slice(2);if(n.startsWith('212'))return n;if(n.startsWith('0'))return '212'+n.slice(1);if(n.length===9)return '212'+n;return n;}
+function waLink(phone,text){return 'https://wa.me/'+cleanPhoneMA(phone)+'?text='+encodeURIComponent(text);}
+function openWa(phone,text){window.open(waLink(phone,text),'_blank');}
+
+/* ---------- Navigation ---------- */
+function go(v){
+  document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.v===v));
+  window.scrollTo({top:0,behavior:'smooth'});
+  const r={dash:renderDash,stock:renderStock,retours:renderRetours,conseil:renderConseil,reseau:renderReseau,credit:renderCredit,profil:renderProfile}[v];
+  if(r)r();
+}
+
+/* ========================================================
+   MODAL
+   ======================================================== */
+function modal(title,bodyHTML,onMount){
+  const m=document.getElementById('modalMount');
+  m.innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()">
+    <div class="modal"><div class="modal-head"><h3>${esc(title)}</h3><button class="x" onclick="closeModal()">×</button></div>
+    <div class="modal-body">${bodyHTML}</div></div></div>`;
+  if(onMount)onMount();
+}
+function closeModal(){document.getElementById('modalMount').innerHTML='';}
+
+/* ========================================================
+   DASHBOARD
+   ======================================================== */
+function renderDash(){
+  document.getElementById('dashDate').textContent='Aujourd\'hui · '+new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const s=DB.stock;
+  const crit=s.filter(x=>monthsTo(x.expiration)<=3);
+  const warn=s.filter(x=>{const m=monthsTo(x.expiration);return m>3&&m<=6;});
+  const valCrit=crit.reduce((a,x)=>a+(+x.quantite||0)*(+x.pu||0),0);
+  const valWarn=warn.reduce((a,x)=>a+(+x.quantite||0)*(+x.pu||0),0);
+  const valStock=s.reduce((a,x)=>a+(+x.quantite||0)*(+x.pu||0),0);
+  const creditDu=DB.credits.reduce((a,c)=>a+(+c.solde||0),0);
+
+  document.getElementById('dashStats').innerHTML=`
+    ${stat('brand','Références',s.length,s.reduce((a,x)=>a+(+x.quantite||0),0)+' boîtes','box')}
+    ${stat('warn','Alerte 6 mois',warn.length,money(valWarn)+' à retourner','clock')}
+    ${stat('danger','Critique 3 mois',crit.length,money(valCrit)+' en risque','alert')}
+    ${stat('good','Valeur du stock',money(valStock).replace(' '+DEVISE,''),DEVISE+' immobilisés','coin')}`;
+
+  // alerts list (FEFO)
+  const al=[...crit,...warn].sort((a,b)=>new Date(a.expiration)-new Date(b.expiration)).slice(0,6);
+  const ael=document.getElementById('dashAlerts');
+  if(!al.length){ael.innerHTML=emptyBox('Aucune péremption proche. Stock sain ✓');}
+  else ael.innerHTML=al.map(x=>{const m=monthsTo(x.expiration),u=urgency(m);
+    return `<div class="list-item">
+      <div class="avatar" style="background:${u==='crit'?'var(--crit-bg)':'var(--warn-bg)'};color:${u==='crit'?'var(--crit)':'var(--gold)'}">${m}<small style="font-size:.5rem">m</small></div>
+      <div class="li-main"><div class="li-title">${esc(x.nom)}</div><div class="li-sub">Lot ${esc(x.lot||'—')} · exp. ${fmtDate(x.expiration)} · ${x.quantite} u.</div></div>
+      <span class="badge ${u==='crit'?'b-crit':'b-warn'}">${money((+x.quantite||0)*(+x.pu||0))}</span>
+    </div>`;}).join('');
+
+  document.getElementById('dashFin').innerHTML=`
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span class="note">Valeur à retourner (3-6 mois)</span><b class="money">${money(valWarn)}</b></div>
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span class="note">Risque péremption (≤3 mois)</span><b class="money" style="color:var(--crit)">${money(valCrit)}</b></div>
+    <div style="display:flex;justify-content:space-between;padding:6px 0"><span class="note">Crédits clients en cours</span><b class="money" style="color:var(--accent)">${money(creditDu)}</b></div>`;
+}
+function stat(cls,lbl,val,sub,icon){return `<div class="stat ${cls}"><div class="lbl">${esc(lbl)}</div><div class="val">${esc(val)}</div><div class="sub">${esc(sub)}</div>${statIcon(icon)}</div>`;}
+function statIcon(i){const p={box:'<path d="M3 7l9-4 9 4-9 4-9-4zM3 7v10l9 4 9-4V7" stroke="currentColor" stroke-width="2"/>',clock:'<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2"/>',alert:'<path d="M12 3l9 16H3L12 3z" stroke="currentColor" stroke-width="2"/><path d="M12 9v4M12 16v.5" stroke="currentColor" stroke-width="2"/>',coin:'<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v10M9 10h4a2 2 0 010 4H9" stroke="currentColor" stroke-width="2"/>'}[i]||'';return `<svg class="ic" viewBox="0 0 24 24" fill="none">${p}</svg>`;}
+function emptyBox(msg){return `<div class="empty"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M8 12l3 3 5-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div>${esc(msg)}</div></div>`;}
+
+/* ========================================================
+   STOCK
+   ======================================================== */
+let stockFilter='all';
+function setStockFilter(el){document.querySelectorAll('#stockFilters .chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');stockFilter=el.dataset.f;renderStock();}
+function renderStock(){
+  const q=(document.getElementById('stockSearch').value||'').toLowerCase().trim();
+  let rows=DB.stock.filter(x=>{
+    if(q&&!((x.nom||'')+(x.lot||'')+(x.grossiste||'')+(x.forme||'')).toLowerCase().includes(q))return false;
+    const m=monthsTo(x.expiration);
+    if(stockFilter==='crit')return m<=3;
+    if(stockFilter==='warn')return m>3&&m<=6;
+    if(stockFilter==='low')return (+x.quantite||0)<=3;
+    return true;
+  });
+  // FEFO: tri par date d'expiration croissante
+  rows.sort((a,b)=>new Date(a.expiration||'2999')-new Date(b.expiration||'2999'));
+
+  const atRisk=DB.stock.filter(x=>monthsTo(x.expiration)<=6);
+  const valAtRisk=atRisk.reduce((a,x)=>a+(+x.quantite||0)*(+x.pu||0),0);
+  document.getElementById('stockStats').innerHTML=`
+    ${stat('brand','Références',DB.stock.length,'au total','box')}
+    ${stat('warn','À surveiller ≤6 mois',atRisk.length,'produits','clock')}
+    ${stat('danger','Valeur en risque',money(valAtRisk).replace(' '+DEVISE,''),DEVISE+' à préserver','coin')}`;
+
+  const b=document.getElementById('stockBody');
+  if(!rows.length){b.innerHTML=`<tr><td colspan="8"><div class="empty"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4-9 4-9-4z" stroke="currentColor" stroke-width="1.6"/><path d="M3 7v10l9 4 9-4V7" stroke="currentColor" stroke-width="1.6"/></svg><div>Aucun produit. Ajoutez un article ou importez votre inventaire.</div></div></td></tr>`;return;}
+  b.innerHTML=rows.map(x=>{
+    const m=monthsTo(x.expiration),u=urgency(m);
+    const cls=u==='crit'?'row-crit':(u==='warn'?'row-warn':'');
+    const badge=u==='crit'?`<span class="badge b-crit">${m<0?'Expiré':m+' m'}</span>`:(u==='warn'?`<span class="badge b-warn">${m} m</span>`:`<span class="badge b-mut">${m>900?'—':m+' m'}</span>`);
+    const low=(+x.quantite||0)<=3;
+    return `<tr class="${cls}">
+      <td><div class="cell-strong">${esc(x.nom)}</div><div class="cell-mini">${esc([x.forme,x.dosage].filter(Boolean).join(' · ')||'')}</div></td>
+      <td>${esc(x.lot||'—')}</td>
+      <td>${fmtDate(x.expiration)}<div>${badge}</div></td>
+      <td><span class="cell-strong" style="${low?'color:var(--crit)':''}">${x.quantite||0}</span></td>
+      <td>${money(x.pu)}</td>
+      <td class="money">${money((+x.quantite||0)*(+x.pu||0))}</td>
+      <td class="cell-mini">${esc(x.grossiste||'—')}</td>
+      <td style="white-space:nowrap">
+        <button class="btn sm primary" title="Vente -1 boîte" onclick="quickSale('${x.id}')">−1</button>
+        <button class="btn sm ghost" onclick="openStockForm('${x.id}')">✎</button>
+      </td>
+    </tr>`;}).join('');
+}
+function quickSale(id){const x=DB.stock.find(s=>s.id===id);if(!x)return;if((+x.quantite||0)<=0){toast('Stock épuisé pour ce lot');return;}x.quantite=(+x.quantite||0)-1;save();renderStock();toast('Vente enregistrée · '+x.nom+' ('+x.quantite+' restantes)');}
+function openStockForm(id){
+  const x=id?DB.stock.find(s=>s.id===id):{};const isE=!!id;
+  modal(isE?'Modifier le produit':'Nouveau produit',`
+    <div class="form-grid">
+      <div class="field" style="grid-column:1/-1"><label>Spécialité *</label><input id="f_nom" value="${esc(x.nom||'')}"></div>
+      <div class="field"><label>Forme</label><input id="f_forme" value="${esc(x.forme||'')}" placeholder="Comprimé, sirop, gel…"></div>
+      <div class="field"><label>Dosage</label><input id="f_dosage" value="${esc(x.dosage||'')}" placeholder="500mg, 1g…"></div>
+      <div class="field"><label>N° de lot</label><input id="f_lot" value="${esc(x.lot||'')}"></div>
+      <div class="field"><label>Date d'expiration *</label><input id="f_exp" type="date" value="${esc(x.expiration||'')}"></div>
+      <div class="field"><label>Quantité</label><input id="f_qte" type="number" min="0" value="${x.quantite!=null?x.quantite:0}"></div>
+      <div class="field"><label>Prix unitaire (${DEVISE})</label><input id="f_pu" type="number" min="0" step="0.01" value="${x.pu!=null?x.pu:''}"></div>
+      <div class="field" style="grid-column:1/-1"><label>Grossiste / Répartiteur</label>${grossisteSelect(x.grossiste)}</div>
+    </div>
+    <div class="btn-row" style="margin-top:6px">
+      <button class="btn primary block" onclick="saveStock('${id||''}')">${isE?'Enregistrer':'Ajouter au stock'}</button>
+      ${isE?`<button class="btn danger" onclick="delStock('${id}')">Supprimer</button>`:''}
+    </div>`);
+}
+const GROSSISTES=['Laprophan','Cooper Pharma','Sothema','Afric-Phar','Upsilon','Pharma 5','Promopharm','Zenith Pharma','Autre'];
+function grossisteSelect(val){return `<input list="grossistesL" id="f_gros" value="${esc(val||'')}" placeholder="Choisir ou saisir…">
+  <datalist id="grossistesL">${GROSSISTES.map(g=>`<option value="${g}">`).join('')}</datalist>`;}
+function saveStock(id){
+  const nom=val('f_nom');if(!nom){toast('Nom de spécialité requis');return;}
+  const o={nom,forme:val('f_forme'),dosage:val('f_dosage'),lot:val('f_lot'),expiration:val('f_exp'),
+    quantite:+val('f_qte')||0,pu:+val('f_pu')||0,grossiste:val('f_gros')};
+  if(id){Object.assign(DB.stock.find(s=>s.id===id),o);}else{o.id=uid();DB.stock.push(o);}
+  save();closeModal();renderStock();toast(id?'Produit modifié':'Produit ajouté');
+}
+function delStock(id){if(!confirm('Supprimer ce produit du stock ?'))return;DB.stock=DB.stock.filter(s=>s.id!==id);save();closeModal();renderStock();toast('Produit supprimé');}
+function val(id){const e=document.getElementById(id);return e?e.value.trim():'';}
+
+/* ---------- Import / Export ---------- */
+function exportStock(){
+  const head=['Specialite','Forme','Dosage','Lot','Expiration','Quantite','PrixUnitaire','Grossiste','ValeurTotale'];
+  const lines=[head.join(';')];
+  DB.stock.forEach(x=>lines.push([x.nom,x.forme,x.dosage,x.lot,x.expiration,x.quantite,x.pu,x.grossiste,((+x.quantite||0)*(+x.pu||0)).toFixed(2)].map(csvCell).join(';')));
+  downloadFile('inventaire_'+today()+'.csv','\ufeff'+lines.join('\r\n'),'text/csv');
+  toast('Inventaire exporté ('+DB.stock.length+' lignes)');
+}
+function csvCell(v){v=v==null?'':String(v);return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}
+function importExcel(){
+  _fileCb=(file)=>{
+    const ext=file.name.toLowerCase().split('.').pop();
+    if(ext==='csv'){const r=new FileReader();r.onload=e=>parseCSVImport(e.target.result);r.readAsText(file);}
+    else{ // xlsx -> charge SheetJS à la volée si en ligne
+      loadSheetJS().then(XLSX=>{const r=new FileReader();r.onload=e=>{
+        const wb=XLSX.read(e.target.result,{type:'array'});const ws=wb.Sheets[wb.SheetNames[0]];
+        const arr=XLSX.utils.sheet_to_json(ws,{header:1,raw:false});importRows(arr);};r.readAsArrayBuffer(file);})
+      .catch(()=>toast('Import .xlsx indisponible hors-ligne. Utilisez un fichier .csv.'));
+    }
+  };
+  document.getElementById('fileInput').value='';
+  document.getElementById('fileInput').click();
+}
+function parseCSVImport(text){
+  text=text.replace(/^\ufeff/,'');
+  const delim=(text.split('\n')[0].match(/;/g)||[]).length>=(text.split('\n')[0].match(/,/g)||[]).length?';':',';
+  const rows=csvParse(text,delim);importRows(rows);
+}
+function csvParse(text,delim){const rows=[];let row=[],cur='',q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=c;}
+    else{if(c==='"')q=true;else if(c===delim){row.push(cur);cur='';}else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur='';}else if(c!=='\r')cur+=c;}}
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}return rows;
+}
+function importRows(rows){
+  if(!rows||rows.length<2){toast('Fichier vide ou illisible');return;}
+  const H=rows[0].map(h=>String(h||'').toLowerCase().replace(/[^a-z0-9]/g,''));
+  const idx=(keys)=>{for(const k of keys){const i=H.indexOf(k);if(i>=0)return i;}
+    for(const k of keys){const i=H.findIndex(h=>h.includes(k));if(i>=0)return i;}return -1;};
+  const ci={nom:idx(['specialite','speciality','designation','produit','nom','libelle']),
+    forme:idx(['forme']),dosage:idx(['dosage','dose']),lot:idx(['lot','numlot','batch']),
+    exp:idx(['expiration','peremption','datexp','dateexp','exp']),qte:idx(['quantite','qte','quantity','stock','qty']),
+    pu:idx(['prixunitaire','pu','prix','prixunit','price','ppv']),gros:idx(['grossiste','repartiteur','fournisseur','laboratoire','supplier'])};
+  if(ci.nom<0){toast('Colonne "Spécialité/Désignation" introuvable');return;}
+  let n=0;
+  for(let r=1;r<rows.length;r++){const row=rows[r];if(!row||!String(row[ci.nom]||'').trim())continue;
+    DB.stock.push({id:uid(),nom:String(row[ci.nom]).trim(),
+      forme:get(row,ci.forme),dosage:get(row,ci.dosage),lot:get(row,ci.lot),
+      expiration:normDate(get(row,ci.exp)),quantite:parseFloat(String(get(row,ci.qte)).replace(',','.'))||0,
+      pu:parseFloat(String(get(row,ci.pu)).replace(',','.'))||0,grossiste:get(row,ci.gros)});n++;}
+  save();renderStock();toast(n+' produits importés ✓');
+}
+function get(row,i){return i>=0&&row[i]!=null?String(row[i]).trim():'';}
+function normDate(s){if(!s)return '';s=String(s).trim();
+  let m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+  if(m){let[,d,mo,y]=m;if(y.length===2)y='20'+y;return `${y}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`;}
+  m=s.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})$/);if(m)return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  m=s.match(/^(\d{1,2})[\/\-.](\d{4})$/);if(m)return `${m[2]}-${m[1].padStart(2,'0')}-28`; // MM/YYYY
+  const d=new Date(s);return isNaN(d)?'':d.toISOString().slice(0,10);
+}
+let _sheetPromise=null;
+function loadSheetJS(){if(window.XLSX)return Promise.resolve(window.XLSX);if(_sheetPromise)return _sheetPromise;
+  _sheetPromise=new Promise((res,rej)=>{const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload=()=>res(window.XLSX);s.onerror=rej;document.head.appendChild(s);});return _sheetPromise;}
+
+/* ========================================================
+   RETOURS GROSSISTES
+   ======================================================== */
+function renderRetours(){
+  // Fenêtre de retour: entre 3 et 6 mois avant péremption
+  const eligible=DB.stock.filter(x=>{const m=monthsTo(x.expiration);return m>3&&m<=6&&(+x.quantite||0)>0;});
+  const byG={};eligible.forEach(x=>{const g=x.grossiste||'Non attribué';(byG[g]=byG[g]||[]).push(x);});
+  const el=document.getElementById('retoursList');
+  const groups=Object.keys(byG).sort();
+  if(!groups.length){el.innerHTML=`<div class="card">${emptyBox('Aucun produit dans la fenêtre de retour (3 à 6 mois). Vérifiez vos dates d\'expiration.')}</div>`;return;}
+  el.innerHTML=groups.map(g=>{
+    const items=byG[g].sort((a,b)=>new Date(a.expiration)-new Date(b.expiration));
+    const tot=items.reduce((a,x)=>a+(+x.quantite||0)*(+x.pu||0),0);
+    const qte=items.reduce((a,x)=>a+(+x.quantite||0),0);
+    return `<div class="card pad" style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <div><h3 style="font-size:1.1rem;margin:0">${esc(g)}</h3><span class="note">${items.length} référence(s) · ${qte} boîtes · <b>${money(tot)}</b></span></div>
+        <div class="btn-row">
+          <button class="btn blue sm" onclick="printBordereau('${esc(g).replace(/'/g,"\\'")}')">🖨 Bordereau A4</button>
+          <button class="btn wa sm" onclick="waBordereau('${esc(g).replace(/'/g,"\\'")}')">WhatsApp</button>
+        </div>
+      </div>
+      <div class="tbl-wrap"><table style="min-width:520px"><thead><tr><th>Désignation</th><th>Lot</th><th>Exp.</th><th>Qté</th><th>Valeur</th></tr></thead>
+      <tbody>${items.map(x=>`<tr class="row-warn"><td class="cell-strong">${esc(x.nom)}<div class="cell-mini">${esc([x.forme,x.dosage].filter(Boolean).join(' '))}</div></td><td>${esc(x.lot||'—')}</td><td>${fmtDate(x.expiration)}</td><td>${x.quantite}</td><td class="money">${money((+x.quantite||0)*(+x.pu||0))}</td></tr>`).join('')}</tbody></table></div>
+    </div>`;}).join('');
+}
+function retourItems(g){return DB.stock.filter(x=>{const m=monthsTo(x.expiration);return m>3&&m<=6&&(+x.quantite||0)>0&&(x.grossiste||'Non attribué')===g;}).sort((a,b)=>new Date(a.expiration)-new Date(b.expiration));}
+function printBordereau(g){
+  const items=retourItems(g);const p=DB.profile;
+  const total=items.reduce((a,x)=>a+(+x.quantite||0)*(+x.pu||0),0);
+  document.getElementById('printArea').innerHTML=`<div class="a4">
+    <div class="ph-head">
+      <div><h1>${esc(p.nom||'Pharmacie')}</h1><div style="font-size:9pt">${esc(p.pharm||'')}</div></div>
+      <div class="meta">${p.inpe?'INPE : '+esc(p.inpe)+'<br>':''}${p.patente?'Patente : '+esc(p.patente)+'<br>':''}${esc(p.adr||'')}${p.adr?'<br>':''}${esc(p.ville||'')}${p.tel?' · '+esc(p.tel):''}</div>
+    </div>
+    <div class="doc-title">BORDEREAU DE RETOUR MARCHANDISE</div>
+    <div style="display:flex;justify-content:space-between;font-size:10pt;margin-bottom:6px">
+      <span><b>Répartiteur / Laboratoire :</b> ${esc(g)}</span>
+      <span><b>Date :</b> ${new Date().toLocaleDateString('fr-FR')}</span>
+    </div>
+    <table><thead><tr><th>#</th><th>Désignation</th><th>Forme</th><th>Dosage</th><th>N° Lot</th><th>Expiration</th><th>Qté</th><th>P.U.</th><th>Montant</th><th>Motif</th></tr></thead>
+    <tbody>${items.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.nom)}</td><td>${esc(x.forme||'')}</td><td>${esc(x.dosage||'')}</td><td>${esc(x.lot||'')}</td><td>${fmtDate(x.expiration)}</td><td style="text-align:center">${x.quantite}</td><td style="text-align:right">${(+x.pu||0).toFixed(2)}</td><td style="text-align:right">${((+x.quantite||0)*(+x.pu||0)).toFixed(2)}</td><td>Péremption proche</td></tr>`).join('')}
+    <tr><td colspan="8" style="text-align:right;font-weight:bold">TOTAL (${DEVISE})</td><td style="text-align:right;font-weight:bold">${total.toFixed(2)}</td><td></td></tr></tbody></table>
+    <div class="sign">
+      <div>Cachet & signature du pharmacien<div class="ln">&nbsp;</div></div>
+      <div>Visa livreur-répartiteur & date de prise en charge<div class="ln">&nbsp;</div></div>
+    </div>
+    <div class="foot">Document généré par PharmaAlert Pro — ${esc(p.nom||'')} · ${new Date().toLocaleString('fr-FR')}</div>
+  </div>`;
+  window.print();
+}
+function waBordereau(g){
+  const items=retourItems(g);const p=DB.profile;
+  let t=`*PRÉAVIS DE RETOUR*\n${p.nom||'Pharmacie'}${p.ville?' — '+p.ville:''}\nRépartiteur : ${g}\n\n`;
+  items.forEach((x,i)=>{t+=`${i+1}. ${x.nom} ${x.dosage||''} — Lot ${x.lot||'—'} — exp. ${fmtDate(x.expiration)} — Qté ${x.quantite}\n`;});
+  const tot=items.reduce((a,x)=>a+(+x.quantite||0)*(+x.pu||0),0);
+  t+=`\nTotal estimé : ${money(tot)}\nMerci de programmer la prise en charge.`;
+  // demande du numéro du délégué
+  const phone=prompt('Numéro WhatsApp du délégué '+g+' (laisser vide pour choisir le contact dans WhatsApp) :','');
+  window.open(phone?waLink(phone,t):'https://api.whatsapp.com/send?text='+encodeURIComponent(t),'_blank');
+}
+
+/* ========================================================
+   CONSEIL COMPTOIR + DÉSTOCKAGE
+   ======================================================== */
+const CONSEIL=[
+  {fam:'Douleurs musculaires & articulaires',icon:'💪',prods:[
+    {nom:'Voltarène Emulgel',fr:'Anti-inflammatoire local pour douleurs articulaires et tendinites. Appliquer 3-4x/jour.',dj:'Had la pommade kat9ad l\'wja3 dyal l\'3adam w l\'mfassel, dirha 3la l\'blassa li kat9lek 3la 7sab 3 ou 4 marrat f nhar.'},
+    {nom:'Biofreeze',fr:'Gel effet froid, soulage rapidement les douleurs musculaires sans odeur.',dj:'Gel bared, kayfaraj daghya 3la l\'3adalat, bla ri7a 9wiya.'},
+    {nom:'Flexium',fr:'Topique anti-douleur articulaire, idéal pour l\'effort et l\'arthrose.',dj:'Mezyan l\'wja3 dyal l\'mfassel w li kaydiro majhoud.'},
+    {nom:'Chondrostéo',fr:'Complément pour le cartilage et le confort articulaire durable.',dj:'Moukammil kayfid l\'ghodrof dyal l\'mfassel bach ykono m\'rta7in.'}
+  ]},
+  {fam:'Magnésium & Fatigue',icon:'🔋',prods:[
+    {nom:'Oxymag',fr:'Magnésium marin contre fatigue, stress et crampes. Cure de 1 mois.',dj:'Magnesium dyal l\'b7ar l\'t3ab, l\'stress w l\'crampe, cure dyal cher.'},
+    {nom:'Mag 2',fr:'Magnésium bien toléré, recommandé en cas de nervosité et fatigue passagère.',dj:'Magnesium khfif 3la l\'m3da, mezyan mnin katkoun 3asbi wla t3ban.'}
+  ]},
+  {fam:'Rhume & Toux',icon:'🤧',prods:[
+    {nom:'Humex',fr:'Soulage le rhume, nez bouché et écoulement. Respecter la posologie.',dj:'Kayfaraj 3la rwa7, nif m9fol w l\'ma li kaysil mn nif.'},
+    {nom:'Doliprane',fr:'Paracétamol : fièvre et douleurs du rhume. Max 3g/jour adulte.',dj:'Paracétamol l\'s5ana w l\'wja3, ma tfout-ch 3g f nhar l\'kbar.'}
+  ]},
+  {fam:'Confort digestif',icon:'🌿',prods:[
+    {nom:'Smecta',fr:'Diarrhée et inconfort digestif. Bien s\'hydrater en parallèle.',dj:'L\'is-hal w l\'m3da, chrab l\'ma bezzaf m3ah.'},
+    {nom:'Gaviscon',fr:'Brûlures et remontées acides après repas. Prendre après manger.',dj:'L\'7er9a w l\'7mouda mora l\'makla, khodo mora ma takol.'}
+  ]},
+  {fam:'Vitamines & Immunité',icon:'🍊',prods:[
+    {nom:'Supradyn',fr:'Multivitamines pour l\'énergie et la vitalité au quotidien.',dj:'Vitaminat bach tkoun 3andek taqa koll nhar.'},
+    {nom:'Vitamine C',fr:'Renfort immunitaire, idéal en période de fatigue ou de rhume.',dj:'Katqawi l\'mna3a, mezyana mnin katkoun t3ban wla 3andek rwa7.'}
+  ]}
+];
+let conseilFam=0;
+function renderConseil(){
+  document.getElementById('conseilFamilies').innerHTML=CONSEIL.map((c,i)=>`<span class="chip ${i===conseilFam?'active':''}" onclick="conseilFam=${i};renderConseil()">${c.icon} ${esc(c.fam)}</span>`).join('');
+  const c=CONSEIL[conseilFam];
+  // Déstockage: chercher dans le stock un produit de cette famille (surstock ou proche péremption)
+  const names=c.prods.map(p=>p.nom.toLowerCase());
+  const matches=DB.stock.filter(x=>{const n=(x.nom||'').toLowerCase();return names.some(nm=>n.includes(nm.split(' ')[0].toLowerCase()))&&(+x.quantite||0)>0;});
+  let destock='';
+  if(matches.length){
+    // priorité: péremption la plus proche, sinon surstock (qté max)
+    matches.sort((a,b)=>{const ma=monthsTo(a.expiration),mb=monthsTo(b.expiration);if(ma!==mb)return ma-mb;return (b.quantite||0)-(a.quantite||0);});
+    const t=matches[0];const prod=c.prods.find(p=>(t.nom||'').toLowerCase().includes(p.nom.split(' ')[0].toLowerCase()))||c.prods[0];
+    const m=monthsTo(t.expiration);
+    destock=`<div class="gold-box" style="margin-bottom:16px">
+      <span class="tag">⭐ À déstocker en priorité</span>
+      <h4>${esc(t.nom)}</h4>
+      <div style="display:flex;gap:18px;flex-wrap:wrap;font-size:.9rem">
+        <span><b style="font-size:1.3rem">${t.quantite}</b> unités en stock</span>
+        <span>Valeur à préserver : <b class="money">${money((+t.quantite||0)*(+t.pu||0))}</b></span>
+        <span>${m<=6?`<span class="badge ${m<=3?'b-crit':'b-warn'}">Exp. ${fmtDate(t.expiration)}</span>`:'En surstock'}</span>
+      </div>
+      <div class="argu"><div class="lab">Argumentaire — Français</div>${esc(prod.fr)}</div>
+      <div class="argu"><div class="lab">Argumentaire — Darija</div>${esc(prod.dj)}</div>
+    </div>`;
+  }else{
+    destock=`<div class="card pad" style="margin-bottom:16px"><p class="note" style="margin:0">Aucun produit de cette famille en stock actuellement. Ajoutez vos références pour activer le déstockage prioritaire.</p></div>`;
+  }
+  document.getElementById('conseilContent').innerHTML=destock+`
+    <div class="section-title">Références conseil & argumentaires</div>
+    <div class="grid g2">${c.prods.map(p=>{
+      const inStock=DB.stock.find(x=>(x.nom||'').toLowerCase().includes(p.nom.split(' ')[0].toLowerCase())&&(+x.quantite||0)>0);
+      return `<div class="card pad">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <b>${esc(p.nom)}</b>${inStock?`<span class="badge b-ok">${inStock.quantite} en stock</span>`:'<span class="badge b-mut">Hors stock</span>'}</div>
+        <div class="argu" style="border-style:solid;border-color:var(--line)"><div class="lab" style="color:var(--brand-d)">Français</div>${esc(p.fr)}</div>
+        <div class="argu" style="border-style:solid;border-color:var(--line)"><div class="lab" style="color:var(--brand-d)">Darija</div>${esc(p.dj)}</div>
+      </div>`;}).join('')}</div>`;
+}
+
+/* ========================================================
+   RÉSEAU B2B
+   ======================================================== */
+let reseauTab='partners';
+function setReseauTab(el){document.querySelectorAll('#view-reseau .chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');reseauTab=el.dataset.t;renderReseau();}
+function renderReseau(){
+  const c=document.getElementById('reseauContent');
+  if(reseauTab==='partners')return renderPartners(c);
+  if(reseauTab==='bourse')return renderBourse(c);
+  if(reseauTab==='sos')return renderSOS(c);
+  if(reseauTab==='ruptures')return renderRuptures(c);
+}
+function renderPartners(c){
+  c.innerHTML=`<div class="btn-row" style="margin-bottom:12px"><button class="btn primary sm" onclick="openPartnerForm()">＋ Ajouter une pharmacie</button></div>
+    <div class="card" id="partnersList"></div>`;
+  const el=document.getElementById('partnersList');
+  if(!DB.partners.length){el.innerHTML=emptyBox('Aucune pharmacie partenaire. Constituez votre carnet confraternel.');return;}
+  el.innerHTML=DB.partners.map(p=>`<div class="list-item">
+    <div class="avatar">${esc((p.nom||'?').slice(0,2).toUpperCase())}</div>
+    <div class="li-main"><div class="li-title">${esc(p.nom)}</div><div class="li-sub">${esc([p.quartier,p.ville].filter(Boolean).join(', '))}${p.titulaire?' · '+esc(p.titulaire):''}</div></div>
+    <div class="btn-row"><button class="btn wa sm" onclick="openWa('${esc(p.whatsapp)}','Salam, confrère.')">💬</button>
+    <button class="btn sm ghost" onclick="openPartnerForm('${p.id}')">✎</button></div>
+  </div>`).join('');
+}
+function openPartnerForm(id){const p=id?DB.partners.find(x=>x.id===id):{};const isE=!!id;
+  modal(isE?'Modifier la pharmacie':'Nouvelle pharmacie partenaire',`
+    <div class="form-grid">
+      <div class="field" style="grid-column:1/-1"><label>Nom de la pharmacie *</label><input id="p_nom" value="${esc(p.nom||'')}"></div>
+      <div class="field"><label>Ville</label><input id="p_ville" value="${esc(p.ville||'')}"></div>
+      <div class="field"><label>Quartier</label><input id="p_quartier" value="${esc(p.quartier||'')}"></div>
+      <div class="field"><label>Titulaire</label><input id="p_titulaire" value="${esc(p.titulaire||'')}"></div>
+      <div class="field"><label>WhatsApp *</label><input id="p_wa" value="${esc(p.whatsapp||'')}" placeholder="06.. ou +212.."></div>
+    </div>
+    <div class="btn-row"><button class="btn primary block" onclick="savePartner('${id||''}')">${isE?'Enregistrer':'Ajouter'}</button>
+    ${isE?`<button class="btn danger" onclick="delPartner('${id}')">Supprimer</button>`:''}</div>`);
+}
+function savePartner(id){const nom=val('p_nom');if(!nom){toast('Nom requis');return;}
+  const o={nom,ville:val('p_ville'),quartier:val('p_quartier'),titulaire:val('p_titulaire'),whatsapp:val('p_wa')};
+  if(id)Object.assign(DB.partners.find(x=>x.id===id),o);else{o.id=uid();DB.partners.push(o);}
+  save();closeModal();renderReseau();toast(id?'Pharmacie modifiée':'Pharmacie ajoutée');}
+function delPartner(id){if(!confirm('Supprimer cette pharmacie ?'))return;DB.partners=DB.partners.filter(x=>x.id!==id);save();closeModal();renderReseau();}
+
+function renderBourse(c){
+  c.innerHTML=`<p class="note">Proposez vos boîtes proches de péremption aux confrères (au PAMP ou avec remise concertée) pour éviter la perte sèche.</p>
+    <div class="btn-row" style="margin:10px 0 12px"><button class="btn primary sm" onclick="openBourseForm()">＋ Proposer un surstock</button>
+    <button class="btn sm" onclick="suggestBourse()">↻ Suggérer depuis le stock</button></div>
+    <div class="grid g2" id="bourseList"></div>`;
+  const el=document.getElementById('bourseList');
+  if(!DB.bourse.length){el.innerHTML='<div class="card pad">'+emptyBox('Aucune offre. Ajoutez un surstock à proposer.')+'</div>';return;}
+  el.innerHTML=DB.bourse.map(b=>`<div class="card pad">
+    <div style="display:flex;justify-content:space-between;align-items:start"><b>${esc(b.nom)}</b><button class="x" onclick="delBourse('${b.id}')">×</button></div>
+    <div class="note">${b.qte} boîte(s) · exp. ${fmtDate(b.exp)}</div>
+    <div style="margin:6px 0"><span class="badge b-blue">Prix proposé : ${money(b.prix)}</span></div>
+    <button class="btn wa sm block" onclick="broadcastBourse('${b.id}')">📢 Diffuser aux confrères</button>
+  </div>`).join('');
+}
+function openBourseForm(pref){const p=pref||{};
+  modal('Proposer un surstock',`
+    <div class="field"><label>Produit *</label><input id="b_nom" value="${esc(p.nom||'')}"></div>
+    <div class="form-grid">
+      <div class="field"><label>Quantité</label><input id="b_qte" type="number" value="${p.qte||1}"></div>
+      <div class="field"><label>Expiration</label><input id="b_exp" type="date" value="${esc(p.exp||'')}"></div>
+      <div class="field"><label>Prix proposé (${DEVISE})</label><input id="b_prix" type="number" step="0.01" value="${p.prix!=null?p.prix:''}"></div>
+    </div>
+    <button class="btn primary block" onclick="saveBourse()">Publier l'offre</button>`);
+}
+function saveBourse(){const nom=val('b_nom');if(!nom){toast('Produit requis');return;}
+  DB.bourse.push({id:uid(),nom,qte:+val('b_qte')||1,exp:val('b_exp'),prix:+val('b_prix')||0});save();closeModal();renderReseau();toast('Offre publiée');}
+function delBourse(id){DB.bourse=DB.bourse.filter(b=>b.id!==id);save();renderReseau();}
+function suggestBourse(){const near=DB.stock.filter(x=>monthsTo(x.expiration)<=4&&(+x.quantite||0)>2).sort((a,b)=>new Date(a.expiration)-new Date(b.expiration))[0];
+  if(!near){toast('Aucun surstock proche de péremption détecté');return;}
+  openBourseForm({nom:near.nom+(near.dosage?' '+near.dosage:''),qte:near.quantite,exp:near.expiration,prix:+(near.pu*0.85).toFixed(2)});}
+function broadcastBourse(id){const b=DB.bourse.find(x=>x.id===id);const p=DB.profile;
+  const t=`*BOURSE SURSTOCK — ${p.nom||'Pharmacie'}*${p.ville?' ('+p.ville+')':''}\n\nDispo : *${b.nom}*\nQté : ${b.qte} boîte(s)\nExp. : ${fmtDate(b.exp)}\nPrix confrère : ${money(b.prix)}\n\nIntéressé(e) ? Répondez SVP.`;
+  window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(t),'_blank');}
+
+function renderSOS(c){
+  c.innerHTML=`<div class="card pad"><h3 style="font-size:1.05rem">🆘 Radar SOS dépannage</h3>
+    <p class="note">Envoyez une alerte formatée aux groupes confraternels pour trouver en urgence une boîte manquante.</p>
+    <div class="field"><label>Produit recherché *</label><input id="sos_nom" placeholder="Ex : Augmentin 1g sachet"></div>
+    <div class="field"><label>Quantité nécessaire</label><input id="sos_qte" type="number" value="1"></div>
+    <button class="btn wa block" onclick="sendSOS()">📢 Diffuser l'alerte SOS WhatsApp</button></div>`;
+}
+function sendSOS(){const nom=val('sos_nom');if(!nom){toast('Indiquez le produit');return;}const p=DB.profile;
+  const t=`🆘 *SOS DÉPANNAGE*\n${p.nom||'Pharmacie'}${p.ville?' — '+p.ville:''}\n\nRecherche en urgence : *${nom}*\nQuantité : ${val('sos_qte')||1}\nPatient au comptoir 🙏\n\nQui peut dépanner ? ${p.tel?'Tél : '+p.tel:''}`;
+  window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(t),'_blank');}
+
+function renderRuptures(c){
+  c.innerHTML=`<div class="btn-row" style="margin-bottom:12px"><button class="btn primary sm" onclick="openRuptureForm()">＋ Signaler une rupture</button></div>
+    <div class="card" id="rupturesList"></div>`;
+  const el=document.getElementById('rupturesList');
+  if(!DB.ruptures.length){el.innerHTML=emptyBox('Aucune rupture enregistrée.');return;}
+  el.innerHTML=DB.ruptures.map((r,i)=>`<div class="list-item">
+    <div class="avatar" style="background:var(--crit-bg);color:var(--crit)">⚠</div>
+    <div class="li-main"><div class="li-title">${esc(r.molecule)}</div><div class="li-sub">Alternatives : ${esc(r.alt||'—')}</div></div>
+    <button class="x" onclick="delRupture(${i})">×</button></div>`).join('');
+}
+function openRuptureForm(){modal('Signaler une rupture nationale',`
+  <div class="field"><label>Molécule / Spécialité en rupture *</label><input id="r_mol"></div>
+  <div class="field"><label>Alternatives thérapeutiques</label><textarea id="r_alt" rows="2"></textarea></div>
+  <button class="btn primary block" onclick="saveRupture()">Enregistrer</button>`);}
+function saveRupture(){const m=val('r_mol');if(!m){toast('Molécule requise');return;}DB.ruptures.unshift({molecule:m,alt:val('r_alt')});save();closeModal();renderReseau();toast('Rupture enregistrée');}
+function delRupture(i){DB.ruptures.splice(i,1);save();renderReseau();}
+
+/* ========================================================
+   CRÉDIT (KOUNACH)
+   ======================================================== */
+function renderCredit(){
+  const q=(document.getElementById('creditSearch').value||'').toLowerCase().trim();
+  const totalDu=DB.credits.reduce((a,c)=>a+(+c.solde||0),0);
+  const totalRec=DB.credits.reduce((a,c)=>a+(+c.recouvre||0),0);
+  const retards=DB.credits.filter(c=>(+c.solde||0)>0&&daysTo(c.date)<-30).length;
+  document.getElementById('creditStats').innerHTML=`
+    ${stat('danger','Encours total',money(totalDu).replace(' '+DEVISE,''),DEVISE+' à recouvrer','coin')}
+    ${stat('good','Déjà recouvré',money(totalRec).replace(' '+DEVISE,''),DEVISE,'coin')}
+    ${stat('warn','Retards > 30j',retards,'client(s)','alert')}`;
+  let list=DB.credits.filter(c=>!q||(c.nom||'').toLowerCase().includes(q)||(c.tel||'').includes(q));
+  list.sort((a,b)=>(+b.solde||0)-(+a.solde||0));
+  const el=document.getElementById('creditList');
+  if(!list.length){el.innerHTML=emptyBox('Aucun client à crédit. Ajoutez une créance.');return;}
+  el.innerHTML=list.map(c=>{const retard=(+c.solde||0)>0&&daysTo(c.date)<-30;
+    return `<div class="list-item">
+    <div class="avatar" style="${retard?'background:var(--crit-bg);color:var(--crit)':''}">${esc((c.nom||'?').slice(0,2).toUpperCase())}</div>
+    <div class="li-main"><div class="li-title">${esc(c.nom)} ${retard?'<span class="badge b-crit">Retard</span>':''}</div>
+      <div class="li-sub">${esc(c.tel||'')} · dernier engagement ${fmtDate(c.date)}</div></div>
+    <div style="text-align:right"><div class="money" style="color:${(+c.solde||0)>0?'var(--crit)':'var(--ok)'}">${money(c.solde)}</div>
+      <div class="btn-row" style="justify-content:flex-end;margin-top:4px">
+        <button class="btn wa sm" onclick="relanceCredit('${c.id}')">💬</button>
+        <button class="btn sm ghost" onclick="openCreditForm('${c.id}')">✎</button>
+      </div></div>
+  </div>`;}).join('');
+}
+function openCreditForm(id){const c=id?DB.credits.find(x=>x.id===id):{};const isE=!!id;
+  modal(isE?'Fiche crédit client':'Nouveau client à crédit',`
+    <div class="form-grid">
+      <div class="field"><label>Nom du client *</label><input id="c_nom" value="${esc(c.nom||'')}"></div>
+      <div class="field"><label>Téléphone</label><input id="c_tel" value="${esc(c.tel||'')}" placeholder="06.."></div>
+      <div class="field"><label>Solde dû (${DEVISE}) *</label><input id="c_solde" type="number" step="0.01" value="${c.solde!=null?c.solde:''}"></div>
+      <div class="field"><label>Date d'engagement</label><input id="c_date" type="date" value="${esc(c.date||today())}"></div>
+    </div>
+    ${isE?`<div class="divider"></div>
+    <div class="section-title" style="margin-top:0">Enregistrer un versement (acompte)</div>
+    <div class="form-grid"><div class="field"><label>Montant versé</label><input id="c_pay" type="number" step="0.01" placeholder="0.00"></div>
+    <div class="field" style="display:flex;align-items:flex-end"><button class="btn block" onclick="payCredit('${id}')">Encaisser l'acompte</button></div></div>`:''}
+    <div class="btn-row"><button class="btn primary block" onclick="saveCredit('${id||''}')">${isE?'Enregistrer':'Ajouter la créance'}</button>
+    ${isE?`<button class="btn" onclick="settleCredit('${id}')">Solder (0 DH)</button><button class="btn danger" onclick="delCredit('${id}')">Suppr.</button>`:''}</div>`);
+}
+function saveCredit(id){const nom=val('c_nom');if(!nom){toast('Nom requis');return;}
+  const o={nom,tel:val('c_tel'),solde:+val('c_solde')||0,date:val('c_date')||today()};
+  if(id)Object.assign(DB.credits.find(x=>x.id===id),o);else{o.id=uid();o.recouvre=0;DB.credits.push(o);}
+  save();closeModal();renderCredit();toast(id?'Fiche mise à jour':'Créance ajoutée');}
+function payCredit(id){const c=DB.credits.find(x=>x.id===id);const p=+val('c_pay');if(!p||p<=0){toast('Montant invalide');return;}
+  c.solde=Math.max(0,(+c.solde||0)-p);c.recouvre=(+c.recouvre||0)+p;c.date=today();save();closeModal();renderCredit();toast('Acompte de '+money(p)+' encaissé');}
+function settleCredit(id){const c=DB.credits.find(x=>x.id===id);c.recouvre=(+c.recouvre||0)+(+c.solde||0);c.solde=0;c.date=today();save();closeModal();renderCredit();toast('Créance soldée ✓');}
+function delCredit(id){if(!confirm('Supprimer ce client ?'))return;DB.credits=DB.credits.filter(x=>x.id!==id);save();closeModal();renderCredit();}
+function relanceCredit(id){const c=DB.credits.find(x=>x.id===id);const p=DB.profile;
+  const t=`Bonjour ${c.nom}, 🙏\nCeci est un rappel courtois de ${p.nom||'votre pharmacie'}.\nIl reste un solde de *${money(c.solde)}* sur votre compte.\nMerci de passer à votre convenance pour régulariser. Bonne journée !`;
+  openWa(c.tel,t);}
+
+/* ========================================================
+   PROFIL & DONNÉES
+   ======================================================== */
+function renderProfile(){const p=DB.profile;
+  setV('pf_nom',p.nom);setV('pf_pharm',p.pharm);setV('pf_inpe',p.inpe);setV('pf_patente',p.patente);
+  setV('pf_ville',p.ville);setV('pf_tel',p.tel);setV('pf_adr',p.adr);}
+function setV(id,v){const e=document.getElementById(id);if(e)e.value=v||'';}
+function saveProfile(){DB.profile={nom:val('pf_nom')||'Ma Pharmacie',pharm:val('pf_pharm'),inpe:val('pf_inpe'),patente:val('pf_patente'),ville:val('pf_ville'),tel:val('pf_tel'),adr:val('pf_adr')};
+  save();document.getElementById('phNameTop').textContent=DB.profile.nom;toast('Profil enregistré ✓');}
+function backupData(){downloadFile('pharmaalert_sauvegarde_'+today()+'.json',JSON.stringify(DB,null,2),'application/json');toast('Sauvegarde exportée');}
+function restoreData(){_fileCb=(file)=>{const r=new FileReader();r.onload=e=>{try{const d=JSON.parse(e.target.result);if(!d.profile&&!d.stock)throw 0;DB=d;const b=blankDB();for(const k in b)if(!(k in DB))DB[k]=b[k];save();boot();toast('Données restaurées ✓');}catch(err){toast('Fichier de sauvegarde invalide');}};r.readAsText(file);};
+  document.getElementById('fileInput').value='';document.getElementById('fileInput').click();}
+function wipeData(){if(!confirm('Effacer TOUTES les données de l\'application ? Cette action est irréversible.'))return;localStorage.removeItem(LS);DB=blankDB();save();boot();toast('Données effacées');}
+function today(){return new Date().toISOString().slice(0,10);}
+function downloadFile(name,content,type){const blob=new Blob([content],{type});const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1500);}
+
+/* ---------- File input dispatcher ---------- */
+document.getElementById('fileInput').addEventListener('change',function(){if(this.files[0]&&_fileCb){_fileCb(this.files[0]);_fileCb=null;}});
+
+/* ========================================================
+   DONNÉES DÉMO
+   ======================================================== */
+function loadDemo(){
+  if(DB.stock.length&&!confirm('Charger les données de démonstration ? Elles s\'ajouteront à vos données actuelles.'))return;
+  const addMonths=(n)=>{const d=new Date();d.setMonth(d.getMonth()+n);return d.toISOString().slice(0,10);};
+  DB.profile={nom:'Pharmacie Al Amal',pharm:'Dr. Youssef Benani',inpe:'12/3456',patente:'7890123',ville:'Casablanca',tel:'0522-000000',adr:'12 Bd Mohammed V, Maârif'};
+  DB.stock.push(
+    {id:uid(),nom:'Doliprane',forme:'Comprimé',dosage:'1000mg',lot:'DOL2401',expiration:addMonths(2),quantite:8,pu:28.50,grossiste:'Sothema'},
+    {id:uid(),nom:'Voltarène Emulgel',forme:'Gel',dosage:'1%',lot:'VLT889',expiration:addMonths(4),quantite:12,pu:62.00,grossiste:'Laprophan'},
+    {id:uid(),nom:'Oxymag',forme:'Comprimé',dosage:'',lot:'OXY556',expiration:addMonths(5),quantite:15,pu:54.00,grossiste:'Cooper Pharma'},
+    {id:uid(),nom:'Humex Rhume',forme:'Comprimé',dosage:'',lot:'HMX210',expiration:addMonths(1),quantite:3,pu:45.00,grossiste:'Upsilon'},
+    {id:uid(),nom:'Mag 2',forme:'Ampoule',dosage:'',lot:'MG2100',expiration:addMonths(9),quantite:20,pu:48.00,grossiste:'Cooper Pharma'},
+    {id:uid(),nom:'Flexium',forme:'Gel',dosage:'',lot:'FLX073',expiration:addMonths(3),quantite:9,pu:58.00,grossiste:'Afric-Phar'},
+    {id:uid(),nom:'Supradyn',forme:'Comprimé eff.',dosage:'',lot:'SPD442',expiration:addMonths(14),quantite:25,pu:75.00,grossiste:'Laprophan'},
+    {id:uid(),nom:'Smecta',forme:'Sachet',dosage:'3g',lot:'SMC900',expiration:addMonths(5),quantite:18,pu:32.00,grossiste:'Sothema'}
+  );
+  DB.partners.push(
+    {id:uid(),nom:'Pharmacie Ennour',ville:'Casablanca',quartier:'Maârif',titulaire:'Dr. Alaoui',whatsapp:'0661223344'},
+    {id:uid(),nom:'Pharmacie Centrale',ville:'Casablanca',quartier:'Gauthier',titulaire:'Dr. Tazi',whatsapp:'0677889900'}
+  );
+  DB.credits.push(
+    {id:uid(),nom:'Ahmed Rifi',tel:'0612345678',solde:240,recouvre:60,date:addMonths(-2)},
+    {id:uid(),nom:'Fatima Zahra',tel:'0698765432',solde:85,recouvre:0,date:addMonths(0)}
+  );
+  save();document.getElementById('phNameTop').textContent=DB.profile.nom;go('dash');toast('Données démo chargées ✓');
+}
+
+/* ========================================================
+   BOOT
+   ======================================================== */
+function boot(){
+  document.getElementById('phNameTop').textContent=DB.profile.nom||'Ma Pharmacie';
+  renderDash();renderProfile();
+}
+load();boot();
+
+/* Service worker (hors-ligne) */
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));}
+</script>
+</body>
+</html>
