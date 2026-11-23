@@ -397,6 +397,21 @@ th{background:var(--cream);color:var(--brand-d)}
 .lang-opt.active{border-color:var(--brand);background:var(--brand-l);color:var(--brand-dd)}
 .lang-opt .chk{margin-inline-start:auto;color:var(--brand);font-weight:900}
 
+/* Visite guidée (démo) */
+.tour-ov{position:fixed;left:0;right:0;bottom:0;z-index:96;padding:0 12px calc(80px + env(safe-area-inset-bottom));pointer-events:none}
+.tour-card{pointer-events:auto;max-width:620px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-lg);padding:15px 17px;animation:slideup .25s ease}
+.tour-card::before{content:'';position:absolute}
+.tour-head{display:flex;align-items:center;gap:11px;margin-bottom:4px}
+.tour-ic{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--brand-l),#eafaf4);display:flex;align-items:center;justify-content:center;font-size:21px;flex:none}
+.tour-step{font-size:.68rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.6px}
+.tour-title{font-weight:800;font-size:1.12rem;color:var(--brand-dd);line-height:1.15}
+.tour-text{font-size:.92rem;color:var(--ink);margin:8px 0 12px;line-height:1.5}
+.tour-nav{display:flex;align-items:center;gap:8px}
+.tour-dots{display:flex;gap:5px;flex:1;flex-wrap:wrap;align-items:center}
+.tour-dot{width:7px;height:7px;border-radius:50%;background:var(--line);transition:.2s}
+.tour-dot.on{background:var(--brand);width:18px;border-radius:4px}
+.btn-demo{background:linear-gradient(135deg,var(--gold-line),var(--gold))!important;border-color:var(--gold)!important;color:#fff!important}
+
 .list-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
 .list-item:last-child{border-bottom:none}
 .avatar{width:42px;height:42px;border-radius:12px;background:var(--brand-l);color:var(--brand-d);display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
@@ -497,6 +512,7 @@ th{background:var(--cream);color:var(--brand-d)}
     <div class="card pad">
       <h3 style="font-size:1rem;margin-bottom:8px">⚡ Accès rapide</h3>
       <div class="btn-row">
+        <button class="btn sm btn-demo" onclick="startTour()">🎬 Démo guidée</button>
         <button class="btn primary sm" onclick="go('caisse')">💵 Nouvelle vente</button>
         <button class="btn blue sm" onclick="go('scan')">📷 Scanner une boîte</button>
         <button class="btn sm" onclick="openStockForm()">+ Produit</button>
@@ -636,6 +652,7 @@ th{background:var(--cream);color:var(--brand-d)}
 
   <div class="section-title">Données & sauvegarde</div>
   <div class="card pad">
+    <button class="btn block btn-demo" style="margin-bottom:12px" onclick="startTour()">🎬 Lancer la visite guidée (démo)</button>
     <p class="note" style="margin-top:0">Toutes les données sont stockées localement sur l'appareil (hors-ligne). Exportez une sauvegarde régulièrement.</p>
     <div class="btn-row">
       <button class="btn sm" onclick="backupData()">⤒ Sauvegarde (JSON)</button>
@@ -810,6 +827,7 @@ const I18N={
  "Code-barres détecté":["Barcode detected","تم كشف الباركود"],
  "Analyse du produit en cours":["Analyzing the product","جاري تحليل المنتج"],"Informations":["Information","معلومات"],"Source":["Source","المصدر"],"Informations détaillées non disponibles pour ce produit.":["Detailed information not available for this product.","ما كايناش معلومات مفصّلة على هاد المنتج."],"Produit non reconnu. Essayez un meilleur cadrage ou la recherche manuelle.":["Product not recognized. Try better framing or manual search.","ما تعرفش على المنتج. حاول تصوير أحسن ولا البحث اليدوي."],
  "Caisse & Ventes":["Checkout & Sales","الصندوق والمبيعات"],"Caisse":["Checkout","الصندوق"],"Ventes":["Sales","المبيعات"],"Enregistrer une vente · chiffre d'affaires du jour":["Record a sale · today's revenue","سجّل بيعة · مداخيل اليوم"],"Ajouter un produit à la vente":["Add a product to the sale","زيد منتج للبيعة"],"Rechercher un produit du stock…":["Search a product in stock…","قلب على منتج ف المخزون…"],"CA du jour":["Today's revenue","مداخيل اليوم"],"Marge du jour":["Today's margin","ربح اليوم"],"Ventes (jour)":["Sales (day)","مبيعات (اليوم)"],"Chiffre d'affaires (7 jours)":["Revenue (7 days)","رقم المعاملات (7 أيام)"],"Ventes du jour":["Today's sales","مبيعات اليوم"],"Nouvelle vente":["New sale","بيعة جديدة"],"Prix d'achat (DH)":["Cost price (MAD)","ثمن الشراء (درهم)"],"Marge":["Margin","الربح"],
+ "Visite guidée":["Guided tour","جولة إرشادية"],"Précédent":["Previous","السابق"],"Suivant":["Next","التالي"],"Terminer":["Finish","إنهاء"],"🎬 Démo guidée":["🎬 Guided demo","🎬 عرض إرشادي"],"🎬 Lancer la visite guidée (démo)":["🎬 Start the guided tour (demo)","🎬 ابدأ الجولة الإرشادية (عرض)"],
  "Langue":["Language","اللغة"],"Choisissez la langue de l'application":["Choose the app language","اختر لغة التطبيق"]
 };
 let curLang=(function(){try{return localStorage.getItem('pa_lang')||'fr';}catch(e){return 'fr';}})();
@@ -839,6 +857,46 @@ function rerenderCurrent(){const r={dash:renderDash,scan:renderScan,stock:render
 const LANGS=[['fr','🇫🇷','Français'],['en','🇬🇧','English'],['ar','🇲🇦','العربية (الدارجة)']];
 function openLang(){modal(t('Langue'),`<p class="note" style="margin-top:0">${t("Choisissez la langue de l'application")}</p><div class="lang-grid">${LANGS.map(l=>`<button class="lang-opt ${curLang===l[0]?'active':''}" onclick="setLang('${l[0]}')"><span class="flag">${l[1]}</span>${l[2]}${curLang===l[0]?'<span class="chk">✓</span>':''}</button>`).join('')}</div>`);}
 function setLang(l){curLang=l;try{localStorage.setItem('pa_lang',l);}catch(e){}if(DB&&DB.settings){DB.settings.lang=l;save();}closeModal();rerenderCurrent();i18nApply(l);}
+
+/* ========================================================
+   VISITE GUIDÉE (démo de présentation)
+   ======================================================== */
+const TOUR=[
+ {view:'dash',icon:'👋',title:{fr:'Bienvenue — démonstration',en:'Welcome — demo',ar:'مرحبا — عرض تجريبي'},
+  text:{fr:'Cette démo présente une officine gérée de A à Z. Toutes les données sont des exemples. Fonctionne même sans internet, en français, anglais et arabe.',en:'This demo shows a pharmacy managed end to end. All data is sample data. Works even offline, in French, English and Arabic.',ar:'هاد العرض كيبيّن صيدلية مُدبّرة من الألف للياء. جميع المعطيات أمثلة. كيخدم حتى بلا أنترنيت، بالفرنسية والإنجليزية والعربية.'}},
+ {view:'dash',icon:'📊',title:{fr:'Tout voir en un coup d’œil',en:'See everything at a glance',ar:'شوف كلشي بنظرة'},
+  text:{fr:'Dès l’accueil : vos références, les produits bientôt périmés et la valeur immobilisée en dirhams. Vous repérez immédiatement l’argent à sauver.',en:'On the home screen: your references, soon-to-expire products and the value tied up in dirhams. You instantly spot the money to save.',ar:'من الصفحة الرئيسية: المنتجات، لي قرب يسالي، والقيمة المجمّدة بالدرهم. كتلقى دغيا الفلوس لي تقدر تربحها.'}},
+ {view:'caisse',icon:'💵',title:{fr:'Caisse & chiffre d’affaires',en:'Checkout & revenue',ar:'الصندوق ومداخيل اليوم'},
+  text:{fr:'Encaissez vos ventes en un geste : le stock se met à jour et vous suivez votre chiffre d’affaires et votre marge du jour, comme une vraie caisse.',en:'Register sales in one tap: stock updates and you track your daily revenue and margin, just like a real till.',ar:'سجّل البيعات بضغطة: المخزون كيتحدّث وكتتبّع المداخيل والربح ديال النهار بحال صندوق حقيقي.'}},
+ {view:'stock',icon:'⏳',title:{fr:'Stock & péremptions (FEFO)',en:'Stock & expiry (FEFO)',ar:'المخزون والصلاحية (FEFO)'},
+  text:{fr:'Vos lots classés par urgence : rouge (<3 mois), orange (<6 mois). Méthode FEFO : vous vendez d’abord ce qui périme en premier. Vente en 1 clic.',en:'Your batches ranked by urgency: red (<3 months), orange (<6 months). FEFO method: sell what expires first. One-tap sale.',ar:'اللوطات مرتّبة حسب الأولوية: حمر (<3 شهور)، أصفر (<6 شهور). طريقة FEFO: تبيع لي غادي يسالي الأول. بيعة بضغطة.'}},
+ {view:'scan',icon:'📷',title:{fr:'Scan & conseil produit',en:'Product scan & advice',ar:'مسح ونصيحة المنتج'},
+  text:{fr:'Scannez ou tapez un produit : usage, posologie et conseils s’affichent directement dans l’app, en français et en darija.',en:'Scan or type a product: use, dosage and advice appear right in the app, in French and darija.',ar:'صوّر ولا كتب منتج: الاستعمال والجرعة والنصائح كيبانو مباشرة فالتطبيق، بالفرنسية والدارجة.'}},
+ {view:'retours',icon:'↩️',title:{fr:'Zéro perte sur les périmés',en:'Zero loss on expiries',ar:'بلا خسارة على الصلاحية'},
+  text:{fr:'L’app repère ce qui doit être retourné au grossiste et génère un bordereau A4 officiel, prêt à imprimer ou à envoyer par WhatsApp.',en:'The app spots what must be returned to the supplier and generates an official A4 slip, ready to print or send by WhatsApp.',ar:'التطبيق كيلقى لي خاصو يرجع للموزّع وكيصاوب وصل A4 رسمي، واجد للطبع ولا الإرسال عبر واتساب.'}},
+ {view:'conseil',icon:'💡',title:{fr:'Conseil comptoir intelligent',en:'Smart counter advice',ar:'نصيحة الكونوار بذكاء'},
+  text:{fr:'Au comptoir, l’app met en avant le produit à écouler en priorité (surstock ou proche péremption), avec un argumentaire prêt à l’emploi.',en:'At the counter, the app highlights the product to sell first (overstock or near expiry), with a ready-made sales pitch.',ar:'فالكونوار، التطبيق كيبرز المنتج لي خاصك تصرّفو الأول، مع حجة بيع جاهزة.'}},
+ {view:'credit',icon:'💳',title:{fr:'Carnet de crédit digital',en:'Digital credit book',ar:'دفتر الكريدي الرقمي'},
+  text:{fr:'Le kounach digital : qui doit quoi, acomptes, et relances WhatsApp courtoises. Fini le carnet papier.',en:'The digital kounach: who owes what, part-payments, and polite WhatsApp reminders. No more paper book.',ar:'الكوناش الرقمي: شكون خاصو يخلّص، التسبيقات، وتذكير مؤدّب عبر واتساب. سالات الورقة.'}},
+ {view:'stats',icon:'📈',title:{fr:'Pilotage & rentabilité',en:'Steering & profitability',ar:'القيادة والمردودية'},
+  text:{fr:'Valeur du stock, répartition des échéances, chiffre d’affaires sur 7 jours et marge. Vous pilotez votre officine avec des chiffres clairs.',en:'Stock value, expiry breakdown, 7-day revenue and margin. You steer your pharmacy with clear numbers.',ar:'قيمة المخزون، توزيع الآجال، المداخيل ديال 7 أيام والربح. كتقود صيدليتك بأرقام واضحة.'}},
+ {view:'dash',icon:'🚀',title:{fr:'Moins de pertes, plus de ventes',en:'Less waste, more sales',ar:'خسارة أقل، مبيعات أكثر'},
+  text:{fr:'PharmaAlert Pro réunit tout votre officine dans votre poche : péremptions, caisse, retours, crédits et réseau. Essayez-la dès aujourd’hui !',en:'PharmaAlert Pro brings your whole pharmacy into your pocket: expiries, checkout, returns, credit and network. Try it today!',ar:'PharmaAlert Pro كيجمع صيدليتك كاملة فجيبك: الصلاحية، الصندوق، الإرجاع، الكريدي والشبكة. جرّبها اليوم!'}}
+];
+let tourStep=0,tourActive=false;
+function startTour(){closeModal();if(!DB.stock.length){seedDemoData();save();document.getElementById('phNameTop').textContent=DB.profile.nom;}tourActive=true;tourStep=0;renderTour();}
+function renderTour(){if(!tourActive)return;const s=TOUR[tourStep];if(s.view)go(s.view);
+  let ov=document.getElementById('tourOv');if(!ov){ov=document.createElement('div');ov.id='tourOv';ov.className='tour-ov';document.body.appendChild(ov);}
+  const last=tourStep===TOUR.length-1;
+  ov.innerHTML=`<div class="tour-card"><div class="tour-head"><div class="tour-ic">${s.icon}</div><div style="flex:1;min-width:0"><div class="tour-step">${t('Visite guidée')} · ${tourStep+1}/${TOUR.length}</div><div class="tour-title">${esc(L(s.title))}</div></div><button class="x" onclick="endTour()">×</button></div>
+    <div class="tour-text">${esc(L(s.text))}</div>
+    <div class="tour-nav"><div class="tour-dots">${TOUR.map((_,i)=>`<span class="tour-dot ${i===tourStep?'on':''}"></span>`).join('')}</div>
+    ${tourStep>0?`<button class="btn sm" onclick="tourPrev()">${t('Précédent')}</button>`:''}
+    <button class="btn primary sm" onclick="${last?'endTour()':'tourNext()'}">${last?t('Terminer'):t('Suivant')}</button></div></div>`;
+}
+function tourNext(){if(tourStep<TOUR.length-1){tourStep++;renderTour();}else endTour();}
+function tourPrev(){if(tourStep>0){tourStep--;renderTour();}}
+function endTour(){tourActive=false;const ov=document.getElementById('tourOv');if(ov)ov.remove();go('dash');}
 
 /* ---------- Navigation ---------- */
 function go(v){
@@ -1762,7 +1820,7 @@ function shareTicket(t){const sale=DB.sales.find(s=>s.t===t);if(!sale)return;con
 
 /* --- Menu Plus --- */
 function plusItem(v,ic,t,sub){return `<button class="plus-card" onclick="closeModal();go('${v}')"><div class="pic">${ic}</div><div><div class="pt">${esc(t)}</div><div class="ps">${esc(sub)}</div></div></button>`;}
-function openPlus(){modal('Plus',`<div class="plus-grid">
+function openPlus(){modal('Plus',`<button class="btn block btn-demo" style="margin-bottom:12px" onclick="closeModal();startTour()">🎬 ${t('Visite guidée')} (démo)</button><div class="plus-grid">
    ${plusItem('caisse','💵','Caisse & Ventes','Encaisser · CA du jour')}
    ${plusItem('stats','📊','Statistiques','Pilotage & valeur')}
    ${plusItem('reassort','🔄','Réassort','Suggestions de commande')}
