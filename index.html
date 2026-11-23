@@ -1709,7 +1709,19 @@ function boot(){
 load();boot();
 
 /* Service worker (hors-ligne) */
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));}
+if('serviceWorker' in navigator){
+  let _reloading=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(_reloading)return;_reloading=true;location.reload();});
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('service-worker.js').then(reg=>{
+      try{reg.update();}catch(e){}
+      if(reg.waiting&&navigator.serviceWorker.controller){try{reg.waiting.postMessage('skipWaiting');}catch(e){}}
+      reg.addEventListener&&reg.addEventListener('updatefound',()=>{const nw=reg.installing;if(!nw)return;nw.addEventListener('statechange',()=>{if(nw.state==='installed'&&navigator.serviceWorker.controller){try{nw.postMessage('skipWaiting');}catch(e){}}});});
+    }).catch(()=>{});
+    // vérifie les mises à jour quand l'app revient au premier plan
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){navigator.serviceWorker.getRegistration().then(r=>{if(r)try{r.update();}catch(e){}}).catch(()=>{});}});
+  });
+}
 </script>
 </body>
 </html>
