@@ -497,8 +497,9 @@ th{background:var(--cream);color:var(--brand-d)}
     <div class="card pad">
       <h3 style="font-size:1rem;margin-bottom:8px">⚡ Accès rapide</h3>
       <div class="btn-row">
+        <button class="btn primary sm" onclick="go('caisse')">💵 Nouvelle vente</button>
         <button class="btn blue sm" onclick="go('scan')">📷 Scanner une boîte</button>
-        <button class="btn primary sm" onclick="openStockForm()">+ Produit</button>
+        <button class="btn sm" onclick="openStockForm()">+ Produit</button>
         <button class="btn sm" onclick="go('retours')">Bordereaux retour</button>
         <button class="btn sm" onclick="go('conseil')">Conseil comptoir</button>
         <button class="btn sm" onclick="go('credit')">Carnet crédit</button>
@@ -655,6 +656,7 @@ th{background:var(--cream);color:var(--brand-d)}
     <div class="card pad"><h3 style="font-size:1rem;margin-bottom:10px">Valeur immobilisée par grossiste</h3><div id="chartGros"></div></div>
   </div>
   <div class="card pad" style="margin-top:12px"><h3 style="font-size:1rem;margin-bottom:10px">Péremptions à venir (6 prochains mois)</h3><div id="chartMonths"></div></div>
+  <div class="card pad" style="margin-top:12px"><h3 style="font-size:1rem;margin-bottom:10px">Chiffre d'affaires (7 jours)</h3><div id="chartCA"></div></div>
 </section>
 
 <!-- ============ RÉASSORT ============ -->
@@ -674,6 +676,18 @@ th{background:var(--cream);color:var(--brand-d)}
 <section class="view" id="view-pro">
   <div class="page-head"><div><h2>Offre Pro & Parrainage</h2><p>Débloquez tout le potentiel de PharmaAlert</p></div></div>
   <div id="proContent"></div>
+</section>
+
+<!-- ============ CAISSE & VENTES ============ -->
+<section class="view" id="view-caisse">
+  <div class="page-head"><div><h2>Caisse & Ventes</h2><p>Enregistrer une vente · chiffre d'affaires du jour</p></div></div>
+  <div class="grid g3" id="caisseKpi" style="margin-bottom:12px"></div>
+  <div class="card pad" style="margin-bottom:12px">
+    <div class="field" style="margin:0"><label>Ajouter un produit à la vente</label>
+      <input id="caisseSearch" placeholder="Rechercher un produit du stock…" oninput="renderCaisseSearch(this.value)" autocomplete="off"></div>
+    <div id="caisseSuggest"></div>
+  </div>
+  <div id="caisseBasket"></div>
 </section>
 
 </main>
@@ -708,8 +722,8 @@ let DB=null, _fileCb=null;
 /* ---------- Persistance ---------- */
 function blankDB(){return{
   profile:{nom:'Ma Pharmacie',pharm:'',inpe:'',patente:'',ville:'',adr:'',tel:''},
-  settings:{pro:false,parrainage:null,lang:'fr'},
-  history:[],
+  settings:{pro:false,parrainage:null,lang:'fr',seeded:false},
+  history:[], sales:[],
   stock:[], partners:[], credits:[], bourse:[],
   ruptures:[
     {molecule:'Amoxicilline 1g',alt:'Augmentin / Clamoxyl selon prescription'},
@@ -717,9 +731,11 @@ function blankDB(){return{
     {molecule:'Ventoline spray',alt:'Salbutamol générique, Airomir'}
   ]
 };}
-function load(){try{DB=JSON.parse(localStorage.getItem(LS))||blankDB();}catch(e){DB=blankDB();}
+let _fresh=false;
+function load(){const raw=localStorage.getItem(LS);_fresh=(raw===null);try{DB=JSON.parse(raw)||blankDB();}catch(e){DB=blankDB();}
   // migrate missing keys
   const b=blankDB();for(const k in b){if(!(k in DB))DB[k]=b[k];}
+  if(!DB.settings)DB.settings=b.settings;for(const k in b.settings){if(!(k in DB.settings))DB.settings[k]=b.settings[k];}
 }
 function save(){localStorage.setItem(LS,JSON.stringify(DB));}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
@@ -791,7 +807,9 @@ const I18N={
  "Offre Pro & Parrainage":["Pro offer & Referral","عرض Pro والإحالة"],"Débloquez tout le potentiel de PharmaAlert":["Unlock the full power of PharmaAlert","فتح كامل إمكانيات PharmaAlert"],"Version gratuite":["Free version","النسخة المجانية"],"Gratuit":["Free","مجاني"],"Activer Pro":["Activate Pro","تفعيل Pro"],"Code d'activation":["Activation code","كود التفعيل"],"Activer PharmaAlert Pro":["Activate PharmaAlert Pro","فعّل PharmaAlert Pro"],"🎁 Parrainage":["🎁 Referral","🎁 الإحالة"],"Inviter un confrère via WhatsApp":["Invite a peer via WhatsApp","عيّط لزميل عبر واتساب"],"Support prioritaire":["Priority support","دعم ذو أولوية"],
  // Plus / alertes / langue
  "Réassort":["Restocking","التموين"],"Offre Pro":["Pro offer","عرض Pro"],"Profil & données":["Profile & data","الملف والمعطيات"],"🔔 Activer les rappels":["🔔 Enable reminders","🔔 تفعيل التذكيرات"],"🌓 Mode clair / sombre":["🌓 Light / dark mode","🌓 وضع فاتح / غامق"],"Centre d'alertes":["Alert center","مركز التنبيهات"],"Aucune alerte. Tout est sous contrôle ✓":["No alert. Everything is under control ✓","ما كاين حتى تنبيه. كلشي مزيان ✓"],"Pilotage & valeur":["Steering & value","قيادة وقيمة"],"Suggestions de commande":["Order suggestions","اقتراحات الطلب"],"Journal des opérations":["Operations log","سجل العمليات"],"Débloquer & parrainage":["Unlock & referral","فتح وإحالة"],"Confrères & SOS":["Peers & SOS","الزملاء وSOS"],"Officine, sauvegarde":["Pharmacy, backup","الصيدلية، نسخة احتياطية"],
- "Informations (internet)":["Online information","معلومات من الإنترنت"],"Recherche sur internet":["Searching the web","البحث في الإنترنت"],"Recherche web":["Web search","بحث في الويب"],"Lire la suite":["Read more","اقرأ المزيد"],"Code-barres détecté":["Barcode detected","تم كشف الباركود"],"Aucun résultat automatique. Lancez une recherche web :":["No automatic result. Start a web search:","ما كاين نتيجة أوتوماتيكية. دير بحث فالويب:"],
+ "Code-barres détecté":["Barcode detected","تم كشف الباركود"],
+ "Analyse du produit en cours":["Analyzing the product","جاري تحليل المنتج"],"Informations":["Information","معلومات"],"Source":["Source","المصدر"],"Informations détaillées non disponibles pour ce produit.":["Detailed information not available for this product.","ما كايناش معلومات مفصّلة على هاد المنتج."],"Produit non reconnu. Essayez un meilleur cadrage ou la recherche manuelle.":["Product not recognized. Try better framing or manual search.","ما تعرفش على المنتج. حاول تصوير أحسن ولا البحث اليدوي."],
+ "Caisse & Ventes":["Checkout & Sales","الصندوق والمبيعات"],"Caisse":["Checkout","الصندوق"],"Ventes":["Sales","المبيعات"],"Enregistrer une vente · chiffre d'affaires du jour":["Record a sale · today's revenue","سجّل بيعة · مداخيل اليوم"],"Ajouter un produit à la vente":["Add a product to the sale","زيد منتج للبيعة"],"Rechercher un produit du stock…":["Search a product in stock…","قلب على منتج ف المخزون…"],"CA du jour":["Today's revenue","مداخيل اليوم"],"Marge du jour":["Today's margin","ربح اليوم"],"Ventes (jour)":["Sales (day)","مبيعات (اليوم)"],"Chiffre d'affaires (7 jours)":["Revenue (7 days)","رقم المعاملات (7 أيام)"],"Ventes du jour":["Today's sales","مبيعات اليوم"],"Nouvelle vente":["New sale","بيعة جديدة"],"Prix d'achat (DH)":["Cost price (MAD)","ثمن الشراء (درهم)"],"Marge":["Margin","الربح"],
  "Langue":["Language","اللغة"],"Choisissez la langue de l'application":["Choose the app language","اختر لغة التطبيق"]
 };
 let curLang=(function(){try{return localStorage.getItem('pa_lang')||'fr';}catch(e){return 'fr';}})();
@@ -817,7 +835,7 @@ function startI18n(){_i18obs=new MutationObserver(function(muts){if(curLang==='f
   _i18obs.observe(document.body,{childList:true,subtree:true,characterData:true});});
   _i18obs.observe(document.body,{childList:true,subtree:true,characterData:true});}
 function locale(){return curLang==='ar'?'ar-MA':(curLang==='en'?'en-GB':'fr-FR');}
-function rerenderCurrent(){const r={dash:renderDash,scan:renderScan,stock:renderStock,retours:renderRetours,conseil:renderConseil,reseau:renderReseau,credit:renderCredit,profil:renderProfile,stats:renderStats,reassort:renderReassort,historique:renderHistorique,pro:renderPro}[CURV];if(r)r();}
+function rerenderCurrent(){const r={dash:renderDash,scan:renderScan,stock:renderStock,retours:renderRetours,conseil:renderConseil,reseau:renderReseau,credit:renderCredit,profil:renderProfile,stats:renderStats,reassort:renderReassort,historique:renderHistorique,pro:renderPro,caisse:renderCaisse}[CURV];if(r)r();}
 const LANGS=[['fr','🇫🇷','Français'],['en','🇬🇧','English'],['ar','🇲🇦','العربية (الدارجة)']];
 function openLang(){modal(t('Langue'),`<p class="note" style="margin-top:0">${t("Choisissez la langue de l'application")}</p><div class="lang-grid">${LANGS.map(l=>`<button class="lang-opt ${curLang===l[0]?'active':''}" onclick="setLang('${l[0]}')"><span class="flag">${l[1]}</span>${l[2]}${curLang===l[0]?'<span class="chk">✓</span>':''}</button>`).join('')}</div>`);}
 function setLang(l){curLang=l;try{localStorage.setItem('pa_lang',l);}catch(e){}if(DB&&DB.settings){DB.settings.lang=l;save();}closeModal();rerenderCurrent();i18nApply(l);}
@@ -830,7 +848,7 @@ function go(v){
   document.getElementById('view-'+v).classList.add('active');
   document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.v===v));
   window.scrollTo({top:0,behavior:'smooth'});
-  const r={dash:renderDash,scan:renderScan,stock:renderStock,retours:renderRetours,conseil:renderConseil,reseau:renderReseau,credit:renderCredit,profil:renderProfile,stats:renderStats,reassort:renderReassort,historique:renderHistorique,pro:renderPro}[v];
+  const r={dash:renderDash,scan:renderScan,stock:renderStock,retours:renderRetours,conseil:renderConseil,reseau:renderReseau,credit:renderCredit,profil:renderProfile,stats:renderStats,reassort:renderReassort,historique:renderHistorique,pro:renderPro,caisse:renderCaisse}[v];
   if(r)r();
 }
 
@@ -881,6 +899,7 @@ function renderDash(){
     </div>`;}).join('');
 
   document.getElementById('dashFin').innerHTML=`
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span class="note">Ventes du jour</span><b class="money" style="color:var(--ok)">${money(caToday())}</b></div>
     <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span class="note">Valeur à retourner (3-6 mois)</span><b class="money">${money(valWarn)}</b></div>
     <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span class="note">Risque péremption (≤3 mois)</span><b class="money" style="color:var(--crit)">${money(valCrit)}</b></div>
     <div style="display:flex;justify-content:space-between;padding:6px 0"><span class="note">Crédits clients en cours</span><b class="money" style="color:var(--accent)">${money(creditDu)}</b></div>`;
@@ -946,7 +965,8 @@ function openStockForm(id){
       <div class="field"><label>N° de lot</label><input id="f_lot" value="${esc(x.lot||'')}"></div>
       <div class="field"><label>Date d'expiration *</label><input id="f_exp" type="date" value="${esc(x.expiration||'')}"></div>
       <div class="field"><label>Quantité</label><input id="f_qte" type="number" min="0" value="${x.quantite!=null?x.quantite:0}"></div>
-      <div class="field"><label>Prix unitaire (${DEVISE})</label><input id="f_pu" type="number" min="0" step="0.01" value="${x.pu!=null?x.pu:''}"></div>
+      <div class="field"><label>Prix vente (${DEVISE})</label><input id="f_pu" type="number" min="0" step="0.01" value="${x.pu!=null?x.pu:''}"></div>
+      <div class="field"><label>Prix d'achat (${DEVISE})</label><input id="f_pa" type="number" min="0" step="0.01" value="${x.pa!=null?x.pa:''}"></div>
       <div class="field" style="grid-column:1/-1"><label>Grossiste / Répartiteur</label>${grossisteSelect(x.grossiste)}</div>
     </div>
     <div class="btn-row" style="margin-top:6px">
@@ -960,7 +980,7 @@ function grossisteSelect(val){return `<input list="grossistesL" id="f_gros" valu
 function saveStock(id){
   const nom=val('f_nom');if(!nom){toast('Nom de spécialité requis');return;}
   const o={nom,forme:val('f_forme'),dosage:val('f_dosage'),lot:val('f_lot'),expiration:val('f_exp'),
-    quantite:+val('f_qte')||0,pu:+val('f_pu')||0,grossiste:val('f_gros')};
+    quantite:+val('f_qte')||0,pu:+val('f_pu')||0,pa:+val('f_pa')||0,grossiste:val('f_gros')};
   if(id){Object.assign(DB.stock.find(s=>s.id===id),o);}else{o.id=uid();DB.stock.push(o);}
   save();closeModal();renderStock();toast(id?'Produit modifié':'Produit ajouté');
 }
@@ -1381,7 +1401,62 @@ const MEDBASE=[
    fam:{fr:'Confort articulaire (complément)',en:'Joint comfort (supplement)',ar:'راحة المفاصل (مكمّل)'},
    usage:{fr:'Entretien du cartilage et confort articulaire durable.',en:'Cartilage maintenance and lasting joint comfort.',ar:'العناية بالغضروف وراحة المفاصل على المدى الطويل.'},
    poso:{fr:'En cure, selon la notice.',en:'As a course, per leaflet.',ar:'بكور، حسب الورقة.'},
-   prec:{fr:'Complément alimentaire, ne remplace pas un traitement.',en:'Food supplement, not a replacement for treatment.',ar:'مكمّل غذائي، ماشي بديل للعلاج.'}}
+   prec:{fr:'Complément alimentaire, ne remplace pas un traitement.',en:'Food supplement, not a replacement for treatment.',ar:'مكمّل غذائي، ماشي بديل للعلاج.'}},
+  {nom:'Efferalgan',aliases:['efferalgan','paracetamol'],
+   fam:{fr:'Antalgique / Antipyrétique',en:'Painkiller / Antipyretic',ar:'مسكّن / خافض للحرارة'},
+   usage:{fr:'Fièvre et douleurs légères à modérées.',en:'Fever and mild to moderate pain.',ar:'السخانة والوجع الخفيف إلى المتوسط.'},
+   poso:{fr:'Adulte : 500 mg à 1 g, jusqu\'à 3 fois/jour (max 3 g). Espacer 6 h.',en:'Adult: 500 mg to 1 g, up to 3 times/day (max 3 g). 6 h apart.',ar:'الكبير: من 500 ملغ ل 1غ، حتى 3 مرات ف النهار (ماكس 3غ)، كل 6 سوايع.'},
+   prec:{fr:'Ne pas dépasser la dose. Prudence en cas de maladie du foie.',en:'Do not exceed the dose. Caution with liver disease.',ar:'ما تفوتش الجرعة. ردّ البال إلى عندك مرض الكبد.'}},
+  {nom:'Amoxicilline',aliases:['amoxicilline','amoxicillin'],
+   fam:{fr:'Antibiotique (pénicilline)',en:'Antibiotic (penicillin)',ar:'مضاد حيوي (بنسيلين)'},
+   usage:{fr:'Infections bactériennes courantes — sur prescription.',en:'Common bacterial infections — by prescription.',ar:'عدوى بكتيرية شائعة — بوصفة.'},
+   poso:{fr:'Strictement selon la prescription. Terminer toute la cure.',en:'Strictly as prescribed. Finish the full course.',ar:'حسب الوصفة فقط. كمّل الكور كامل.'},
+   prec:{fr:'Sur ordonnance. Signaler toute allergie à la pénicilline.',en:'Prescription only. Report penicillin allergy.',ar:'بوصفة فقط. قول إلى عندك حساسية من البنسيلين.'}},
+  {nom:'Imodium',aliases:['imodium','loperamide'],
+   fam:{fr:'Antidiarrhéique',en:'Antidiarrheal',ar:'مضاد للإسهال'},
+   usage:{fr:'Diarrhée aiguë sans fièvre ni sang.',en:'Acute diarrhea without fever or blood.',ar:'الإسهال بلا سخانة ولا دم.'},
+   poso:{fr:'2 gélules puis 1 après chaque selle (max 8/jour).',en:'2 capsules then 1 after each stool (max 8/day).',ar:'2 حبات من بعد كل مرة لخلا (ماكس 8 ف النهار).'},
+   prec:{fr:'Ne pas utiliser si fièvre ou sang. Bien s\'hydrater.',en:'Do not use with fever or blood. Stay hydrated.',ar:'ما تستعملوش إلى كانت سخانة ولا دم. شرب الما.'}},
+  {nom:'Spasfon',aliases:['spasfon','phloroglucinol'],
+   fam:{fr:'Antispasmodique',en:'Antispasmodic',ar:'مضاد للتشنج'},
+   usage:{fr:'Douleurs spasmodiques (digestives, règles, urinaires).',en:'Spasmodic pain (digestive, periods, urinary).',ar:'الوجع ديال التشنج (الهضم، العادة، البول).'},
+   poso:{fr:'2 comprimés jusqu\'à 3 fois par jour.',en:'2 tablets up to 3 times a day.',ar:'2 حبات حتى 3 مرات ف النهار.'},
+   prec:{fr:'Consulter si les douleurs persistent.',en:'See a doctor if pain persists.',ar:'شوف الطبيب إلى بقا الوجع.'}},
+  {nom:'Maalox',aliases:['maalox','hydroxyde'],
+   fam:{fr:'Anti-acide',en:'Antacid',ar:'مضاد للحموضة'},
+   usage:{fr:'Brûlures et acidité d\'estomac.',en:'Heartburn and stomach acidity.',ar:'الحرقة وحموضة المعدة.'},
+   poso:{fr:'1 dose après les repas et au coucher.',en:'1 dose after meals and at bedtime.',ar:'جرعة من بعد الماكلة وقبل النعاس.'},
+   prec:{fr:'Espacer des autres médicaments (2 h).',en:'Space from other medicines (2 h).',ar:'بعّدو على الأدوية الأخرى بساعتين.'}},
+  {nom:'Vitamine C',aliases:['vitamine c','vitamin c','acide ascorbique'],
+   fam:{fr:'Vitamine / Immunité',en:'Vitamin / Immunity',ar:'فيتامين / مناعة'},
+   usage:{fr:'Fatigue passagère, soutien de l\'immunité.',en:'Temporary fatigue, immune support.',ar:'التعب العابر ودعم المناعة.'},
+   poso:{fr:'1 comprimé par jour, le matin.',en:'1 tablet per day, in the morning.',ar:'حبة ف النهار ف الصباح.'},
+   prec:{fr:'Éviter la prise le soir.',en:'Avoid taking in the evening.',ar:'تجنّب تاخدها ف الليل.'}},
+  {nom:'Zyrtec',aliases:['zyrtec','cetirizine'],
+   fam:{fr:'Antihistaminique (allergie)',en:'Antihistamine (allergy)',ar:'مضاد للحساسية'},
+   usage:{fr:'Rhinite allergique, urticaire, démangeaisons.',en:'Allergic rhinitis, hives, itching.',ar:'حساسية النيف، الشرى، الحكة.'},
+   poso:{fr:'1 comprimé par jour.',en:'1 tablet per day.',ar:'حبة ف النهار.'},
+   prec:{fr:'Peut provoquer une légère somnolence.',en:'May cause mild drowsiness.',ar:'يقدر يجيب شوية دالنعاس.'}},
+  {nom:'Betadine',aliases:['betadine','povidone','iode'],
+   fam:{fr:'Antiseptique',en:'Antiseptic',ar:'مطهّر'},
+   usage:{fr:'Désinfection de la peau et des plaies.',en:'Skin and wound disinfection.',ar:'تعقيم الجلد والجروح.'},
+   poso:{fr:'Appliquer localement sur la zone à désinfecter.',en:'Apply locally on the area to disinfect.',ar:'دهنها على البلاصة لي باغي تعقّم.'},
+   prec:{fr:'Usage externe. Prudence si allergie à l\'iode.',en:'External use. Caution if allergic to iodine.',ar:'للاستعمال الخارجي. ردّ البال من حساسية اليود.'}},
+  {nom:'Daktarin',aliases:['daktarin','miconazole'],
+   fam:{fr:'Antifongique',en:'Antifungal',ar:'مضاد للفطريات'},
+   usage:{fr:'Mycoses de la peau et des plis.',en:'Skin and fold fungal infections.',ar:'الفطريات ديال الجلد.'},
+   poso:{fr:'Appliquer 2 fois par jour.',en:'Apply twice a day.',ar:'دهنو مرتين ف النهار.'},
+   prec:{fr:'Poursuivre 1 semaine après guérison.',en:'Continue 1 week after healing.',ar:'كمّل سيمانة من بعد ما تبرا.'}},
+  {nom:'Ventoline',aliases:['ventoline','salbutamol'],
+   fam:{fr:'Bronchodilatateur',en:'Bronchodilator',ar:'موسّع للشعب الهوائية'},
+   usage:{fr:'Crise d\'asthme, gêne respiratoire.',en:'Asthma attack, breathing difficulty.',ar:'أزمة الربو وصعوبة التنفّس.'},
+   poso:{fr:'1 à 2 bouffées en cas de gêne.',en:'1 to 2 puffs when needed.',ar:'بخة ولا جوج فاش كتحس بالضيق.'},
+   prec:{fr:'Sur prescription. Consulter si usage fréquent.',en:'By prescription. See a doctor if used often.',ar:'بوصفة. شوف الطبيب إلى كتستعملها بزاف.'}},
+  {nom:'Nurofen',aliases:['nurofen','ibuprofene','ibuprofen'],
+   fam:{fr:'Anti-inflammatoire (AINS)',en:'Anti-inflammatory (NSAID)',ar:'مضاد للالتهاب (AINS)'},
+   usage:{fr:'Douleurs et fièvre.',en:'Pain and fever.',ar:'الوجع والسخانة.'},
+   poso:{fr:'200 à 400 mg jusqu\'à 3 fois/jour, pendant un repas.',en:'200 to 400 mg up to 3 times/day, with food.',ar:'من 200 ل 400 ملغ حتى 3 مرات ف النهار مع الماكلة.'},
+   prec:{fr:'Prudence estomac/reins. Éviter en fin de grossesse.',en:'Caution stomach/kidneys. Avoid in late pregnancy.',ar:'ردّ البال للمعدة والكلي. تجنّب ف آخر الحمل.'}}
 ];
 let scanStream=null;
 function renderScan(){document.getElementById('scanResult').innerHTML='';const st=document.getElementById('scanStatus');if(st)st.textContent='';const mi=document.getElementById('scanManualInput');if(mi)mi.value='';}
@@ -1407,23 +1482,33 @@ async function captureScan(){
   await ocrAndMatch(c);
 }
 function scanPhotoHandler(file){const img=new Image();img.onload=()=>{const c=document.createElement('canvas');c.width=img.width;c.height=img.height;c.getContext('2d').drawImage(img,0,0);ocrAndMatch(c);URL.revokeObjectURL(img.src);};img.src=URL.createObjectURL(file);}
+function ocrPreprocess(canvas){
+  const w=canvas.width,h=canvas.height;const scale=Math.min(2,Math.max(1,1500/Math.max(w,h||1)));
+  const c2=document.createElement('canvas');c2.width=Math.round(w*scale);c2.height=Math.round(h*scale);
+  const ctx=c2.getContext('2d');ctx.drawImage(canvas,0,0,c2.width,c2.height);
+  try{const im=ctx.getImageData(0,0,c2.width,c2.height),d=im.data,C=1.45,inter=128*(1-C);
+    for(let i=0;i<d.length;i+=4){let g=0.3*d[i]+0.59*d[i+1]+0.11*d[i+2];g=g*C+inter;g=g<0?0:g>255?255:g;d[i]=d[i+1]=d[i+2]=g;}
+    ctx.putImageData(im,0,0);}catch(e){}
+  return c2;
+}
 async function ocrAndMatch(canvas){
-  const st=document.getElementById('scanStatus');st.textContent='🔎 Analyse de l\'image en cours…';
+  const st=document.getElementById('scanStatus');st.textContent='🔎 '+t('Analyse du produit en cours')+'…';
   try{
     const T=await loadTesseract();
-    const {data}=await T.recognize(canvas,'fra');
+    const pc=ocrPreprocess(canvas);
+    let data;try{({data}=await T.recognize(pc,'eng+fra'));}catch(e){({data}=await T.recognize(pc,'eng'));}
     const rawtxt=(data&&data.text)||'';const med=matchMed(rawtxt);st.textContent='';
     if(med){showMedInfo(med);return;}
     const cand=rawtxt.replace(/[^A-Za-zÀ-ÿ0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>=4).sort((a,b)=>b.length-a.length)[0]||'';
-    if(cand){document.getElementById('scanResult').innerHTML=`<div class="card pad"><b>${esc(cand)}</b><div id="webInfo" style="margin-top:10px"></div></div>`;onlineLookup(cand);}
-    else document.getElementById('scanResult').innerHTML='<div class="card pad note">Produit non reconnu. Essayez un meilleur cadrage ou la recherche manuelle.</div>';
+    if(cand){document.getElementById('scanResult').innerHTML=`<div class="card pad"><b>${esc(cand)}</b><div id="webInfo" style="margin-top:10px"></div></div>`;onlineLookup(cand,true);}
+    else document.getElementById('scanResult').innerHTML='<div class="card pad note">'+t('Produit non reconnu. Essayez un meilleur cadrage ou la recherche manuelle.')+'</div>';
   }catch(e){st.textContent='';document.getElementById('scanResult').innerHTML='<div class="card pad note">Reconnaissance automatique indisponible (hors-ligne). Utilisez la recherche manuelle ci-dessus.</div>';}
 }
 function scanManual(q){q=(q||'').trim();const r=document.getElementById('scanResult');clearTimeout(_webTimer);if(q.length<2){r.innerHTML='';return;}
   const med=matchMed(q);
   if(med){showMedInfo(med);return;}
   r.innerHTML=`<div class="card pad"><b>${esc(q)}</b><div id="webInfo" style="margin-top:10px"></div></div>`;
-  scheduleWeb(q);}
+  scheduleWeb(q,true);}
 function normTxt(s){return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9 ]/g,' ');}
 function matchMed(text){const t=normTxt(text);let best=null,score=0;
   MEDBASE.forEach(m=>{[m.nom,...(m.aliases||[])].forEach(k=>{const kn=normTxt(k).trim();if(kn&&t.includes(kn)&&kn.length>score){best=m;score=kn.length;}});});
@@ -1443,7 +1528,7 @@ function showMedInfo(m){
      ${near?`<div class="gold-box" style="margin-top:14px"><span class="tag">${t('⭐ À écouler en priorité')}</span><h4 style="margin:6px 0 0">${t('Valeur à préserver :')} ${money((+inStock.quantite||0)*(+inStock.pu||0))}</h4></div>`:''}
      <div id="webInfo"></div>
    </div>`;
-  scheduleWeb(m.nom);
+  scheduleWeb(m.nom,false);
 }
 let _tess=null;
 function loadTesseract(){if(window.Tesseract)return Promise.resolve(window.Tesseract);if(_tess)return _tess;
@@ -1452,7 +1537,7 @@ function loadTesseract(){if(window.Tesseract)return Promise.resolve(window.Tesse
 /* --- Recherche internet (Wikipedia + OpenFoodFacts) --- */
 function ensureWebMount(){let m=document.getElementById('webInfo');if(!m){m=document.createElement('div');m.id='webInfo';document.getElementById('scanResult').appendChild(m);}return m;}
 let _webTimer=null;
-function scheduleWeb(name){clearTimeout(_webTimer);const m=ensureWebMount();m.innerHTML=`<div class="card pad web-card"><div class="web-lab"><span class="web-spin"></span> ${t('Recherche sur internet')}…</div></div>`;_webTimer=setTimeout(()=>onlineLookup(name),500);}
+function scheduleWeb(name,primary){clearTimeout(_webTimer);const m=ensureWebMount();if(primary)m.innerHTML=`<div class="card pad web-card"><div class="web-lab"><span class="web-spin"></span> ${t('Analyse du produit en cours')}…</div></div>`;_webTimer=setTimeout(()=>onlineLookup(name,primary),450);}
 async function wikiSummary(q,lang){
   try{const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),6000);
     const r=await fetch('https://'+lang+'.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(q),{signal:ctrl.signal,headers:{'Accept':'application/json'}});
@@ -1468,25 +1553,29 @@ async function offName(code){
     if(j&&j.status===1&&j.product)return (j.product.product_name||j.product.brands||'').trim()||null;return null;
   }catch(e){return null;}
 }
-async function onlineLookup(name){
+async function wikiSearch(q,lang){
+  try{const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),6000);
+    const r=await fetch('https://'+lang+'.wikipedia.org/w/api.php?action=query&list=search&srlimit=1&format=json&origin=*&srsearch='+encodeURIComponent(q),{signal:ctrl.signal});
+    clearTimeout(to);if(!r.ok)return null;const j=await r.json();
+    const hit=j&&j.query&&j.query.search&&j.query.search[0];return hit?hit.title:null;
+  }catch(e){return null;}
+}
+async function onlineLookup(name,primary){
   const q=(name||'').trim();const mount=ensureWebMount();if(!q){mount.innerHTML='';return;}
-  mount.innerHTML=`<div class="card pad web-card"><div class="web-lab"><span class="web-spin"></span> ${t('Recherche sur internet')}…</div></div>`;
+  if(primary)mount.innerHTML=`<div class="card pad web-card"><div class="web-lab"><span class="web-spin"></span> ${t('Analyse du produit en cours')}…</div></div>`;
   const langs=curLang==='ar'?['ar','fr','en']:(curLang==='en'?['en','fr']:['fr','en']);
-  let data=null;for(const lg of langs){data=await wikiSummary(q,lg);if(data)break;}
-  const gUrl='https://www.google.com/search?q='+encodeURIComponent(q+' médicament notice');
+  let data=null;
+  for(const lg of langs){let d=await wikiSummary(q,lg);if(!d){const title=await wikiSearch(q,lg);if(title)d=await wikiSummary(title,lg);}if(d){data=d;break;}}
   if(data){
-    mount.innerHTML=`<div class="card pad web-card"><div class="web-lab">🌐 ${t('Informations (internet)')}</div>
+    mount.innerHTML=`<div class="card pad web-card"><div class="web-lab">ℹ️ ${t('Informations')}</div>
       <div style="display:flex;gap:12px;align-items:flex-start">
         ${data.thumb?`<img src="${esc(data.thumb)}" class="web-thumb" alt="" onerror="this.remove()">`:''}
         <div style="flex:1;min-width:0"><b>${esc(data.title)}</b>
-          <p class="note" style="margin:4px 0 10px;color:var(--ink);white-space:normal">${esc(data.extract)}</p>
-          <div class="btn-row"><a class="btn sm blue" href="${esc(data.url)}" target="_blank" rel="noopener">${t('Lire la suite')}</a>
-          <a class="btn sm" href="${gUrl}" target="_blank" rel="noopener">🔎 Google</a></div>
+          <p class="note" style="margin:4px 0 6px;color:var(--ink);white-space:normal">${esc(data.extract)}</p>
+          <div class="cell-mini">${t('Source')} : Wikipédia</div>
         </div></div></div>`;
   }else{
-    mount.innerHTML=`<div class="card pad web-card"><div class="web-lab">🌐 ${t('Recherche web')}</div>
-      <p class="note" style="margin:4px 0 10px">${t('Aucun résultat automatique. Lancez une recherche web :')}</p>
-      <div class="btn-row"><a class="btn sm blue" href="${gUrl}" target="_blank" rel="noopener">🔎 Google</a></div></div>`;
+    mount.innerHTML=primary?`<div class="card pad web-card note" style="border-top-color:var(--muted)">${t('Informations détaillées non disponibles pour ce produit.')}</div>`:'';
   }
 }
 /* --- Démo : fausse caméra pour la vidéo --- */
@@ -1553,6 +1642,12 @@ function renderStats(){
     const cnt=s.filter(x=>{const e=new Date(x.expiration);return !isNaN(e)&&e.getFullYear()===d.getFullYear()&&e.getMonth()===d.getMonth();}).length;
     months.push({label:d.toLocaleDateString('fr-FR',{month:'short',year:'2-digit'}),value:cnt,color:i<3?'#d1402e':'#d8ad46'});}
   document.getElementById('chartMonths').innerHTML=barsChart(months,v=>v+' réf.');
+  // chiffre d'affaires 7 jours
+  const days=[];
+  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);d.setHours(0,0,0,0);const d2=new Date(d);d2.setHours(23,59,59,999);
+    const ca=DB.sales.filter(sl=>sl.t>=d.getTime()&&sl.t<=d2.getTime()).reduce((a,sl)=>a+(+sl.total||0),0);
+    days.push({label:d.toLocaleDateString(locale(),{weekday:'short'}),value:Math.round(ca),color:'#0d7a63'});}
+  const caEl=document.getElementById('chartCA');if(caEl)caEl.innerHTML=barsChart(days,v=>money(v));
 }
 
 /* --- Réassort intelligent --- */
@@ -1596,9 +1691,79 @@ function activatePro(){const c=(val('proCode')||'').toUpperCase().replace(/[\s-]
 function genParrainage(){if(!DB.settings.parrainage){DB.settings.parrainage='PA-'+Math.random().toString(36).slice(2,7).toUpperCase();save();}return DB.settings.parrainage;}
 function inviteParrainage(){const code=genParrainage();const t=`Salam confrère 👋\nJe te conseille *PharmaAlert Pro* pour gérer l'officine : péremptions, retours, crédits, scan des boîtes…\nEssaie-la ici : ${APP_URL}\nMon code parrainage : *${code}*`;window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(t),'_blank');renderPro();}
 
+/* --- Caisse & Ventes --- */
+let caisseCart=[];
+function sameDayTs(ts){const a=new Date(ts),b=new Date();return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+function caToday(){return DB.sales.filter(s=>sameDayTs(s.t)).reduce((a,s)=>a+(+s.total||0),0);}
+function margeToday(){return DB.sales.filter(s=>sameDayTs(s.t)).reduce((a,s)=>a+(+s.marge||0),0);}
+function countToday(){return DB.sales.filter(s=>sameDayTs(s.t)).length;}
+function renderCaisse(){
+  document.getElementById('caisseKpi').innerHTML=
+    stat('good','CA du jour',money(caToday()).replace(' '+DEVISE,''),DEVISE,'coin')+
+    stat('brand','Marge du jour',money(margeToday()).replace(' '+DEVISE,''),DEVISE,'coin')+
+    stat('warn','Ventes (jour)',countToday(),'transactions','box');
+  const s=document.getElementById('caisseSearch');if(s)s.value='';
+  const sg=document.getElementById('caisseSuggest');if(sg)sg.innerHTML='';
+  renderBasket();
+}
+function renderCaisseSearch(q){q=(q||'').toLowerCase().trim();const sg=document.getElementById('caisseSuggest');if(!sg)return;
+  if(q.length<1){sg.innerHTML='';return;}
+  const rows=DB.stock.filter(x=>(+x.quantite||0)>0&&((x.nom||'')+(x.lot||'')+(x.dosage||'')).toLowerCase().includes(q)).sort((a,b)=>new Date(a.expiration)-new Date(b.expiration)).slice(0,8);
+  if(!rows.length){sg.innerHTML='<p class="note" style="margin:10px 0 0">Aucun produit en stock pour cette recherche.</p>';return;}
+  sg.innerHTML='<div style="margin-top:10px">'+rows.map(x=>`<div class="list-item" style="cursor:pointer" onclick="addToCart('${x.id}')"><div class="avatar">＋</div><div class="li-main"><div class="li-title">${esc(x.nom)} <span class="cell-mini">${esc(x.dosage||'')}</span></div><div class="li-sub">Lot ${esc(x.lot||'—')} · ${x.quantite} en stock · ${money(x.pu)}</div></div></div>`).join('')+'</div>';
+}
+function addToCart(id){const x=DB.stock.find(s=>s.id===id);if(!x)return;const it=caisseCart.find(c=>c.id===id);
+  if(it){if(it.qte<(+x.quantite||0))it.qte++;else{toast('Stock insuffisant');return;}}
+  else caisseCart.push({id,nom:x.nom,dosage:x.dosage,pu:+x.pu||0,pa:+x.pa||0,qte:1,max:+x.quantite||0});
+  const s=document.getElementById('caisseSearch');if(s)s.value='';document.getElementById('caisseSuggest').innerHTML='';renderBasket();
+}
+function cartQty(id,delta){const it=caisseCart.find(c=>c.id===id);if(!it)return;it.qte+=delta;
+  if(it.qte<=0)caisseCart=caisseCart.filter(c=>c.id!==id);else if(it.qte>it.max){it.qte=it.max;toast('Stock max atteint');}renderBasket();}
+function renderBasket(){const el=document.getElementById('caisseBasket');if(!el)return;
+  if(!caisseCart.length){el.innerHTML='<div class="card">'+emptyBox('Panier vide. Recherchez un produit ci-dessus pour démarrer une vente.')+'</div>';return;}
+  const total=caisseCart.reduce((a,c)=>a+c.pu*c.qte,0);
+  el.innerHTML=`<div class="card pad"><h3 style="font-size:1rem;margin-bottom:8px">🧺 Panier</h3>
+    ${caisseCart.map(c=>`<div class="list-item"><div class="li-main"><div class="li-title">${esc(c.nom)} <span class="cell-mini">${esc(c.dosage||'')}</span></div><div class="li-sub">${money(c.pu)} × ${c.qte} = <b>${money(c.pu*c.qte)}</b></div></div><div class="btn-row"><button class="btn sm" onclick="cartQty('${c.id}',-1)">−</button><button class="btn sm" onclick="cartQty('${c.id}',1)">＋</button></div></div>`).join('')}
+    <div class="divider"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:1.15rem"><b>Total</b><b class="money" style="color:var(--brand-d)">${money(total)}</b></div>
+    <div class="btn-row" style="margin-top:12px"><button class="btn primary block" onclick="encaisser()">💵 Encaisser ${money(total)}</button><button class="btn danger" onclick="caisseCart=[];renderBasket()">Vider</button></div></div>`;
+}
+function encaisser(){if(!caisseCart.length)return;let total=0,marge=0;const items=[];
+  caisseCart.forEach(c=>{const x=DB.stock.find(s=>s.id===c.id);const q=Math.min(c.qte,x?(+x.quantite||0):c.qte);if(x)x.quantite=(+x.quantite||0)-q;total+=c.pu*q;marge+=(c.pu-c.pa)*q;items.push({nom:c.nom,qte:q,pu:c.pu,pa:c.pa});});
+  total=Math.round(total*100)/100;marge=Math.round(marge*100)/100;
+  const sale={id:uid(),t:Date.now(),items,total,marge};DB.sales.push(sale);
+  logEvent('vente','Vente encaissée · '+money(total)+' ('+items.length+' article(s))');
+  caisseCart=[];save();renderCaisse();toast('Vente encaissée : '+money(total)+' ✓');ticketModal(sale);
+}
+function ticketModal(sale){const p=DB.profile;
+  const body=`<div style="font-family:ui-monospace,monospace;font-size:.86rem;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:14px">
+    <div style="text-align:center;font-weight:800">${esc(p.nom||'Pharmacie')}</div>
+    <div style="text-align:center;font-size:.76rem;color:var(--muted)">${esc(p.ville||'')} · ${new Date(sale.t).toLocaleString(locale())}</div>
+    <div class="divider"></div>
+    ${sale.items.map(i=>`<div style="display:flex;justify-content:space-between;gap:10px"><span>${esc(i.nom)} ×${i.qte}</span><span>${money(i.pu*i.qte)}</span></div>`).join('')}
+    <div class="divider"></div>
+    <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1rem"><span>TOTAL</span><span>${money(sale.total)}</span></div>
+    <div style="text-align:center;font-size:.72rem;color:var(--muted);margin-top:8px">Merci de votre visite 🙏</div></div>`;
+  modal('Ticket de vente',body+`<div class="btn-row" style="margin-top:12px"><button class="btn block" onclick="printTicket(${sale.t})">🖨 Imprimer</button><button class="btn wa block" onclick="shareTicket(${sale.t})">WhatsApp</button></div>`);
+}
+function printTicket(t){const sale=DB.sales.find(s=>s.t===t);if(!sale)return;const p=DB.profile;
+  document.getElementById('printArea').innerHTML=`<div class="a4" style="font-family:ui-monospace,monospace;max-width:360px;margin:0 auto">
+    <div style="text-align:center;font-weight:bold;font-size:14pt">${esc(p.nom||'Pharmacie')}</div>
+    <div style="text-align:center;font-size:9pt">${esc(p.adr||'')} ${esc(p.ville||'')}<br>${new Date(sale.t).toLocaleString('fr-FR')}</div>
+    <table style="width:100%;font-size:10pt;margin-top:8px;border-top:1px solid #000">${sale.items.map(i=>`<tr><td style="border:none">${esc(i.nom)} ×${i.qte}</td><td style="border:none;text-align:right">${(i.pu*i.qte).toFixed(2)}</td></tr>`).join('')}</table>
+    <div style="display:flex;justify-content:space-between;font-weight:bold;border-top:1px solid #000;padding-top:6px;margin-top:6px">TOTAL<span>${sale.total.toFixed(2)} ${DEVISE}</span></div>
+    <div style="text-align:center;font-size:8pt;margin-top:12px">Merci de votre visite — PharmaAlert Pro</div></div>`;
+  window.print();}
+function shareTicket(t){const sale=DB.sales.find(s=>s.t===t);if(!sale)return;const p=DB.profile;
+  let msg=`*${p.nom||'Pharmacie'}* — Ticket\n${new Date(sale.t).toLocaleString('fr-FR')}\n\n`;
+  sale.items.forEach(i=>{msg+=`${i.nom} ×${i.qte} — ${money(i.pu*i.qte)}\n`;});
+  msg+=`\nTOTAL : ${money(sale.total)}\nMerci 🙏`;
+  window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(msg),'_blank');}
+
 /* --- Menu Plus --- */
 function plusItem(v,ic,t,sub){return `<button class="plus-card" onclick="closeModal();go('${v}')"><div class="pic">${ic}</div><div><div class="pt">${esc(t)}</div><div class="ps">${esc(sub)}</div></div></button>`;}
 function openPlus(){modal('Plus',`<div class="plus-grid">
+   ${plusItem('caisse','💵','Caisse & Ventes','Encaisser · CA du jour')}
    ${plusItem('stats','📊','Statistiques','Pilotage & valeur')}
    ${plusItem('reassort','🔄','Réassort','Suggestions de commande')}
    ${plusItem('historique','🧾','Historique','Journal des opérations')}
@@ -1643,10 +1808,10 @@ function stopBarcode(){_bcRun=false;try{if(_bcStream)_bcStream.getTracks().forEa
 async function onBarcode(code){const m=DB.stock.find(x=>x.barcode&&String(x.barcode)===String(code));
   if(m){const med=matchMed(m.nom);if(med){showMedInfo(med);return;}}
   const med=matchMed(code);if(med){showMedInfo(med);return;}
-  document.getElementById('scanResult').innerHTML=`<div class="card pad"><span class="badge b-blue">${t('Code-barres détecté')}</span><div class="cell-mini" style="margin-top:6px">${esc(code)}</div><div id="webInfo" style="margin-top:10px"><div class="card pad web-card"><div class="web-lab"><span class="web-spin"></span> ${t('Recherche sur internet')}…</div></div></div></div>`;
+  document.getElementById('scanResult').innerHTML=`<div class="card pad"><span class="badge b-blue">${t('Code-barres détecté')}</span><div class="cell-mini" style="margin-top:6px">${esc(code)}</div><div id="webInfo" style="margin-top:10px"><div class="card pad web-card"><div class="web-lab"><span class="web-spin"></span> ${t('Analyse du produit en cours')}…</div></div></div></div>`;
   const name=await offName(code);
-  if(name){document.getElementById('scanResult').innerHTML=`<div class="card pad"><span class="badge b-blue">${t('Code-barres détecté')}</span><h3 style="margin:8px 0 2px">${esc(name)}</h3><div class="cell-mini">${esc(code)}</div><div id="webInfo" style="margin-top:12px"></div></div>`;onlineLookup(name);}
-  else onlineLookup(code);}
+  if(name){const med2=matchMed(name);if(med2){showMedInfo(med2);return;}document.getElementById('scanResult').innerHTML=`<div class="card pad"><span class="badge b-blue">${t('Code-barres détecté')}</span><h3 style="margin:8px 0 2px">${esc(name)}</h3><div class="cell-mini">${esc(code)}</div><div id="webInfo" style="margin-top:12px"></div></div>`;onlineLookup(name,true);}
+  else onlineLookup(code,true);}
 
 /* ========================================================
    PROFIL & DONNÉES
@@ -1671,35 +1836,87 @@ document.getElementById('scanPhoto').addEventListener('change',function(){if(thi
 /* ========================================================
    DONNÉES DÉMO
    ======================================================== */
-function loadDemo(){
-  if(DB.stock.length&&!confirm('Charger les données de démonstration ? Elles s\'ajouteront à vos données actuelles.'))return;
-  const addMonths=(n)=>{const d=new Date();d.setMonth(d.getMonth()+n);return d.toISOString().slice(0,10);};
+function seedDemoData(){
+  const dM=(n)=>{const d=new Date();d.setMonth(d.getMonth()+n);return d.toISOString().slice(0,10);};
+  const dAgo=(n)=>{const d=new Date();d.setDate(d.getDate()-n);return d.toISOString().slice(0,10);};
   DB.profile={nom:'Pharmacie Al Amal',pharm:'Dr. Youssef Benani',inpe:'12/3456',patente:'7890123',ville:'Casablanca',tel:'0522-000000',adr:'12 Bd Mohammed V, Maârif'};
-  DB.stock.push(
-    {id:uid(),nom:'Doliprane',forme:'Comprimé',dosage:'1000mg',lot:'DOL2401',expiration:addMonths(2),quantite:8,pu:28.50,grossiste:'Sothema'},
-    {id:uid(),nom:'Voltarène Emulgel',forme:'Gel',dosage:'1%',lot:'VLT889',expiration:addMonths(4),quantite:12,pu:62.00,grossiste:'Laprophan'},
-    {id:uid(),nom:'Oxymag',forme:'Comprimé',dosage:'',lot:'OXY556',expiration:addMonths(5),quantite:15,pu:54.00,grossiste:'Cooper Pharma'},
-    {id:uid(),nom:'Humex Rhume',forme:'Comprimé',dosage:'',lot:'HMX210',expiration:addMonths(1),quantite:3,pu:45.00,grossiste:'Upsilon'},
-    {id:uid(),nom:'Mag 2',forme:'Ampoule',dosage:'',lot:'MG2100',expiration:addMonths(9),quantite:20,pu:48.00,grossiste:'Cooper Pharma'},
-    {id:uid(),nom:'Flexium',forme:'Gel',dosage:'',lot:'FLX073',expiration:addMonths(3),quantite:9,pu:58.00,grossiste:'Afric-Phar'},
-    {id:uid(),nom:'Supradyn',forme:'Comprimé eff.',dosage:'',lot:'SPD442',expiration:addMonths(14),quantite:25,pu:75.00,grossiste:'Laprophan'},
-    {id:uid(),nom:'Smecta',forme:'Sachet',dosage:'3g',lot:'SMC900',expiration:addMonths(5),quantite:18,pu:32.00,grossiste:'Sothema'}
-  );
-  DB.partners.push(
+  const P=(nom,forme,dosage,lot,mois,qte,pu,gros)=>({id:uid(),nom,forme,dosage,lot,expiration:dM(mois),quantite:qte,pu,pa:Math.round(pu*0.74*100)/100,grossiste:gros});
+  DB.stock=[
+    P('Doliprane','Comprimé','1000mg','DOL2401',2,8,28.50,'Sothema'),
+    P('Efferalgan','Comprimé eff.','500mg','EFF118',7,22,26.00,'Sothema'),
+    P('Augmentin','Sachet','1g','AUG330',10,14,78.00,'Cooper Pharma'),
+    P('Amoxicilline','Gélule','500mg','AMX205',4,30,35.00,'Pharma 5'),
+    P('Voltarène Emulgel','Gel','1%','VLT889',4,12,62.00,'Laprophan'),
+    P('Flexium','Gel','','FLX073',3,9,58.00,'Afric-Phar'),
+    P('Biofreeze','Gel','','BIO540',8,7,89.00,'Upsilon'),
+    P('Oxymag','Comprimé','','OXY556',5,15,54.00,'Cooper Pharma'),
+    P('Mag 2','Ampoule','','MG2100',9,20,48.00,'Cooper Pharma'),
+    P('Humex Rhume','Comprimé','','HMX210',1,3,45.00,'Upsilon'),
+    P('Doliprane','Sirop','enfant','DOL778',6,16,33.00,'Sothema'),
+    P('Smecta','Sachet','3g','SMC900',5,18,32.00,'Sothema'),
+    P('Gaviscon','Sachet','','GAV410',11,21,41.00,'Zenith Pharma'),
+    P('Imodium','Gélule','','IMO260',13,19,38.00,'Pharma 5'),
+    P('Spasfon','Comprimé','','SPS150',2,6,30.00,'Laprophan'),
+    P('Maalox','Suspension','','MAL090',8,12,36.00,'Promopharm'),
+    P('Supradyn','Comprimé eff.','','SPD442',14,25,75.00,'Laprophan'),
+    P('Vitamine C','Comprimé eff.','1000mg','VTC660',16,28,22.00,'Promopharm'),
+    P('Zyrtec','Comprimé','10mg','ZYR300',3,10,47.00,'Cooper Pharma'),
+    P('Betadine','Solution','','BET220',12,14,34.00,'Afric-Phar'),
+    P('Daktarin','Gel','','DKT515',5,8,52.00,'Zenith Pharma'),
+    P('Chondrostéo','Comprimé','','CHO720',6,11,96.00,'Upsilon'),
+    P('Ventoline','Spray','','VEN480',9,9,42.00,'Pharma 5'),
+    P('Nurofen','Comprimé','400mg','NUR145',2,5,39.00,'Laprophan')
+  ];
+  DB.partners=[
     {id:uid(),nom:'Pharmacie Ennour',ville:'Casablanca',quartier:'Maârif',titulaire:'Dr. Alaoui',whatsapp:'0661223344'},
-    {id:uid(),nom:'Pharmacie Centrale',ville:'Casablanca',quartier:'Gauthier',titulaire:'Dr. Tazi',whatsapp:'0677889900'}
-  );
-  DB.credits.push(
-    {id:uid(),nom:'Ahmed Rifi',tel:'0612345678',solde:240,recouvre:60,date:addMonths(-2)},
-    {id:uid(),nom:'Fatima Zahra',tel:'0698765432',solde:85,recouvre:0,date:addMonths(0)}
-  );
-  save();document.getElementById('phNameTop').textContent=DB.profile.nom;go('dash');toast('Données démo chargées ✓');
+    {id:uid(),nom:'Pharmacie Centrale',ville:'Casablanca',quartier:'Gauthier',titulaire:'Dr. Tazi',whatsapp:'0677889900'},
+    {id:uid(),nom:'Pharmacie Al Massira',ville:'Casablanca',quartier:'Hay Hassani',titulaire:'Dr. Bennis',whatsapp:'0655112233'},
+    {id:uid(),nom:'Pharmacie Ibn Sina',ville:'Mohammedia',quartier:'Centre',titulaire:'Dr. Chraibi',whatsapp:'0644556677'},
+    {id:uid(),nom:'Pharmacie Zerktouni',ville:'Casablanca',quartier:'Bourgogne',titulaire:'Dr. Idrissi',whatsapp:'0622334455'}
+  ];
+  DB.credits=[
+    {id:uid(),nom:'Ahmed Rifi',tel:'0612345678',solde:240,recouvre:60,date:dAgo(63)},
+    {id:uid(),nom:'Fatima Zahra',tel:'0698765432',solde:85,recouvre:0,date:dAgo(4)},
+    {id:uid(),nom:'Mohamed El Idrissi',tel:'0661002030',solde:420,recouvre:180,date:dAgo(41)},
+    {id:uid(),nom:'Khadija Nour',tel:'0677889911',solde:0,recouvre:150,date:dAgo(10)},
+    {id:uid(),nom:'Youssef Amrani',tel:'0655443322',solde:130,recouvre:0,date:dAgo(2)},
+    {id:uid(),nom:'Salma Berrada',tel:'0633221100',solde:310,recouvre:90,date:dAgo(38)}
+  ];
+  DB.bourse=[
+    {id:uid(),nom:'Doliprane 1000mg',qte:6,exp:dM(2),prix:21.00},
+    {id:uid(),nom:'Humex Rhume',qte:3,exp:dM(1),prix:34.00}
+  ];
+  DB.ruptures=[
+    {molecule:'Amoxicilline 1g',alt:'Augmentin / Clamoxyl selon prescription'},
+    {molecule:'Lévothyrox 100µg',alt:'L-Thyroxine Serb, Euthyrox'},
+    {molecule:'Ventoline spray',alt:'Salbutamol générique, Airomir'},
+    {molecule:'Insuline Lantus',alt:'Toujeo, Abasaglar (avis médecin)'}
+  ];
+  // ventes historiques (7 derniers jours) → chiffre d'affaires
+  DB.sales=[];const pool=DB.stock.map(x=>({nom:x.nom,pu:x.pu,pa:x.pa}));
+  let sd=7;const rnd=()=>{sd=(sd*9301+49297)%233280;return sd/233280;};
+  for(let d=6;d>=0;d--){const nb=3+Math.floor(rnd()*4);
+    for(let k=0;k<nb;k++){const items=[];const li=1+Math.floor(rnd()*3);let total=0,marge=0;
+      for(let j=0;j<li;j++){const p=pool[Math.floor(rnd()*pool.length)];const q=1+Math.floor(rnd()*2);items.push({nom:p.nom,qte:q,pu:p.pu,pa:p.pa});total+=p.pu*q;marge+=(p.pu-p.pa)*q;}
+      const dt=new Date();dt.setDate(dt.getDate()-d);dt.setHours(9+Math.floor(rnd()*9),Math.floor(rnd()*59),0,0);
+      DB.sales.push({id:uid(),t:dt.getTime(),items,total:Math.round(total*100)/100,marge:Math.round(marge*100)/100});}}
+  DB.sales.sort((a,b)=>a.t-b.t);
+  DB.history=[];
+  DB.sales.slice(-6).reverse().forEach(s=>DB.history.push({t:s.t,type:'vente',text:'Vente encaissée · '+money(s.total)+' ('+s.items.length+' article(s))'}));
+  DB.history.push({t:Date.now()-3600e3,type:'credit',text:'Acompte 150,00 DH · Khadija Nour'});
+  DB.history.push({t:Date.now()-7200e3,type:'retour',text:'Bordereau de retour · Sothema (2 réf.)'});
+  DB.settings.seeded=true;
+}
+function loadDemo(){
+  if((DB.stock.length||DB.sales.length)&&!confirm('Recharger les données de démonstration ? Vos données actuelles seront remplacées.'))return;
+  seedDemoData();save();document.getElementById('phNameTop').textContent=DB.profile.nom;go('dash');toast('Données démo chargées ✓');
 }
 
 /* ========================================================
    BOOT
    ======================================================== */
 function boot(){
+  if(_fresh && !DB.settings.seeded){seedDemoData();save();}
   document.getElementById('phNameTop').textContent=DB.profile.nom||'Ma Pharmacie';
   curLang=(DB.settings&&DB.settings.lang)||curLang||'fr';
   updateThemeIcon();updateBell();checkReminders(false);
