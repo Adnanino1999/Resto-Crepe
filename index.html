@@ -825,7 +825,7 @@ const I18N={
  // Plus / alertes / langue
  "Réassort":["Restocking","التموين"],"Offre Pro":["Pro offer","عرض Pro"],"Profil & données":["Profile & data","الملف والمعطيات"],"🔔 Activer les rappels":["🔔 Enable reminders","🔔 تفعيل التذكيرات"],"🌓 Mode clair / sombre":["🌓 Light / dark mode","🌓 وضع فاتح / غامق"],"Centre d'alertes":["Alert center","مركز التنبيهات"],"Aucune alerte. Tout est sous contrôle ✓":["No alert. Everything is under control ✓","ما كاين حتى تنبيه. كلشي مزيان ✓"],"Pilotage & valeur":["Steering & value","قيادة وقيمة"],"Suggestions de commande":["Order suggestions","اقتراحات الطلب"],"Journal des opérations":["Operations log","سجل العمليات"],"Débloquer & parrainage":["Unlock & referral","فتح وإحالة"],"Confrères & SOS":["Peers & SOS","الزملاء وSOS"],"Officine, sauvegarde":["Pharmacy, backup","الصيدلية، نسخة احتياطية"],
  "Code-barres détecté":["Barcode detected","تم كشف الباركود"],
- "Analyse du produit en cours":["Analyzing the product","جاري تحليل المنتج"],"Informations":["Information","معلومات"],"Source":["Source","المصدر"],"Informations détaillées non disponibles pour ce produit.":["Detailed information not available for this product.","ما كايناش معلومات مفصّلة على هاد المنتج."],"Produit non reconnu. Essayez un meilleur cadrage ou la recherche manuelle.":["Product not recognized. Try better framing or manual search.","ما تعرفش على المنتج. حاول تصوير أحسن ولا البحث اليدوي."],
+ "Analyse du produit en cours":["Analyzing the product","جاري تحليل المنتج"],"Informations":["Information","معلومات"],"Source":["Source","المصدر"],"Informations détaillées non disponibles pour ce produit.":["Detailed information not available for this product.","ما كايناش معلومات مفصّلة على هاد المنتج."],"Aucune information médicale trouvée pour ce produit.":["No medical information found for this product.","ما لقيناش معلومات طبية على هاد المنتج."],"Produit non reconnu. Essayez un meilleur cadrage ou la recherche manuelle.":["Product not recognized. Try better framing or manual search.","ما تعرفش على المنتج. حاول تصوير أحسن ولا البحث اليدوي."],
  "Caisse & Ventes":["Checkout & Sales","الصندوق والمبيعات"],"Caisse":["Checkout","الصندوق"],"Ventes":["Sales","المبيعات"],"Enregistrer une vente · chiffre d'affaires du jour":["Record a sale · today's revenue","سجّل بيعة · مداخيل اليوم"],"Ajouter un produit à la vente":["Add a product to the sale","زيد منتج للبيعة"],"Rechercher un produit du stock…":["Search a product in stock…","قلب على منتج ف المخزون…"],"CA du jour":["Today's revenue","مداخيل اليوم"],"Marge du jour":["Today's margin","ربح اليوم"],"Ventes (jour)":["Sales (day)","مبيعات (اليوم)"],"Chiffre d'affaires (7 jours)":["Revenue (7 days)","رقم المعاملات (7 أيام)"],"Ventes du jour":["Today's sales","مبيعات اليوم"],"Nouvelle vente":["New sale","بيعة جديدة"],"Prix d'achat (DH)":["Cost price (MAD)","ثمن الشراء (درهم)"],"Marge":["Margin","الربح"],
  "Visite guidée":["Guided tour","جولة إرشادية"],"Précédent":["Previous","السابق"],"Suivant":["Next","التالي"],"Terminer":["Finish","إنهاء"],"🎬 Démo guidée":["🎬 Guided demo","🎬 عرض إرشادي"],"🎬 Lancer la visite guidée (démo)":["🎬 Start the guided tour (demo)","🎬 ابدأ الجولة الإرشادية (عرض)"],
  "Langue":["Language","اللغة"],"Choisissez la langue de l'application":["Choose the app language","اختر لغة التطبيق"]
@@ -1601,7 +1601,7 @@ async function wikiSummary(q,lang){
     const r=await fetch('https://'+lang+'.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(q),{signal:ctrl.signal,headers:{'Accept':'application/json'}});
     clearTimeout(to);if(!r.ok)return null;const j=await r.json();
     if(!j||j.type==='disambiguation'||!j.extract)return null;
-    return {title:j.title,extract:j.extract,url:(j.content_urls&&j.content_urls.desktop&&j.content_urls.desktop.page)||('https://'+lang+'.wikipedia.org/wiki/'+encodeURIComponent(q)),thumb:(j.thumbnail&&j.thumbnail.source)||''};
+    return {title:j.title,extract:j.extract,description:j.description||'',url:(j.content_urls&&j.content_urls.desktop&&j.content_urls.desktop.page)||('https://'+lang+'.wikipedia.org/wiki/'+encodeURIComponent(q)),thumb:(j.thumbnail&&j.thumbnail.source)||''};
   }catch(e){return null;}
 }
 async function offName(code){
@@ -1611,19 +1611,34 @@ async function offName(code){
     if(j&&j.status===1&&j.product)return (j.product.product_name||j.product.brands||'').trim()||null;return null;
   }catch(e){return null;}
 }
-async function wikiSearch(q,lang){
+const MED_WORDS=['medicament','medecine','medical','pharmaceut','pharmacolog','pharmacie','molecule','principe actif','substance active','antibiot','inflammat','antalg','analges','antipyret','antihistamin','antisept','antifong','antiviral','antidiarrh','laxatif','antispasmod','bronchodilat','vitamine','complement alimentaire','pommade','sirop','comprime','gelule','suppositoire','collyre','posologie','traitement','indique dans','indication','effet indesirable','contre-indication','ordonnance','maladie','symptome','infection','inflammation','douleur','fievre','allergie','voie orale','excipient','therapeut','medication','medicine','drug','pharmaceutical','pharmacology','active ingredient','antibiotic','inflammatory','analgesic','painkiller','antipyretic','antihistamine','antiseptic','antifungal','antidiarrheal','laxative','vitamin','dietary supplement','ointment','syrup','tablet','capsule','suppository','dosage','treatment','used to treat','indicated for','side effect','disease','fever','allergy'];
+const MED_AR=['دواء','عقار','طبي','مضاد حيوي','مسكن','علاج','صيدل','فيتامين','مرهم','شراب','جرعة','التهاب','عدوى','مرض','حمى','حساسية','مضاد'];
+function isMedical(sum){if(!sum)return false;
+  const raw=((sum.description||'')+' '+(sum.extract||'')).toLowerCase();
+  const norm=raw.normalize('NFD').replace(/[̀-ͯ]/g,'');
+  for(const w of MED_WORDS){if(norm.indexOf(w)>=0)return true;}
+  for(const w of MED_AR){if(raw.indexOf(w)>=0)return true;}
+  return false;
+}
+async function wikiSearchList(q,lang,limit){
   try{const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),6000);
-    const r=await fetch('https://'+lang+'.wikipedia.org/w/api.php?action=query&list=search&srlimit=1&format=json&origin=*&srsearch='+encodeURIComponent(q),{signal:ctrl.signal});
-    clearTimeout(to);if(!r.ok)return null;const j=await r.json();
-    const hit=j&&j.query&&j.query.search&&j.query.search[0];return hit?hit.title:null;
-  }catch(e){return null;}
+    const r=await fetch('https://'+lang+'.wikipedia.org/w/api.php?action=query&list=search&srlimit='+(limit||5)+'&format=json&origin=*&srsearch='+encodeURIComponent(q),{signal:ctrl.signal});
+    clearTimeout(to);if(!r.ok)return [];const j=await r.json();
+    return ((j&&j.query&&j.query.search)||[]).map(h=>h.title);
+  }catch(e){return [];}
 }
 async function onlineLookup(name,primary){
   const q=(name||'').trim();const mount=ensureWebMount();if(!q){mount.innerHTML='';return;}
   if(primary)mount.innerHTML=`<div class="card pad web-card"><div class="web-lab"><span class="web-spin"></span> ${t('Analyse du produit en cours')}…</div></div>`;
   const langs=curLang==='ar'?['ar','fr','en']:(curLang==='en'?['en','fr']:['fr','en']);
+  const HINT={fr:'médicament',en:'drug medication',ar:'دواء'};
   let data=null;
-  for(const lg of langs){let d=await wikiSummary(q,lg);if(!d){const title=await wikiSearch(q,lg);if(title)d=await wikiSummary(title,lg);}if(d){data=d;break;}}
+  outer:for(const lg of langs){
+    const direct=await wikiSummary(q,lg);if(direct&&isMedical(direct)){data=direct;break;}
+    const titles=await wikiSearchList(q+' '+(HINT[lg]||''),lg,5);
+    let tried=0;
+    for(const title of titles){if(tried++>=4)break;const s=await wikiSummary(title,lg);if(s&&isMedical(s)){data=s;break outer;}}
+  }
   if(data){
     mount.innerHTML=`<div class="card pad web-card"><div class="web-lab">ℹ️ ${t('Informations')}</div>
       <div style="display:flex;gap:12px;align-items:flex-start">
@@ -1633,7 +1648,7 @@ async function onlineLookup(name,primary){
           <div class="cell-mini">${t('Source')} : Wikipédia</div>
         </div></div></div>`;
   }else{
-    mount.innerHTML=primary?`<div class="card pad web-card note" style="border-top-color:var(--muted)">${t('Informations détaillées non disponibles pour ce produit.')}</div>`:'';
+    mount.innerHTML=primary?`<div class="card pad web-card note" style="border-top-color:var(--muted)">${t('Aucune information médicale trouvée pour ce produit.')}</div>`:'';
   }
 }
 /* --- Démo : fausse caméra pour la vidéo --- */
