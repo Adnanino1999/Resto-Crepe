@@ -533,7 +533,7 @@ class GFX:
         # brand bar
         self.brand = tsprite("RESTO CRÊPES", "mont", 25, CREAM, var=b"Black", tracking=9, shadow=0.6, shadow_blur=6)
         self.brand_rule = hline(300, 1.4, GOLD)
-        self.brand_date = tsprite("OFFRE DU 22 AU 29 NOVEMBRE", "mont", 17, GOLD_HI, var=b"Bold", tracking=4.5, shadow=0.6, shadow_blur=5)
+        self.brand_date = tsprite("OFFRE DU 25 NOVEMBRE AU 1ER DÉCEMBRE", "mont", 17, GOLD_HI, var=b"Bold", tracking=4.5, shadow=0.6, shadow_blur=5)
         # supercut typography
         self.sc_kicker = tsprite("NOUVEAU CHEZ RESTO CRÊPES", "mont", 30, GOLD_HI, var=b"Bold", tracking=8, shadow=0.7)
         self.sc_two = tsprite("2 FORMULES", "anton", 205, CREAM, tracking=3, shadow=0.8, shadow_blur=16)
@@ -542,7 +542,7 @@ class GFX:
         self.sc_dh = tsprite("DH", "anton", 150, grad=GOLD_GRAD, shadow=0.8, shadow_blur=14, stroke=1.0, stroke_fill=GOLD_D)
         self.sc_week = tsprite("1 SEMAINE", "anton", 200, CREAM, tracking=3, shadow=0.8, shadow_blur=16)
         self.sc_only = tsprite("SEULEMENT", "mont", 58, GOLD, var=b"Black", tracking=16, shadow=0.7)
-        self.sc_dates = tsprite("DU 22 AU 29 NOVEMBRE", "mont", 38, CREAM, var=b"Bold", tracking=6, shadow=0.7)
+        self.sc_dates = tsprite("DU 25 NOVEMBRE AU 1ER DÉCEMBRE", "mont", 34, CREAM, var=b"Bold", tracking=5, shadow=0.7)
         self.rule_w = hline(520, 1.6, GOLD)
         # chips
         self.chips = {}
@@ -553,7 +553,7 @@ class GFX:
         self.cards = {k: self.make_card(v) for k, v in CARDS.items()}
         self.card_45 = tsprite("45", "anton", 400, grad=GOLD_GRAD, shadow=0.9, shadow_blur=20, stroke=1.2, stroke_fill=GOLD_D)
         self.card_dh = tsprite("DH", "anton", 132, grad=GOLD_GRAD, shadow=0.9, shadow_blur=14, stroke=1.0, stroke_fill=GOLD_D)
-        self.card_date = tsprite("OFFRE VALABLE DU 22 AU 29 NOVEMBRE", "mont", 21, CREAM, var=b"SemiBold", tracking=4, shadow=0.7)
+        self.card_date = tsprite("OFFRE VALABLE DU 25 NOVEMBRE AU 1ER DÉCEMBRE", "mont", 21, CREAM, var=b"SemiBold", tracking=4, shadow=0.7)
         self.glow = self.make_glow(560)
         # time skip + comic freeze
         self.ts_text = tsprite("من بعد شي سوايع...", "lalezar", 118, CREAM, shadow=0.85, shadow_blur=12, glow=(GOLD, 0.55))
@@ -610,7 +610,7 @@ class GFX:
                         self.make_end_card("photo_5764677286648025027_w.jpg", (0.62, 0.66), "FORMULE PIZZA",
                                            ["Pizza 4 fromages", "Pancake"])]
         self.e_week = tsprite("OFFRE VALABLE 1 SEMAINE", "mont", 24, GOLD_HI, var=b"Bold", tracking=8, shadow=0.7)
-        self.e_dates = tsprite("DU 22 AU 29 NOVEMBRE", "anton", 92, CREAM, tracking=3, shadow=0.85, shadow_blur=10)
+        self.e_dates = tsprite("DU 25 NOV. AU 1ER DÉC.", "anton", 92, CREAM, tracking=3, shadow=0.85, shadow_blur=10)
         self.e_datebox = rbox(self.e_dates.shape[1] / U + 30, 132, INK, alpha=150, radius=20, outline=GOLD, ow=1.6, shadow=0.5)
         self.e_order = tsprite("POUR COMMANDER", "mont", 30, GOLD_HI, var=b"Bold", tracking=10, shadow=0.7)
         ph = hcat([emoji("📞", 84), tsprite(PHONE, "anton", 122, grad=GOLD_GRAD, tracking=3, stroke=0.8, stroke_fill=GOLD_D)], 22)
@@ -620,7 +620,7 @@ class GFX:
         self.e_addr = hcat([emoji("📍", 48), tsprite("Hay El Fath  –  Rabat", "mont", 41, CREAM, var=b"SemiBold", shadow=0.8)], 14)
         self.cta = tsprite("On vous attend !", "kaushan", 128, CREAM, shadow=0.9, shadow_blur=14, glow=(GOLD, 0.6))
         self.cta_brand = tsprite("RESTO CRÊPES", "anton", 70, CREAM, tracking=8, shadow=0.8, shadow_blur=10)
-        self.cta_sub = tsprite("2 formules à 45 DH  •  du 22 au 29 novembre", "mont", 28, GOLD_HI, var=b"Bold", tracking=1, shadow=0.8)
+        self.cta_sub = tsprite("2 formules à 45 DH  •  du 25 nov. au 1er déc.", "mont", 28, GOLD_HI, var=b"Bold", tracking=1, shadow=0.8)
         self.cta_phone = hcat([emoji("📞", 50), tsprite(PHONE, "anton", 70, CREAM, tracking=2, shadow=0.85, shadow_blur=10)], 14)
 
     def make_end_card(self, photo, focus, title, lines):

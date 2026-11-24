@@ -1,4 +1,4 @@
-# Promo « 2 formules à 45 DH » — du 22 au 29 novembre
+# Promo « 2 formules à 45 DH » — du 25 novembre au 1er décembre 2026 (inclus)
 
 Publicité verticale (9:16) pour Instagram, TikTok et Facebook, 49 s, ton humoristique.
 
@@ -19,7 +19,7 @@ Publicité verticale (9:16) pour Instagram, TikTok et Facebook, 49 s, ton humori
 | 0:22 – 0:24 | « Fin had chi ? » « F Resto Crêpes ! » |
 | 0:24 – 0:25 | Transition « من بعد شي سوايع... » (avance rapide + réveil) |
 | 0:25 – 0:42 | Le retour : il mange encore (formule tacos), « Mazal ba9i katakoul ?! », il s'énerve → arrêt sur image comique 😤, il bouscule la caméra |
-| 0:42 – 0:47 | Écran de fin : les 2 formules, dates, puis 📞 06 60 24 14 75 · 🛵 Livraison Rabat • Témara · 📍 Hay El Fath – Rabat |
+| 0:42 – 0:47 | Écran de fin : les 2 formules, dates (25 nov. → 1er déc.), puis 📞 06 60 24 14 75 · 🛵 Livraison Rabat • Témara · 📍 Hay El Fath – Rabat |
 | 0:47 – 0:49 | « On vous attend ! » + numéro |
 
 Pas de sous-titres (public marocain, dialogue en darija).
