@@ -825,7 +825,7 @@ const I18N={
  // Plus / alertes / langue
  "Réassort":["Restocking","التموين"],"Offre Pro":["Pro offer","عرض Pro"],"Profil & données":["Profile & data","الملف والمعطيات"],"🔔 Activer les rappels":["🔔 Enable reminders","🔔 تفعيل التذكيرات"],"🌓 Mode clair / sombre":["🌓 Light / dark mode","🌓 وضع فاتح / غامق"],"Centre d'alertes":["Alert center","مركز التنبيهات"],"Aucune alerte. Tout est sous contrôle ✓":["No alert. Everything is under control ✓","ما كاين حتى تنبيه. كلشي مزيان ✓"],"Pilotage & valeur":["Steering & value","قيادة وقيمة"],"Suggestions de commande":["Order suggestions","اقتراحات الطلب"],"Journal des opérations":["Operations log","سجل العمليات"],"Débloquer & parrainage":["Unlock & referral","فتح وإحالة"],"Confrères & SOS":["Peers & SOS","الزملاء وSOS"],"Officine, sauvegarde":["Pharmacy, backup","الصيدلية، نسخة احتياطية"],
  "Code-barres détecté":["Barcode detected","تم كشف الباركود"],
- "Analyse du produit en cours":["Analyzing the product","جاري تحليل المنتج"],"Informations":["Information","معلومات"],"Source":["Source","المصدر"],"Informations détaillées non disponibles pour ce produit.":["Detailed information not available for this product.","ما كايناش معلومات مفصّلة على هاد المنتج."],"Aucune information médicale trouvée pour ce produit.":["No medical information found for this product.","ما لقيناش معلومات طبية على هاد المنتج."],"Médicament":["Medication","دواء"],"Utilisations":["Uses","الاستعمالات"],"Posologie / fréquence":["Dosage / frequency","الجرعة / التكرار"],"Information à titre indicatif — avis du pharmacien requis.":["For guidance only — pharmacist's advice required.","معلومة إرشادية — خاص رأي الصيدلي."],"Produit non reconnu. Essayez un meilleur cadrage ou la recherche manuelle.":["Product not recognized. Try better framing or manual search.","ما تعرفش على المنتج. حاول تصوير أحسن ولا البحث اليدوي."],
+ "Analyse du produit en cours":["Analyzing the product","جاري تحليل المنتج"],"Informations":["Information","معلومات"],"Source":["Source","المصدر"],"Informations détaillées non disponibles pour ce produit.":["Detailed information not available for this product.","ما كايناش معلومات مفصّلة على هاد المنتج."],"Aucune information médicale trouvée pour ce produit.":["No medical information found for this product.","ما لقيناش معلومات طبية على هاد المنتج."],"Médicament":["Medication","دواء"],"DCI":["INN","الاسم العلمي"],"Utilisations":["Uses","الاستعمالات"],"Posologie / fréquence":["Dosage / frequency","الجرعة / التكرار"],"Information à titre indicatif — avis du pharmacien requis.":["For guidance only — pharmacist's advice required.","معلومة إرشادية — خاص رأي الصيدلي."],"Produit non reconnu. Essayez un meilleur cadrage ou la recherche manuelle.":["Product not recognized. Try better framing or manual search.","ما تعرفش على المنتج. حاول تصوير أحسن ولا البحث اليدوي."],
  "Caisse & Ventes":["Checkout & Sales","الصندوق والمبيعات"],"Caisse":["Checkout","الصندوق"],"Ventes":["Sales","المبيعات"],"Enregistrer une vente · chiffre d'affaires du jour":["Record a sale · today's revenue","سجّل بيعة · مداخيل اليوم"],"Ajouter un produit à la vente":["Add a product to the sale","زيد منتج للبيعة"],"Rechercher un produit du stock…":["Search a product in stock…","قلب على منتج ف المخزون…"],"CA du jour":["Today's revenue","مداخيل اليوم"],"Marge du jour":["Today's margin","ربح اليوم"],"Ventes (jour)":["Sales (day)","مبيعات (اليوم)"],"Chiffre d'affaires (7 jours)":["Revenue (7 days)","رقم المعاملات (7 أيام)"],"Ventes du jour":["Today's sales","مبيعات اليوم"],"Nouvelle vente":["New sale","بيعة جديدة"],"Prix d'achat (DH)":["Cost price (MAD)","ثمن الشراء (درهم)"],"Marge":["Margin","الربح"],
  "Visite guidée":["Guided tour","جولة إرشادية"],"Précédent":["Previous","السابق"],"Suivant":["Next","التالي"],"Terminer":["Finish","إنهاء"],"🎬 Démo guidée":["🎬 Guided demo","🎬 عرض إرشادي"],"🎬 Lancer la visite guidée (démo)":["🎬 Start the guided tour (demo)","🎬 ابدأ الجولة الإرشادية (عرض)"],
  "Langue":["Language","اللغة"],"Choisissez la langue de l'application":["Choose the app language","اختر لغة التطبيق"]
@@ -1558,15 +1558,16 @@ async function ocrAndMatch(canvas){
     const rawtxt=(data&&data.text)||'';const med=matchMed(rawtxt);st.textContent='';
     if(med){showMedInfo(med);return;}
     const cand=rawtxt.replace(/[^A-Za-zÀ-ÿ0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>=4).sort((a,b)=>b.length-a.length)[0]||'';
-    if(cand){document.getElementById('scanResult').innerHTML=`<div class="card pad"><b>${esc(cand)}</b><div id="webInfo" style="margin-top:10px"></div></div>`;onlineLookup(cand,true);}
+    if(cand){const bc=resolveBrand(cand);const medc=matchMed(cand)||(bc.molecule?matchMed(bc.molecule):null);if(medc){showMedInfo(medc);return;}document.getElementById('scanResult').innerHTML=`<div class="card pad"><b>${esc(cand)}</b>${bc.molecule?`<div class="cell-mini">${t('DCI')} : ${esc(bc.molecule)}</div>`:''}<div id="webInfo" style="margin-top:10px"></div></div>`;onlineLookup(bc.query,true,cand);}
     else document.getElementById('scanResult').innerHTML='<div class="card pad note">'+t('Produit non reconnu. Essayez un meilleur cadrage ou la recherche manuelle.')+'</div>';
   }catch(e){st.textContent='';document.getElementById('scanResult').innerHTML='<div class="card pad note">Reconnaissance automatique indisponible (hors-ligne). Utilisez la recherche manuelle ci-dessus.</div>';}
 }
 function scanManual(q){q=(q||'').trim();const r=document.getElementById('scanResult');clearTimeout(_webTimer);if(q.length<2){r.innerHTML='';return;}
-  const med=matchMed(q);
+  const b=resolveBrand(q);
+  const med=matchMed(q)||(b.molecule?matchMed(b.molecule):null);
   if(med){showMedInfo(med);return;}
-  r.innerHTML=`<div class="card pad"><b>${esc(q)}</b><div id="webInfo" style="margin-top:10px"></div></div>`;
-  scheduleWeb(q,true);}
+  r.innerHTML=`<div class="card pad"><b>${esc(q)}</b>${b.molecule?`<div class="cell-mini">${t('DCI')} : ${esc(b.molecule)}</div>`:''}<div id="webInfo" style="margin-top:10px"></div></div>`;
+  scheduleWeb(b.query,true,q);}
 function normTxt(s){return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9 ]/g,' ');}
 function matchMed(text){const t=normTxt(text);let best=null,score=0;
   MEDBASE.forEach(m=>{[m.nom,...(m.aliases||[])].forEach(k=>{const kn=normTxt(k).trim();if(kn&&t.includes(kn)&&kn.length>score){best=m;score=kn.length;}});});
@@ -1593,7 +1594,7 @@ function loadTesseract(){if(window.Tesseract)return Promise.resolve(window.Tesse
 /* --- Recherche internet (Wikipedia + OpenFoodFacts) --- */
 function ensureWebMount(){let m=document.getElementById('webInfo');if(!m){m=document.createElement('div');m.id='webInfo';document.getElementById('scanResult').appendChild(m);}return m;}
 let _webTimer=null;
-function scheduleWeb(name,primary){clearTimeout(_webTimer);const m=ensureWebMount();if(primary)m.innerHTML=`<div class="card pad web-card"><div class="web-lab"><span class="web-spin"></span> ${t('Analyse du produit en cours')}…</div></div>`;_webTimer=setTimeout(()=>onlineLookup(name,primary),450);}
+function scheduleWeb(name,primary,display){clearTimeout(_webTimer);const m=ensureWebMount();if(primary)m.innerHTML=`<div class="card pad web-card"><div class="web-lab"><span class="web-spin"></span> ${t('Analyse du produit en cours')}…</div></div>`;_webTimer=setTimeout(()=>onlineLookup(name,primary,display),450);}
 async function wikiSummary(q,lang){
   try{const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),6000);
     const r=await fetch('https://'+lang+'.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(q),{signal:ctrl.signal,headers:{'Accept':'application/json'}});
@@ -1643,23 +1644,30 @@ function parseMedSections(text,lang){
   const clean=s=>s.replace(/\[\d+\]/g,'').replace(/=+/g,' ').replace(/\s+/g,' ').trim().slice(0,520);
   return {uses:clean(find(USES)),dosage:clean(find(DOSE))};
 }
-async function onlineLookup(name,primary){
+const GENERIC_BLOCK=['medicament','medicaments','medication','medications','drug','drugs','medicine','medicines','pharmacie','pharmacien','pharmacologie','pharmacology','posologie','medecine','principe actif','substance active','excipient','forme galenique','voie d administration','dose','comprime','gelule','ordonnance','notice','specialite pharmaceutique'];
+function normKey(s){return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();}
+function isGenericTitle(title){return GENERIC_BLOCK.indexOf(normKey(title))>=0;}
+/* Table extensible : nom commercial -> molécule (DCI). À compléter selon vos marques. */
+const BRAND_MAP={'ares':'ciprofloxacine'};
+function resolveBrand(q){const n=normKey(q);const mol=BRAND_MAP[n];return {query:mol||q,molecule:mol||null};}
+async function onlineLookup(name,primary,display){
   const q=(name||'').trim();const mount=ensureWebMount();if(!q){mount.innerHTML='';return;}
   if(primary)mount.innerHTML=`<div class="card pad web-card"><div class="web-lab"><span class="web-spin"></span> ${t('Analyse du produit en cours')}…</div></div>`;
   const langs=curLang==='ar'?['ar','fr','en']:(curLang==='en'?['en','fr']:['fr','en']);
-  const HINT={fr:'médicament',en:'drug medication',ar:'دواء'};
   let data=null;
   outer:for(const lg of langs){
-    const direct=await wikiSummary(q,lg);if(direct&&isMedical(direct)){direct.lang=lg;data=direct;break;}
-    const titles=await wikiSearchList(q+' '+(HINT[lg]||''),lg,5);
+    const direct=await wikiSummary(q,lg);if(direct&&isMedical(direct)&&!isGenericTitle(direct.title)){direct.lang=lg;data=direct;break;}
+    const titles=await wikiSearchList(q,lg,6);
     let tried=0;
-    for(const title of titles){if(tried++>=4)break;const s=await wikiSummary(title,lg);if(s&&isMedical(s)){s.lang=lg;data=s;break outer;}}
+    for(const title of titles){if(isGenericTitle(title))continue;if(tried++>=5)break;const s=await wikiSummary(title,lg);if(s&&isMedical(s)&&!isGenericTitle(s.title)){s.lang=lg;data=s;break outer;}}
   }
   if(data){
     const sec=parseMedSections(await wikiFullExtract(data.title,data.lang),data.lang);
     const uses=sec.uses||data.extract||'';
+    const title=display||data.title;
+    const sub=(display&&data.title&&normKey(display)!==normKey(data.title))?`<div class="cell-mini" style="margin-top:3px">${t('DCI')} : ${esc(data.title)}</div>`:'';
     mount.innerHTML=`<div class="card pad med-card">
-      <div class="med-head"><div><span class="badge b-blue">${t('Médicament')}</span><h3>${esc(data.title)}</h3></div>${data.thumb?`<img src="${esc(data.thumb)}" class="web-thumb" alt="" onerror="this.remove()">`:''}</div>
+      <div class="med-head"><div style="min-width:0"><span class="badge b-blue">${t('Médicament')}</span><h3>${esc(title)}</h3>${sub}</div>${data.thumb?`<img src="${esc(data.thumb)}" class="web-thumb" alt="" onerror="this.remove()">`:''}</div>
       <div class="med-sec"><div class="med-lab">💊 ${t('Utilisations')}</div>${esc(uses)}</div>
       ${sec.dosage?`<div class="med-sec"><div class="med-lab">📏 ${t('Posologie / fréquence')}</div>${esc(sec.dosage)}</div>`:''}
       <div class="med-sec" style="border:none"><div class="cell-mini">${t('Information à titre indicatif — avis du pharmacien requis.')} · ${t('Source')} : Wikipédia</div></div>
@@ -1900,7 +1908,7 @@ async function onBarcode(code){const m=DB.stock.find(x=>x.barcode&&String(x.barc
   const med=matchMed(code);if(med){showMedInfo(med);return;}
   document.getElementById('scanResult').innerHTML=`<div class="card pad"><span class="badge b-blue">${t('Code-barres détecté')}</span><div class="cell-mini" style="margin-top:6px">${esc(code)}</div><div id="webInfo" style="margin-top:10px"><div class="card pad web-card"><div class="web-lab"><span class="web-spin"></span> ${t('Analyse du produit en cours')}…</div></div></div></div>`;
   const name=await offName(code);
-  if(name){const med2=matchMed(name);if(med2){showMedInfo(med2);return;}document.getElementById('scanResult').innerHTML=`<div class="card pad"><span class="badge b-blue">${t('Code-barres détecté')}</span><h3 style="margin:8px 0 2px">${esc(name)}</h3><div class="cell-mini">${esc(code)}</div><div id="webInfo" style="margin-top:12px"></div></div>`;onlineLookup(name,true);}
+  if(name){const bn=resolveBrand(name);const med2=matchMed(name)||(bn.molecule?matchMed(bn.molecule):null);if(med2){showMedInfo(med2);return;}document.getElementById('scanResult').innerHTML=`<div class="card pad"><span class="badge b-blue">${t('Code-barres détecté')}</span><h3 style="margin:8px 0 2px">${esc(name)}</h3><div class="cell-mini">${esc(code)}</div><div id="webInfo" style="margin-top:12px"></div></div>`;onlineLookup(bn.query,true,name);}
   else onlineLookup(code,true);}
 
 /* ========================================================
