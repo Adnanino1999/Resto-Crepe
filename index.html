@@ -825,7 +825,7 @@ const I18N={
  // Plus / alertes / langue
  "Réassort":["Restocking","التموين"],"Offre Pro":["Pro offer","عرض Pro"],"Profil & données":["Profile & data","الملف والمعطيات"],"🔔 Activer les rappels":["🔔 Enable reminders","🔔 تفعيل التذكيرات"],"🌓 Mode clair / sombre":["🌓 Light / dark mode","🌓 وضع فاتح / غامق"],"Centre d'alertes":["Alert center","مركز التنبيهات"],"Aucune alerte. Tout est sous contrôle ✓":["No alert. Everything is under control ✓","ما كاين حتى تنبيه. كلشي مزيان ✓"],"Pilotage & valeur":["Steering & value","قيادة وقيمة"],"Suggestions de commande":["Order suggestions","اقتراحات الطلب"],"Journal des opérations":["Operations log","سجل العمليات"],"Débloquer & parrainage":["Unlock & referral","فتح وإحالة"],"Confrères & SOS":["Peers & SOS","الزملاء وSOS"],"Officine, sauvegarde":["Pharmacy, backup","الصيدلية، نسخة احتياطية"],
  "Code-barres détecté":["Barcode detected","تم كشف الباركود"],
- "Analyse du produit en cours":["Analyzing the product","جاري تحليل المنتج"],"Informations":["Information","معلومات"],"Source":["Source","المصدر"],"Informations détaillées non disponibles pour ce produit.":["Detailed information not available for this product.","ما كايناش معلومات مفصّلة على هاد المنتج."],"Aucune information médicale trouvée pour ce produit.":["No medical information found for this product.","ما لقيناش معلومات طبية على هاد المنتج."],"Produit non reconnu. Essayez un meilleur cadrage ou la recherche manuelle.":["Product not recognized. Try better framing or manual search.","ما تعرفش على المنتج. حاول تصوير أحسن ولا البحث اليدوي."],
+ "Analyse du produit en cours":["Analyzing the product","جاري تحليل المنتج"],"Informations":["Information","معلومات"],"Source":["Source","المصدر"],"Informations détaillées non disponibles pour ce produit.":["Detailed information not available for this product.","ما كايناش معلومات مفصّلة على هاد المنتج."],"Aucune information médicale trouvée pour ce produit.":["No medical information found for this product.","ما لقيناش معلومات طبية على هاد المنتج."],"Médicament":["Medication","دواء"],"Utilisations":["Uses","الاستعمالات"],"Posologie / fréquence":["Dosage / frequency","الجرعة / التكرار"],"Information à titre indicatif — avis du pharmacien requis.":["For guidance only — pharmacist's advice required.","معلومة إرشادية — خاص رأي الصيدلي."],"Produit non reconnu. Essayez un meilleur cadrage ou la recherche manuelle.":["Product not recognized. Try better framing or manual search.","ما تعرفش على المنتج. حاول تصوير أحسن ولا البحث اليدوي."],
  "Caisse & Ventes":["Checkout & Sales","الصندوق والمبيعات"],"Caisse":["Checkout","الصندوق"],"Ventes":["Sales","المبيعات"],"Enregistrer une vente · chiffre d'affaires du jour":["Record a sale · today's revenue","سجّل بيعة · مداخيل اليوم"],"Ajouter un produit à la vente":["Add a product to the sale","زيد منتج للبيعة"],"Rechercher un produit du stock…":["Search a product in stock…","قلب على منتج ف المخزون…"],"CA du jour":["Today's revenue","مداخيل اليوم"],"Marge du jour":["Today's margin","ربح اليوم"],"Ventes (jour)":["Sales (day)","مبيعات (اليوم)"],"Chiffre d'affaires (7 jours)":["Revenue (7 days)","رقم المعاملات (7 أيام)"],"Ventes du jour":["Today's sales","مبيعات اليوم"],"Nouvelle vente":["New sale","بيعة جديدة"],"Prix d'achat (DH)":["Cost price (MAD)","ثمن الشراء (درهم)"],"Marge":["Margin","الربح"],
  "Visite guidée":["Guided tour","جولة إرشادية"],"Précédent":["Previous","السابق"],"Suivant":["Next","التالي"],"Terminer":["Finish","إنهاء"],"🎬 Démo guidée":["🎬 Guided demo","🎬 عرض إرشادي"],"🎬 Lancer la visite guidée (démo)":["🎬 Start the guided tour (demo)","🎬 ابدأ الجولة الإرشادية (عرض)"],
  "Langue":["Language","اللغة"],"Choisissez la langue de l'application":["Choose the app language","اختر لغة التطبيق"]
@@ -1584,9 +1584,7 @@ function showMedInfo(m){
      <div class="med-sec"><div class="med-lab">${t('📏 Posologie')}</div>${esc(L(m.poso))}</div>
      <div class="med-sec"><div class="med-lab">${t('⚠️ Précautions')}</div>${esc(L(m.prec))}</div>
      ${near?`<div class="gold-box" style="margin-top:14px"><span class="tag">${t('⭐ À écouler en priorité')}</span><h4 style="margin:6px 0 0">${t('Valeur à préserver :')} ${money((+inStock.quantite||0)*(+inStock.pu||0))}</h4></div>`:''}
-     <div id="webInfo"></div>
    </div>`;
-  scheduleWeb(m.nom,false);
 }
 let _tess=null;
 function loadTesseract(){if(window.Tesseract)return Promise.resolve(window.Tesseract);if(_tess)return _tess;
@@ -1627,6 +1625,24 @@ async function wikiSearchList(q,lang,limit){
     return ((j&&j.query&&j.query.search)||[]).map(h=>h.title);
   }catch(e){return [];}
 }
+async function wikiFullExtract(title,lang){
+  try{const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),7000);
+    const r=await fetch('https://'+lang+'.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&exsectionformat=wiki&redirects=1&format=json&origin=*&titles='+encodeURIComponent(title),{signal:ctrl.signal});
+    clearTimeout(to);if(!r.ok)return '';const j=await r.json();const pg=j&&j.query&&j.query.pages;if(!pg)return '';const k=Object.keys(pg)[0];return (pg[k]&&pg[k].extract)||'';
+  }catch(e){return '';}
+}
+function parseMedSections(text,lang){
+  if(!text)return {};
+  const re=/^(={2,})\s*(.+?)\s*\1\s*$/gm;const heads=[];let m;
+  while((m=re.exec(text))){heads.push({title:m[2],end:re.lastIndex,start:m.index});}
+  const secs=[];for(let i=0;i<heads.length;i++){const a=heads[i].end,b=i+1<heads.length?heads[i+1].start:text.length;secs.push({title:heads[i].title,body:text.slice(a,b).trim()});}
+  const norm=s=>s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  const find=keys=>{for(const s of secs){const tl=norm(s.title);if(keys.some(k=>tl.includes(k))&&s.body.length>20)return s.body;}return '';};
+  const USES=({fr:['indication','utilisation','usage','emploi','a quoi'],en:['use','indication'],ar:['استعمال','دواعي','استعمالات']})[lang]||['indication','use'];
+  const DOSE=({fr:['posologie','administration','dose','mode d'],en:['dosage','administration','dosing','dose'],ar:['جرعة','طريقة','الجرعة']})[lang]||['posologie','dosage'];
+  const clean=s=>s.replace(/\[\d+\]/g,'').replace(/=+/g,' ').replace(/\s+/g,' ').trim().slice(0,520);
+  return {uses:clean(find(USES)),dosage:clean(find(DOSE))};
+}
 async function onlineLookup(name,primary){
   const q=(name||'').trim();const mount=ensureWebMount();if(!q){mount.innerHTML='';return;}
   if(primary)mount.innerHTML=`<div class="card pad web-card"><div class="web-lab"><span class="web-spin"></span> ${t('Analyse du produit en cours')}…</div></div>`;
@@ -1634,19 +1650,20 @@ async function onlineLookup(name,primary){
   const HINT={fr:'médicament',en:'drug medication',ar:'دواء'};
   let data=null;
   outer:for(const lg of langs){
-    const direct=await wikiSummary(q,lg);if(direct&&isMedical(direct)){data=direct;break;}
+    const direct=await wikiSummary(q,lg);if(direct&&isMedical(direct)){direct.lang=lg;data=direct;break;}
     const titles=await wikiSearchList(q+' '+(HINT[lg]||''),lg,5);
     let tried=0;
-    for(const title of titles){if(tried++>=4)break;const s=await wikiSummary(title,lg);if(s&&isMedical(s)){data=s;break outer;}}
+    for(const title of titles){if(tried++>=4)break;const s=await wikiSummary(title,lg);if(s&&isMedical(s)){s.lang=lg;data=s;break outer;}}
   }
   if(data){
-    mount.innerHTML=`<div class="card pad web-card"><div class="web-lab">ℹ️ ${t('Informations')}</div>
-      <div style="display:flex;gap:12px;align-items:flex-start">
-        ${data.thumb?`<img src="${esc(data.thumb)}" class="web-thumb" alt="" onerror="this.remove()">`:''}
-        <div style="flex:1;min-width:0"><b>${esc(data.title)}</b>
-          <p class="note" style="margin:4px 0 6px;color:var(--ink);white-space:normal">${esc(data.extract)}</p>
-          <div class="cell-mini">${t('Source')} : Wikipédia</div>
-        </div></div></div>`;
+    const sec=parseMedSections(await wikiFullExtract(data.title,data.lang),data.lang);
+    const uses=sec.uses||data.extract||'';
+    mount.innerHTML=`<div class="card pad med-card">
+      <div class="med-head"><div><span class="badge b-blue">${t('Médicament')}</span><h3>${esc(data.title)}</h3></div>${data.thumb?`<img src="${esc(data.thumb)}" class="web-thumb" alt="" onerror="this.remove()">`:''}</div>
+      <div class="med-sec"><div class="med-lab">💊 ${t('Utilisations')}</div>${esc(uses)}</div>
+      ${sec.dosage?`<div class="med-sec"><div class="med-lab">📏 ${t('Posologie / fréquence')}</div>${esc(sec.dosage)}</div>`:''}
+      <div class="med-sec" style="border:none"><div class="cell-mini">${t('Information à titre indicatif — avis du pharmacien requis.')} · ${t('Source')} : Wikipédia</div></div>
+    </div>`;
   }else{
     mount.innerHTML=primary?`<div class="card pad web-card note" style="border-top-color:var(--muted)">${t('Aucune information médicale trouvée pour ce produit.')}</div>`:'';
   }
