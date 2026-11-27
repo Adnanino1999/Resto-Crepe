@@ -1650,27 +1650,38 @@ function isGenericTitle(title){return GENERIC_BLOCK.indexOf(normKey(title))>=0;}
 /* Table extensible : nom commercial -> molécule (DCI). À compléter selon vos marques. */
 const BRAND_MAP={'ares':'ciprofloxacine'};
 function resolveBrand(q){const n=normKey(q);const mol=BRAND_MAP[n];return {query:mol||q,molecule:mol||null};}
+/* molécule FR -> nom générique EN pour openFDA */
+const FR_EN={'paracetamol':'acetaminophen','ibuprofene':'ibuprofen','ciprofloxacine':'ciprofloxacin','amoxicilline':'amoxicillin','cetirizine':'cetirizine','loperamide':'loperamide','metronidazole':'metronidazole','azithromycine':'azithromycin','omeprazole':'omeprazole','diclofenac':'diclofenac','salbutamol':'albuterol','clarithromycine':'clarithromycin','doxycycline':'doxycycline','loratadine':'loratadine','pantoprazole':'pantoprazole','mebendazole':'mebendazole','miconazole':'miconazole','acide acetylsalicylique':'aspirin','aspirine':'aspirin'};
+async function fdaLookup(term){
+  const en=FR_EN[normKey(term)]||term;
+  const s='openfda.generic_name:"'+en+'" OR openfda.substance_name:"'+en+'" OR openfda.brand_name:"'+en+'"';
+  try{const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),8000);
+    const r=await fetch('https://api.fda.gov/drug/label.json?limit=5&search='+encodeURIComponent('('+s+')'),{signal:ctrl.signal});
+    clearTimeout(to);if(!r.ok)return null;const j=await r.json();
+    const results=(j&&j.results)||[];if(!results.length)return null;
+    const score=x=>{const route=((x.openfda&&x.openfda.route)||[]).join(' ').toLowerCase();let v=0;if(route.indexOf('oral')>=0)v+=3;if(x.indications_and_usage)v+=1;if(x.dosage_and_administration)v+=1;return v;};
+    const res=results.slice().sort((a,b)=>score(b)-score(a))[0];
+    const clean=a=>{let x=Array.isArray(a)?a.join(' '):(a||'');return x.replace(/\s+/g,' ').trim();};
+    const nm=(res.openfda&&((res.openfda.brand_name&&res.openfda.brand_name[0])||(res.openfda.generic_name&&res.openfda.generic_name[0])))||en;
+    return {name:nm,
+      uses:clean(res.indications_and_usage).replace(/^\s*\d*\s*indications?( and usage)?:?\s*/i,'').slice(0,650),
+      dosage:clean(res.dosage_and_administration).replace(/^\s*\d*\s*dosage( and administration)?:?\s*/i,'').slice(0,550),
+      purpose:clean(res.purpose).replace(/^\s*purpose:?\s*/i,'').slice(0,300)};
+  }catch(e){return null;}
+}
 async function onlineLookup(name,primary,display){
   const q=(name||'').trim();const mount=ensureWebMount();if(!q){mount.innerHTML='';return;}
   if(primary)mount.innerHTML=`<div class="card pad web-card"><div class="web-lab"><span class="web-spin"></span> ${t('Analyse du produit en cours')}…</div></div>`;
-  const langs=curLang==='ar'?['ar','fr','en']:(curLang==='en'?['en','fr']:['fr','en']);
-  let data=null;
-  outer:for(const lg of langs){
-    const direct=await wikiSummary(q,lg);if(direct&&isMedical(direct)&&!isGenericTitle(direct.title)){direct.lang=lg;data=direct;break;}
-    const titles=await wikiSearchList(q,lg,6);
-    let tried=0;
-    for(const title of titles){if(isGenericTitle(title))continue;if(tried++>=5)break;const s=await wikiSummary(title,lg);if(s&&isMedical(s)&&!isGenericTitle(s.title)){s.lang=lg;data=s;break outer;}}
-  }
-  if(data){
-    const sec=parseMedSections(await wikiFullExtract(data.title,data.lang),data.lang);
-    const uses=sec.uses||data.extract||'';
-    const title=display||data.title;
-    const sub=(display&&data.title&&normKey(display)!==normKey(data.title))?`<div class="cell-mini" style="margin-top:3px">${t('DCI')} : ${esc(data.title)}</div>`:'';
+  const d=await fdaLookup(q);
+  if(d&&(d.uses||d.purpose||d.dosage)){
+    const title=display||d.name;
+    const sub=(display&&normKey(display)!==normKey(q))?`<div class="cell-mini" style="margin-top:3px">${t('DCI')} : ${esc(q)}</div>`:'';
+    const uses=d.uses||d.purpose||'';
     mount.innerHTML=`<div class="card pad med-card">
-      <div class="med-head"><div style="min-width:0"><span class="badge b-blue">${t('Médicament')}</span><h3>${esc(title)}</h3>${sub}</div>${data.thumb?`<img src="${esc(data.thumb)}" class="web-thumb" alt="" onerror="this.remove()">`:''}</div>
-      <div class="med-sec"><div class="med-lab">💊 ${t('Utilisations')}</div>${esc(uses)}</div>
-      ${sec.dosage?`<div class="med-sec"><div class="med-lab">📏 ${t('Posologie / fréquence')}</div>${esc(sec.dosage)}</div>`:''}
-      <div class="med-sec" style="border:none"><div class="cell-mini">${t('Information à titre indicatif — avis du pharmacien requis.')} · ${t('Source')} : Wikipédia</div></div>
+      <div class="med-head"><div style="min-width:0"><span class="badge b-blue">${t('Médicament')}</span><h3>${esc(title)}</h3>${sub}</div></div>
+      ${uses?`<div class="med-sec"><div class="med-lab">💊 ${t('Utilisations')}</div>${esc(uses)}</div>`:''}
+      ${d.dosage?`<div class="med-sec"><div class="med-lab">📏 ${t('Posologie / fréquence')}</div>${esc(d.dosage)}</div>`:''}
+      <div class="med-sec" style="border:none"><div class="cell-mini">${t('Information à titre indicatif — avis du pharmacien requis.')} · ${t('Source')} : openFDA (FDA)</div></div>
     </div>`;
   }else{
     mount.innerHTML=primary?`<div class="card pad web-card note" style="border-top-color:var(--muted)">${t('Aucune information médicale trouvée pour ce produit.')}</div>`:'';
